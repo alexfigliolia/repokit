@@ -10,6 +10,7 @@ use walkdir::{DirEntry, Error, WalkDir};
 use crate::{
     concurrency::thread_pool::ThreadPool,
     configuration::configuration::DevKitCommand,
+    executables::intenal_executable::InternalExecutable,
     internal_commands::{register_command::RegisterCommand, typescript_command::TypescriptCommand},
     logger::logger::Logger,
 };
@@ -26,7 +27,7 @@ impl ExternalCommands {
     pub async fn find_all(&self) -> HashMap<String, DevKitCommand> {
         let mut paths: Vec<String> = vec![];
         let mut pool = ThreadPool::new(None, None);
-        for entry in WalkDir::new(self.root.clone())
+        for entry in WalkDir::new(&self.root)
             .into_iter()
             .filter(|e| self.allowed(e))
             .map(|e| e.ok())
@@ -34,16 +35,10 @@ impl ExternalCommands {
             let unwrapped = entry.expect("path");
             let path = unwrapped.path().to_owned();
             if path.is_file() && path.extension().map(|ext| ext == "ts").unwrap_or(false) {
-                let path_clone = path.clone();
-                let another_clone = path.clone();
-                let async_task = pool.spawn(move || ExternalCommands::read(&path_clone));
+                let clone = path.clone();
+                let async_task = pool.spawn(move || ExternalCommands::read(&path));
                 if async_task.await.unwrap() == true {
-                    paths.push(
-                        (another_clone)
-                            .into_os_string()
-                            .into_string()
-                            .expect("stringify"),
-                    );
+                    paths.push((clone).into_os_string().into_string().expect("stringify"));
                 }
             }
         }
@@ -51,7 +46,7 @@ impl ExternalCommands {
     }
 
     pub fn validate(
-        internals: &HashMap<String, RegisterCommand>,
+        internals: &HashMap<String, Box<dyn InternalExecutable>>,
         externals: &HashMap<String, DevKitCommand>,
     ) {
         for (name, command) in externals {

@@ -4,6 +4,9 @@ export const Commands = new DevKitCommand({
   name: "test",
   description: "<Your Package Description>",
   commands: {
-    "install": "yarn install",
+    "install": {
+      'command': "yarn install",
+      "description": "Install all packages with yarn"
+    }
   }
 })

@@ -9,26 +9,29 @@ use std::{
 };
 
 use crate::{
-    executables::{executable::Executable, intenal_executable::InternalExecutable},
+    executables::{
+        intenal_executable::InternalExecutable,
+        internal_executable_definition::InternalExecutableDefinition,
+    },
     internal_commands::help::Help,
     logger::logger::Logger,
 };
 
 pub struct RegisterCommand {
     pub root: String,
-    pub definition: Executable,
+    pub definition: InternalExecutableDefinition,
 }
 
 impl RegisterCommand {
     pub fn new(root: String) -> RegisterCommand {
         RegisterCommand {
             root,
-            definition: Executable {
-                name: "register-command".to_string(),
-                description: "Creates new Devkit commands in the specified directory".to_string(),
+            definition: InternalExecutableDefinition {
+                name: "register-command",
+                description: "Creates new Devkit commands in the specified directory",
                 args: HashMap::from([(
-                    "--path | -p".to_string(),
-                    "A relative path to your preferred command location".to_string(),
+                    "--path | -p",
+                    "A relative path to your preferred command location",
                 )]),
             },
         }
@@ -57,9 +60,7 @@ impl RegisterCommand {
         if path_arg == "" {
             RegisterCommand::exit_on_missing_path();
         }
-        let path = Path::new(self.root.as_str())
-            .join(path_arg.clone())
-            .normalize();
+        let path = Path::new(self.root.as_str()).join(&path_arg).normalize();
         if !path.exists() {
             Logger::info(
                 format!(
@@ -68,13 +69,13 @@ impl RegisterCommand {
                 )
                 .as_str(),
             );
-            create_dir_all(path.clone()).expect("");
+            create_dir_all(&path).expect("");
         }
         if !path.is_dir() {
             RegisterCommand::exit_on_missing_path();
         }
-        let command_path = path.clone().join("Commands.ts");
-        if command_path.clone().exists() {
+        let command_path = &path.join("Commands.ts");
+        if command_path.exists() {
             Logger::error(
                 format!(
                     "A {} file already exists in this directory",
@@ -88,7 +89,7 @@ impl RegisterCommand {
             ).as_str());
             process::exit(0);
         }
-        return command_path;
+        return command_path.clone();
     }
 
     fn exit_on_missing_path() {
@@ -115,7 +116,7 @@ impl InternalExecutable for RegisterCommand {
         Logger::info("Registering a new command");
         let command_path = self.parse(args);
         let mut source = File::open(RegisterCommand::template_path()).expect("Template");
-        let mut target = File::create(command_path.clone()).expect("creating");
+        let mut target = File::create(&command_path).expect("creating");
         io::copy(&mut source, &mut target).expect("writing");
         (&target).sync_all().expect("Flushing");
         Logger::info("Creating command file");
@@ -123,11 +124,15 @@ impl InternalExecutable for RegisterCommand {
         println!(
             "\n{}{}\n",
             Logger::indent(None),
-            Logger::blue_bright(command_path.to_str().expect(""))
+            Logger::blue_bright(&command_path.to_str().expect(""))
         );
     }
 
     fn help(&self) {
-        Help::internal_command(self.definition.clone());
+        Help::internal_command(&self.definition);
+    }
+
+    fn get_definition(&self) -> &InternalExecutableDefinition {
+        return &self.definition;
     }
 }

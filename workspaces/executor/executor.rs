@@ -5,8 +5,8 @@ use std::str;
 pub struct Executor {}
 
 impl Executor {
-    pub fn exec<T: AsRef<OsStr>>(command: T, args: Option<&[T]>) -> String {
-        let output = Executor::spawn(command, args)
+    pub fn exec<T: AsRef<OsStr>>(command: T) -> String {
+        let output = Executor::spawn(command)
             .output()
             .expect("command failed to execute");
         if output.status.success() {
@@ -15,17 +15,14 @@ impl Executor {
         return Executor::unwrap(&output.stderr);
     }
 
-    pub fn with_stdio<T: AsRef<OsStr>>(command: T, args: Option<&[T]>) {
-        let mut child = Executor::spawn(command, args)
-            .spawn()
-            .expect("Failed to execute");
+    pub fn with_stdio<T: AsRef<OsStr>>(command: T) {
+        let mut child = Executor::spawn(command).spawn().expect("Failed to execute");
         child.wait().expect("failed to wait on child process");
     }
 
-    pub fn spawn<T: AsRef<OsStr>>(program: T, args: Option<&[T]>) -> Command {
-        let unwrapped_args = args.unwrap_or(&[]);
+    pub fn spawn<T: AsRef<OsStr>>(program: T) -> Command {
         let mut command = Executor::platform_command();
-        command.arg(program).args(unwrapped_args);
+        command.arg(program);
         command
     }
 

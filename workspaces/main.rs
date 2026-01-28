@@ -13,8 +13,8 @@ mod internal_commands;
 mod logger;
 
 fn main() {
-    let root = Executor::exec("git rev-parse --show-toplevel", None);
-    let config = TypescriptCommand::parse_configuration(root.clone());
-    let kit = DevKit::new(root.clone(), config);
+    let root = Executor::exec("git rev-parse --show-toplevel");
+    let config = TypescriptCommand::parse_configuration(&root);
+    let kit = DevKit::new(root, config);
     kit.invoke();
 }

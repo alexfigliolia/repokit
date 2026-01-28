@@ -9,15 +9,8 @@ pub struct ThreadPool {
 
 impl ThreadPool {
     pub fn new(threads_override: Option<usize>, pool_override: Option<Runtime>) -> ThreadPool {
-        let threads = threads_override.or(Some(4 as usize)).unwrap();
         let pool = pool_override
-            .or(Some(
-                runtime::Builder::new_multi_thread()
-                    .worker_threads(threads) // Use worker_threads or core_threads depending on version/docs
-                    .enable_all()
-                    .build()
-                    .unwrap(),
-            ))
+            .or(Some(ThreadPool::create_pool(threads_override)))
             .unwrap();
         ThreadPool { pool }
     }
@@ -29,5 +22,15 @@ impl ThreadPool {
         return self.pool.block_on(async {
             return tokio::spawn(async move { task() });
         });
+    }
+
+    fn create_pool(threads: Option<usize>) -> Runtime {
+        let mut pool = runtime::Builder::new_multi_thread();
+        pool.enable_all();
+        match threads {
+            Some(size) => &pool.worker_threads(size),
+            None => &pool,
+        };
+        return pool.build().unwrap();
     }
 }
