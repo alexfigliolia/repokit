@@ -9,16 +9,16 @@ export const DevKit = new DevKitConfig({
   workspaces: ["./workspace-1/*", "./workspace-2/*"],
   commands: {
     "<your-first-command>": {
-      "command": "<insert shell command here>",
-      "description": "A description for using your command",
+      command: "<insert shell command here>",
+      description: "A description for using your command",
     },
     "<your-second-command>": {
-      "command": "<insert shell command here>",
-      "description": "A description for using your command",
+      command: "<insert shell command here>",
+      description: "A description for using your command",
     },
     "<your-third-command>": {
-      "command": "<insert shell command here>",
-      "description": "A description for using your command",
-    }
-  }
-})
+      command: "<insert shell command here>",
+      description: "A description for using your command",
+    },
+  },
+});

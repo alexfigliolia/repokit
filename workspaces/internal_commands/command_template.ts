@@ -8,16 +8,16 @@ export const Commands = new DevKitCommand({
   description: "<Your Package Description>",
   commands: {
     "<your-first-command>": {
-      "command": "<insert shell command here>",
-      "description": "A description for using your command",
+      command: "<insert shell command here>",
+      description: "A description for using your command",
     },
     "<your-second-command>": {
-      "command": "<insert shell command here>",
-      "description": "A description for using your command",
+      command: "<insert shell command here>",
+      description: "A description for using your command",
     },
     "<your-third-command>": {
-      "command": "<insert shell command here>",
-      "description": "A description for using your command",
-    }
-  }
-})
+      command: "<insert shell command here>",
+      description: "A description for using your command",
+    },
+  },
+});

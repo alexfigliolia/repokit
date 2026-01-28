@@ -13,8 +13,9 @@ export const DevKit = new DevKitConfig({
       description: "Formats rust files",
     },
     "lint:ts": {
-      command: "oxlint --type-aware --type-check --report-unused-disable-directives --fix && oxfmt",
+      command:
+        "oxlint --type-aware --type-check --report-unused-disable-directives --fix && oxfmt",
       description: "Lints typescript files",
     },
-  }
-})
+  },
+});

@@ -1,16 +1,17 @@
-import { parseArgs } from "node:util"
+import { parseArgs } from "node:util";
+
+import type { ILocatedCommand } from "./types";
 import { DevKitCommand } from "./DevKitCommand";
-import { ILocatedCommand } from "./types";
 
 export class CommandParser {
   public static async parse() {
     const paths = this.parsePaths().split(",").filter(Boolean);
     const commands: ILocatedCommand[] = [];
-    for(const path of paths) {
+    for (const path of paths) {
       const declaredExports = await import(path);
-      for(const key in declaredExports) {
-        if(declaredExports[key] instanceof DevKitCommand) {
-          commands.push({...declaredExports[key], location: path})
+      for (const key in declaredExports) {
+        if (declaredExports[key] instanceof DevKitCommand) {
+          commands.push({ ...declaredExports[key].toJSON(), location: path });
         }
       }
     }
@@ -25,12 +26,12 @@ export class CommandParser {
             default: "",
             multiple: false,
             short: "p",
-            type: "string"
-          }
-        }
+            type: "string",
+          },
+        },
       }).values.paths;
     } catch {
-      return ""
+      return "";
     }
   }
 }

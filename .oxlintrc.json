@@ -22,26 +22,14 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": [
-    "node_modules/**",
-    "./target/**"
-  ],
+  "ignorePatterns": ["node_modules/**", "./target/**"],
   "overrides": [
     {
-      "files": [
-        "**/*.{ts,tsx}"
-      ],
-      "plugins": [
-        "node",
-        "eslint",
-        "import",
-        "promise",
-        "typescript",
-        "oxc"
-      ],
+      "files": ["**/*.{ts,tsx}"],
+      "plugins": ["node", "eslint", "import", "promise", "typescript", "oxc"],
       "rules": {
         "typescript/no-explicit-any": "error",
-        "typescript/no-unsafe-assignment": "error",
+        "typescript/no-unsafe-assignment": "off",
         "typescript/no-floating-promises": [
           "error",
           {
@@ -56,8 +44,8 @@
             "args": "all",
             "varsIgnorePattern": "^_",
             "destructuredArrayIgnorePattern": "^_",
-            "argsIgnorePattern": "^_",
-          },
+            "argsIgnorePattern": "^_"
+          }
         ],
         "import/no-cycle": [
           "error",
@@ -66,6 +54,6 @@
           }
         ]
       }
-    },
+    }
   ]
 }

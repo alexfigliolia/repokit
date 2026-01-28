@@ -1,4 +1,4 @@
-import { ICommand, IDevKitCommand } from "./types";
+import type { ICommand, IDevKitCommand } from "./types";
 
 export class DevKitCommand implements IDevKitCommand {
   name: string;
@@ -8,5 +8,10 @@ export class DevKitCommand implements IDevKitCommand {
     this.name = name;
     this.commands = commands;
     this.description = description;
+  }
+
+  public toJSON() {
+    const { name, commands, description } = this;
+    return { name, commands, description };
   }
 }

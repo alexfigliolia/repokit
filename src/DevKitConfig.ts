@@ -1,4 +1,4 @@
-import { ICommand, IDevKitConfig } from "./types";
+import type { ICommand, IDevKitConfig } from "./types";
 
 export class DevKitConfig implements Required<IDevKitConfig> {
   project: string;

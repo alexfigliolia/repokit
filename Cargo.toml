@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [lib]
-name = "devkit"    
+name = "devkit"
 path = "workspaces/main.rs"
 
 [[bin]]
-name="devkit"
+name = "devkit"
 path = "workspaces/main.rs"
 
 [dependencies]

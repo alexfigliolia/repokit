@@ -1,5 +1,5 @@
 import { CommandParser } from "../CommandParser";
 
-(async () => {
-  await CommandParser.parse()
+void (async () => {
+  await CommandParser.parse();
 })();

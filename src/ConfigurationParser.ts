@@ -1,18 +1,19 @@
-import { join } from "node:path"
-import { parseArgs } from "node:util"
-import { DevKitConfig } from "./DevKitConfig";
+import { parseArgs } from "node:util";
+import { join } from "node:path";
 import { existsSync } from "node:fs";
+
+import { DevKitConfig } from "./DevKitConfig";
 
 export class ConfigurationParser {
   public static async parse() {
-    const root = this.parseRoot()
-    const path = join(root, 'devkit.ts');
-    if(!existsSync(path)) {
+    const root = this.parseRoot();
+    const path = join(root, "devkit.ts");
+    if (!existsSync(path)) {
       return;
     }
     const config = await import(path);
-    for(const key in config) {
-      if(config[key] instanceof DevKitConfig) {
+    for (const key in config) {
+      if (config[key] instanceof DevKitConfig) {
         console.log(JSON.stringify(config[key]));
         return;
       }
@@ -23,12 +24,12 @@ export class ConfigurationParser {
     return parseArgs({
       options: {
         root: {
-          default: '',
+          default: "",
           multiple: false,
-          short: 'r',
-          type: 'string'
-        }
-      }
-    }).values.root
+          short: "r",
+          type: "string",
+        },
+      },
+    }).values.root;
   }
 }

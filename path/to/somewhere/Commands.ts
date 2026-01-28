@@ -12,5 +12,5 @@ export const Commands = new DevKitCommand({
       command: "yarn test",
       description: "Runs all tests",
     },
-  }
-})
+  },
+});
