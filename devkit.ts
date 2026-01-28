@@ -1,20 +1,20 @@
 import { DevKitConfig } from "@devkit/core";
 
 export const DevKit = new DevKitConfig({
-  project: "Your Project Name",
+  project: "Devkit",
   workspaces: ["./workspace-1/*", "./workspace-2/*"],
   commands: {
-    "<your-first-command>": {
-      "command": "<insert shell command here>",
-      "description": "A description for using your command",
+    "lint:rust": {
+      command: "cargo clippy --allow-dirty",
+      description: "Lints rust files",
     },
-    "<your-second-command>": {
-      "command": "<insert shell command here>",
-      "description": "A description for using your command",
+    "format:rust": {
+      command: "cargo clippy --fix",
+      description: "Formats rust files",
     },
-    "<your-third-command>": {
-      "command": "<insert shell command here>",
-      "description": "A description for using your command",
-    }
+    "lint:ts": {
+      command: "oxlint --type-aware --type-check --report-unused-disable-directives --fix && oxfmt",
+      description: "Lints typescript files",
+    },
   }
 })
