@@ -1,4 +1,4 @@
-import { DevKitCommand } from "@devkit/DevKitCommand";
+import { DevKitCommand } from "@devkit/core";
 
 export const Commands = new DevKitCommand({
   name: "test",

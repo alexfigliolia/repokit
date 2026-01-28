@@ -1,4 +1,4 @@
-import { DevKitConfig } from "./src/DevKitConfig";
+import { DevKitConfig } from "@devkit/core";
 
 export const Config = new DevKitConfig({
   project: 'Test',

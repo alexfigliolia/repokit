@@ -20,8 +20,8 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "paths": {
-      "@devkit/*": [
-        "./src/*"
+      "@devkit/core": [
+        "./src/index.ts"
       ]
     }
   }

@@ -1,4 +1,4 @@
-import { ConfigurationParser } from "@devkit/ConfigurationParser"
+import { ConfigurationParser } from "../ConfigurationParser";
 
 (async () => {
   await ConfigurationParser.parse()

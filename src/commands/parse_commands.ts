@@ -1,4 +1,4 @@
-import { CommandParser } from "@devkit/CommandParser";
+import { CommandParser } from "../CommandParser";
 
 (async () => {
   await CommandParser.parse()

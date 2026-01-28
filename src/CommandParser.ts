@@ -1,5 +1,5 @@
 import { parseArgs } from "node:util"
-import { DevKitCommand } from "@devkit/DevKitCommand";
+import { DevKitCommand } from "./DevKitCommand";
 import { ILocatedCommand } from "./types";
 
 export class CommandParser {

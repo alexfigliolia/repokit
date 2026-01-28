@@ -1,6 +1,6 @@
 import { join } from "node:path"
 import { parseArgs } from "node:util"
-import { DevKitConfig } from "@devkit/DevKitConfig";
+import { DevKitConfig } from "./DevKitConfig";
 
 export class ConfigurationParser {
   public static async parse() {
