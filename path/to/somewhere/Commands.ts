@@ -1,12 +1,16 @@
 import { DevKitCommand } from "@devkit/core";
 
 export const Commands = new DevKitCommand({
-  name: "test",
-  description: "<Your Package Description>",
+  name: "test-package",
+  description: "A package designed to do important things",
   commands: {
-    "install": {
-      'command': "yarn install",
-      "description": "Install all packages with yarn"
-    }
+    install: {
+      command: "yarn install",
+      description: "Installs package dependencies using yarn",
+    },
+    test: {
+      command: "yarn test",
+      description: "Runs all tests",
+    },
   }
 })

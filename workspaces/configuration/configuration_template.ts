@@ -1,5 +1,9 @@
 import { DevKitConfig } from "@devkit/core";
 
+/**
+ * Please fill out this config file with your desired
+ * devkit settings
+ */
 export const DevKit = new DevKitConfig({
   project: "Your Project Name",
   workspaces: ["./workspace-1/*", "./workspace-2/*"],

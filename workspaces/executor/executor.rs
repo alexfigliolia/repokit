@@ -12,7 +12,7 @@ impl Executor {
         if output.status.success() {
             return Executor::unwrap(&output.stdout);
         }
-        return Executor::unwrap(&output.stderr);
+        Executor::unwrap(&output.stderr)
     }
 
     pub fn with_stdio<T: AsRef<OsStr>>(command: T) {
@@ -29,9 +29,8 @@ impl Executor {
     fn platform_command() -> Command {
         if cfg!(target_os = "windows") {
             return Executor::windows_command();
-        } else {
-            return Executor::unix_command();
-        };
+        }
+        Executor::unix_command()
     }
 
     fn windows_command() -> Command {
@@ -47,9 +46,9 @@ impl Executor {
     }
 
     fn unwrap(io: &Vec<u8>) -> String {
-        return str::from_utf8(io)
+        str::from_utf8(io)
             .expect("Invalid output")
             .trim()
-            .to_string();
+            .to_string()
     }
 }

@@ -20,5 +20,6 @@ normalize-path = "0.2.1"
 walkdir = "2.5.0"
 tokio = { version = "1.49.0", features = ["rt-multi-thread"] }
 futures = "0.3.31"
+clippy = "0.0.302"
 
 

@@ -4,7 +4,7 @@ import { ILocatedCommand } from "./types";
 
 export class CommandParser {
   public static async parse() {
-    const paths = this.parsePaths().split(',');
+    const paths = this.parsePaths().split(",").filter(Boolean);
     const commands: ILocatedCommand[] = [];
     for(const path of paths) {
       const declaredExports = await import(path);
@@ -18,15 +18,19 @@ export class CommandParser {
   }
 
   private static parsePaths() {
-    return parseArgs({
-      'options': {
-        'paths': {
-          'default': '',
-          'multiple': false,
-          'short': 'p',
-          'type': 'string'
+    try {
+      return parseArgs({
+        options: {
+          paths: {
+            default: "",
+            multiple: false,
+            short: "p",
+            type: "string"
+          }
         }
-      }
-    }).values.paths;
+      }).values.paths;
+    } catch {
+      return ""
+    }
   }
 }

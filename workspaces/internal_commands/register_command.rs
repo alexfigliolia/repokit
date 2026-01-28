@@ -28,7 +28,7 @@ impl RegisterCommand {
             root,
             definition: InternalExecutableDefinition {
                 name: "register-command",
-                description: "Creates new Devkit commands in the specified directory",
+                description: "Creates new Devkit commands",
                 args: HashMap::from([(
                     "--path | -p",
                     "A relative path to your preferred command location",
@@ -53,19 +53,19 @@ impl RegisterCommand {
                 _ => {}
             }
         }
-        return self.validate_path(path);
+        self.validate_path(path)
     }
 
     fn validate_path(&self, path_arg: String) -> PathBuf {
-        if path_arg == "" {
+        if path_arg.is_empty() {
             RegisterCommand::exit_on_missing_path();
         }
-        let path = Path::new(self.root.as_str()).join(&path_arg).normalize();
+        let path = Path::new(&self.root).join(&path_arg).normalize();
         if !path.exists() {
             Logger::info(
                 format!(
                     "Creating the path {} in your file system",
-                    Logger::blue_bright(path_arg.as_str())
+                    Logger::cyan_bright(path_arg.as_str())
                 )
                 .as_str(),
             );
@@ -79,24 +79,24 @@ impl RegisterCommand {
             Logger::error(
                 format!(
                     "A {} file already exists in this directory",
-                    Logger::blue_bright("Commands.ts")
+                    Logger::cyan_bright("Commands.ts")
                 )
                 .as_str(),
             );
             Logger::info(format!(
                 "You can append additional commands to the existing {} instance or export another one",
-                Logger::blue_bright("DevKitCommand")
+                Logger::cyan_bright("DevKitCommand")
             ).as_str());
             process::exit(0);
         }
-        return command_path.clone();
+        command_path.clone()
     }
 
     fn exit_on_missing_path() {
         Logger::exitWithError(
                 format!(
                     "Please specify a path to a directory relative to the root of your repository using the {} argument",
-                    Logger::blue_bright("--path | -p")
+                    Logger::cyan_bright("--path | -p")
                 )
                 .as_str(),
             );
@@ -107,7 +107,7 @@ impl RegisterCommand {
         let dir = Path::new(file_path)
             .parent()
             .expect("Failed to get parent directory");
-        return dir.join("command_template.ts");
+        dir.join("command_template.ts")
     }
 }
 
@@ -118,13 +118,13 @@ impl InternalExecutable for RegisterCommand {
         let mut source = File::open(RegisterCommand::template_path()).expect("Template");
         let mut target = File::create(&command_path).expect("creating");
         io::copy(&mut source, &mut target).expect("writing");
-        (&target).sync_all().expect("Flushing");
+        target.sync_all().expect("Flushing");
         Logger::info("Creating command file");
-        Logger::info("Please fill out your command file located at");
+        Logger::info("Please fill out your command file located at:");
         println!(
             "\n{}{}\n",
             Logger::indent(None),
-            Logger::blue_bright(&command_path.to_str().expect(""))
+            Logger::cyan_bright(command_path.to_str().expect(""))
         );
     }
 
@@ -133,6 +133,6 @@ impl InternalExecutable for RegisterCommand {
     }
 
     fn get_definition(&self) -> &InternalExecutableDefinition {
-        return &self.definition;
+        &self.definition
     }
 }

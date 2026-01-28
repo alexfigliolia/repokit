@@ -1,5 +1,8 @@
 import { DevKitCommand } from "@devkit/core";
 
+/**
+ * Please fill out this command file with your desired settings
+ */
 export const Commands = new DevKitCommand({
   name: "<Your Package Name>",
   description: "<Your Package Description>",
