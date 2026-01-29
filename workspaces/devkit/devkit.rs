@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
     env::args,
+    path::Path,
     process::{self},
 };
 
@@ -37,7 +38,10 @@ impl DevKit {
         }
         if self.configuration.commands.contains_key(&command) {
             let root_script = self.configuration.commands.get(&command).expect("exists");
-            return Executor::with_stdio(format!("{}{}", root_script.command, &args.join(" ")));
+            return Executor::with_stdio(
+                format!("{}{}", root_script.command, &args.join(" ")),
+                |cmd| cmd.current_dir(Path::new(&self.root)),
+            );
         }
         let externals = validator.collect_and_validate_externals();
         CommandValidations::detect_collisions_between_internals_and_externals(
@@ -51,11 +55,11 @@ impl DevKit {
             let sub_command = &args[0];
             if interface.commands.contains_key(sub_command) {
                 let script = interface.commands.get(sub_command).expect("exists");
-                return Executor::with_stdio(format!(
-                    "{}{}",
-                    &script.command,
-                    &args[1..].join(" ")
-                ));
+                let working_dir = Path::new(&interface.location).parent().expect("exists");
+                return Executor::with_stdio(
+                    format!("{}{}", &script.command, &args[1..].join(" ")),
+                    |cmd| cmd.current_dir(working_dir),
+                );
             }
             return self.subcommand_not_found(interface, sub_command);
         }

@@ -14,7 +14,7 @@ mod logger;
 mod validations;
 
 fn main() {
-    let root = Executor::exec("git rev-parse --show-toplevel");
+    let root = Executor::exec("git rev-parse --show-toplevel", |cmd| cmd);
     let config = TypescriptCommand::parse_configuration(&root);
     let kit = DevKit::new(root, config);
     kit.invoke();

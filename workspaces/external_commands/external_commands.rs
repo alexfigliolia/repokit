@@ -8,8 +8,7 @@ use std::{
 use walkdir::{DirEntry, Error, WalkDir};
 
 use crate::{
-    concurrency::thread_pool::ThreadPool,
-    devkit::interfaces::DevKitCommand,
+    concurrency::thread_pool::ThreadPool, devkit::interfaces::DevKitCommand,
     internal_commands::typescript_command::TypescriptCommand,
 };
 
@@ -45,7 +44,7 @@ impl ExternalCommands {
 
     fn collect_instances(&self, paths: Vec<String>) -> HashMap<String, DevKitCommand> {
         let mut map = HashMap::new();
-        let commands = TypescriptCommand::parse_commands(paths);
+        let commands = TypescriptCommand::parse_commands(&self.root, paths);
         for command in commands {
             map.insert(command.name.clone(), command);
         }

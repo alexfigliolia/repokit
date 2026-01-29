@@ -5,8 +5,11 @@ use std::str;
 pub struct Executor {}
 
 impl Executor {
-    pub fn exec<T: AsRef<OsStr>>(command: T) -> String {
-        let output = Executor::spawn(command)
+    pub fn exec<T: AsRef<OsStr>>(
+        command: T,
+        composer: impl Fn(&mut Command) -> &mut Command,
+    ) -> String {
+        let output = composer(&mut Executor::spawn(command))
             .output()
             .expect("command failed to execute");
         if output.status.success() {
@@ -15,8 +18,13 @@ impl Executor {
         Executor::unwrap(&output.stderr)
     }
 
-    pub fn with_stdio<T: AsRef<OsStr>>(command: T) {
-        let mut child = Executor::spawn(command).spawn().expect("Failed to execute");
+    pub fn with_stdio<T: AsRef<OsStr>>(
+        command: T,
+        composer: impl Fn(&mut Command) -> &mut Command,
+    ) {
+        let mut child = composer(&mut Executor::spawn(command))
+            .spawn()
+            .expect("Failed to execute");
         child.wait().expect("failed to wait on child process");
     }
 
