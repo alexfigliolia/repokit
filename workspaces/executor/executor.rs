@@ -45,7 +45,7 @@ impl Executor {
         child_process
     }
 
-    fn unwrap(io: &Vec<u8>) -> String {
+    fn unwrap(io: &[u8]) -> String {
         str::from_utf8(io)
             .expect("Invalid output")
             .trim()

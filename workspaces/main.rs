@@ -11,6 +11,7 @@ mod executor;
 mod external_commands;
 mod internal_commands;
 mod logger;
+mod validations;
 
 fn main() {
     let root = Executor::exec("git rev-parse --show-toplevel");

@@ -9,8 +9,7 @@ pub struct ThreadPool {
 
 impl ThreadPool {
     pub fn new(threads_override: Option<usize>, pool_override: Option<Runtime>) -> ThreadPool {
-        let pool = pool_override
-            .unwrap_or(ThreadPool::create_pool(threads_override));
+        let pool = pool_override.unwrap_or(ThreadPool::create_pool(threads_override));
         ThreadPool { pool }
     }
 
@@ -18,9 +17,8 @@ impl ThreadPool {
         &mut self,
         task: F,
     ) -> JoinHandle<T> {
-        self.pool.block_on(async {
-            tokio::spawn(async move { task() })
-        })
+        self.pool
+            .block_on(async { tokio::spawn(async move { task() }) })
     }
 
     fn create_pool(threads: Option<usize>) -> Runtime {

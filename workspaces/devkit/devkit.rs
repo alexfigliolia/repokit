@@ -1,4 +1,3 @@
-use ::futures::executor;
 use std::{
     collections::HashMap,
     env::args,
@@ -9,16 +8,14 @@ use crate::{
     devkit::interfaces::{DevKitCommand, DevKitConfig},
     executables::intenal_executable::InternalExecutable,
     executor::executor::Executor,
-    external_commands::external_commands::ExternalCommands,
-    internal_commands::{
-        help::Help, locate_command::LocateCommand, register_command::RegisterCommand,
-    },
+    internal_commands::help::Help,
     logger::logger::Logger,
+    validations::command_validations::CommandValidations,
 };
 
 pub struct DevKit {
-    root: String,
-    configuration: DevKitConfig,
+    pub root: String,
+    pub configuration: DevKitConfig,
 }
 
 impl DevKit {
@@ -32,16 +29,23 @@ impl DevKit {
 
     pub fn invoke(&self) {
         let (command, args) = self.parse();
-        let internals = self.internal_commands();
+        let validator = CommandValidations::from(self);
+        let internals = validator.collect_and_validate_internals();
         if internals.contains_key(&command) {
             let interface = internals.get(&command).expect("exists");
             return interface.run(args);
         }
-        let externals = self.external_commands();
-        ExternalCommands::validate(&internals, &externals);
+        if self.configuration.commands.contains_key(&command) {
+            let root_script = self.configuration.commands.get(&command).expect("exists");
+            return Executor::with_stdio(format!("{}{}", root_script.command, &args.join(" ")));
+        }
+        let externals = validator.collect_and_validate_externals();
+        CommandValidations::detect_collisions_between_internals_and_externals(
+            &internals, &externals,
+        );
         if externals.contains_key(&command) {
             let interface = externals.get(&command).expect("exists");
-            if args.len() <= 0 {
+            if args.is_empty() {
                 return self.log_external_command(interface);
             }
             let sub_command = &args[0];
@@ -61,7 +65,8 @@ impl DevKit {
     fn parse(&self) -> (String, Vec<String>) {
         let argv: Vec<String> = args().collect();
         if argv.len() < 2 {
-            Help::list_all(&self.internal_commands(), &self.external_commands());
+            let (internals, externals) = self.collect_and_validate();
+            Help::list_all(&self.configuration.commands, &internals, &externals);
             process::exit(0);
         }
         let command = &argv[1];
@@ -69,17 +74,19 @@ impl DevKit {
         (command.clone(), args.to_vec())
     }
 
-    fn internal_commands(&self) -> HashMap<String, Box<dyn InternalExecutable>> {
-        let commands: [Box<dyn InternalExecutable>; 2] = [
-            Box::new(LocateCommand::new(self.root.clone())),
-            Box::new(RegisterCommand::new(self.root.clone())),
-        ];
-        HashMap::from(commands.map(|x| (x.get_definition().name.to_string(), x)))
-    }
-
-    fn external_commands(&self) -> HashMap<String, DevKitCommand> {
-        let finder = ExternalCommands::new(self.root.clone());
-        executor::block_on(finder.find_all())
+    fn collect_and_validate(
+        &self,
+    ) -> (
+        HashMap<String, Box<dyn InternalExecutable>>,
+        HashMap<String, DevKitCommand>,
+    ) {
+        let validator = CommandValidations::from(self);
+        let internals = validator.collect_and_validate_internals();
+        let externals = validator.collect_and_validate_externals();
+        CommandValidations::detect_collisions_between_internals_and_externals(
+            &internals, &externals,
+        );
+        (internals, externals)
     }
 
     fn command_not_found(
@@ -91,26 +98,26 @@ impl DevKit {
         Logger::info(
             format!(
                 "I'm not aware of a command named {}",
-                Logger::cyan_bright(command)
+                Logger::blue_bright(command)
             )
             .as_str(),
         );
-        Help::list_all(internals, externals);
+        Help::list_all(&self.configuration.commands, internals, externals);
     }
 
     fn subcommand_not_found(&self, command: &DevKitCommand, sub_command: &str) {
         Logger::info(
             format!(
                 "The command {} was not found on {}",
-                Logger::cyan_bright(sub_command),
-                Logger::cyan_bright(&command.name)
+                Logger::blue_bright(sub_command),
+                Logger::blue_bright(&command.name)
             )
             .as_str(),
         );
         Logger::info(
             format!(
                 "Here are the commands that belong to {}",
-                Logger::cyan_bright(&command.name)
+                Logger::blue_bright(&command.name)
             )
             .as_str(),
         );
@@ -121,7 +128,7 @@ impl DevKit {
         Logger::info(
             format!(
                 "Listing available commands for {}",
-                Logger::cyan_bright(&command.name)
+                Logger::blue_bright(&command.name)
             )
             .as_str(),
         );

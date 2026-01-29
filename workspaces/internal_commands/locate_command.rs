@@ -32,31 +32,27 @@ impl LocateCommand {
 impl InternalExecutable for LocateCommand {
     fn run(&self, args: Vec<String>) {
         if args.is_empty() {
-            Logger::exitWithInfo("Please specify a command to locate");
+            Logger::exit_with_info("Please specify a command to locate");
         }
         let command = &args[0];
-        Logger::info(format!("Locating a command named {}", Logger::cyan_bright(command)).as_str());
+        Logger::info(format!("Locating a command named {}", Logger::blue_bright(command)).as_str());
         let finder = ExternalCommands::new(self.root.clone());
         let commands = executor::block_on(finder.find_all());
         if commands.contains_key(command) {
             let interface = commands.get(command).expect("exists");
-            return println!(
-                "\n{}{}\n",
-                Logger::indent(Some(3)),
-                Logger::blue(&interface.location)
-            );
+            return Logger::log_file_path(&interface.location);
         }
-        Logger::exitWithError(
+        Logger::exit_with_error(
             format!(
                 "I could not find a command named {}",
-                Logger::cyan_bright(command)
+                Logger::blue_bright(command)
             )
             .as_str(),
         );
     }
 
     fn help(&self) {
-        Help::internal_command(&self.definition);
+        Help::log_internal_command(&self.definition);
     }
 
     fn get_definition(&self) -> &InternalExecutableDefinition {

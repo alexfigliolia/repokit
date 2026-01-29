@@ -8,9 +8,9 @@ use std::{
 use walkdir::{DirEntry, Error, WalkDir};
 
 use crate::{
-    concurrency::thread_pool::ThreadPool, devkit::interfaces::DevKitCommand,
-    executables::intenal_executable::InternalExecutable,
-    internal_commands::typescript_command::TypescriptCommand, logger::logger::Logger,
+    concurrency::thread_pool::ThreadPool,
+    devkit::interfaces::DevKitCommand,
+    internal_commands::typescript_command::TypescriptCommand,
 };
 
 pub struct ExternalCommands {
@@ -41,32 +41,6 @@ impl ExternalCommands {
             }
         }
         self.collect_instances(paths)
-    }
-
-    pub fn validate(
-        internals: &HashMap<String, Box<dyn InternalExecutable>>,
-        externals: &HashMap<String, DevKitCommand>,
-    ) {
-        for (name, command) in externals {
-            if internals.contains_key(name) {
-                Logger::info(
-                    format!(
-                        "I encountered a command named {} that conflicts with one of my internals",
-                        Logger::cyan_bright(name),
-                    )
-                    .as_str(),
-                );
-                Logger::info(
-                    format!(
-                        "{}{}",
-                        Logger::indent(None),
-                        Logger::cyan_bright(&command.location),
-                    )
-                    .as_str(),
-                );
-                Logger::exitWithInfo("Please rename it");
-            }
-        }
     }
 
     fn collect_instances(&self, paths: Vec<String>) -> HashMap<String, DevKitCommand> {

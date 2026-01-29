@@ -21,12 +21,12 @@ impl Logger {
         eprintln!("{}{}", Logger::error_prefix(), message);
     }
 
-    pub fn exitWithInfo(message: &str) {
+    pub fn exit_with_info(message: &str) {
         Logger::info(message);
         process::exit(0);
     }
 
-    pub fn exitWithError(message: &str) {
+    pub fn exit_with_error(message: &str) {
         Logger::error(message);
         process::exit(0);
     }
@@ -35,13 +35,17 @@ impl Logger {
         println!("\n{}{}\n", Logger::info_prefix(), message);
     }
 
+    pub fn log_file_path(path: &str) {
+        println!("\n{}{}\n", Logger::indent(None), Logger::blue_bright(path));
+    }
+
     pub fn indent(times: Option<i32>) -> String {
         let indentation: i32 = times.unwrap_or(5);
         " ".repeat(indentation.try_into().unwrap())
     }
 
     pub fn blue(message: &str) -> ColoredString {
-        message.blue()
+        message.bright_blue()
     }
 
     pub fn blue_bright(message: &str) -> ColoredString {

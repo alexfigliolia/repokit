@@ -9,6 +9,23 @@ pub struct Command {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct ParsedCommand {
+    pub name: String,
+    pub command: String,
+    pub description: String,
+}
+
+impl ParsedCommand {
+    pub fn from(name: &str, command: &Command) -> ParsedCommand {
+        ParsedCommand {
+            name: name.to_string(),
+            command: command.command.to_string(),
+            description: command.description.to_string(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct DevKitConfig {
     pub project: String,
     pub workspaces: Vec<String>,

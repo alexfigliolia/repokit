@@ -5,7 +5,7 @@ export const DevKit = new DevKitConfig({
   workspaces: ["./workspace-1/*", "./workspace-2/*"],
   commands: {
     "lint:rust": {
-      command: "cargo clippy --allow-dirty",
+      command: "cargo clippy",
       description: "Lints rust files",
     },
     "format:rust": {
@@ -14,7 +14,7 @@ export const DevKit = new DevKitConfig({
     },
     "lint:ts": {
       command:
-        "oxlint --type-aware --type-check --report-unused-disable-directives --fix && oxfmt",
+        "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
       description: "Lints typescript files",
     },
   },

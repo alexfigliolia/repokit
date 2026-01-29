@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    devkit::interfaces::{Command, DevKitCommand},
+    devkit::interfaces::{Command, DevKitCommand, ParsedCommand},
     executables::{
         intenal_executable::InternalExecutable,
         internal_executable_definition::InternalExecutableDefinition,
@@ -13,28 +13,16 @@ pub struct Help;
 
 impl Help {
     pub fn list_all(
+        root_commands: &HashMap<String, Command>,
         internals: &HashMap<String, Box<dyn InternalExecutable>>,
         externals: &HashMap<String, DevKitCommand>,
     ) {
-        let sorted_internals = Help::sort_internal(internals);
-        Logger::space_around("Internal Commands:");
-        for internal in sorted_internals {
-            Help::internal_command(internal.get_definition());
-            println!();
-        }
-        if externals.is_empty() {
-            return;
-        }
-        let sorted_externals = Help::sort_external(externals);
-        Logger::info("Registered Commands:");
-        println!();
-        for external in sorted_externals {
-            Help::external_command(external);
-            println!();
-        }
+        Help::log_internal_commands(internals);
+        Help::log_root_commands(root_commands);
+        Help::log_external_commands(externals);
     }
 
-    pub fn internal_command(command: &InternalExecutableDefinition) {
+    pub fn log_internal_command(command: &InternalExecutableDefinition) {
         println!(
             "{}{} {}",
             Logger::indent(Some(3)),
@@ -44,7 +32,16 @@ impl Help {
         Help::print_args(&command.args);
     }
 
-    pub fn external_command(command: &DevKitCommand) {
+    pub fn log_root_command(command: &ParsedCommand) {
+        println!(
+            "{}{} {}",
+            Logger::indent(Some(3)),
+            Logger::blue(&command.name),
+            Logger::gray(&command.description),
+        );
+    }
+
+    pub fn log_external_command(command: &DevKitCommand) {
         println!(
             "{}{} {}",
             Logger::indent(Some(3)),
@@ -57,27 +54,59 @@ impl Help {
     pub fn print_commands(map: &HashMap<String, Command>, indentation: Option<i32>) {
         for (name, command) in map {
             println!(
-                "{}",
-                format!(
-                    "{}{}{}",
-                    Logger::indent(indentation),
-                    Logger::green(format!("{}: ", name).as_str()),
-                    Logger::gray(&command.description),
-                )
+                "{}{}{}",
+                Logger::indent(indentation),
+                Logger::green(format!("{}: ", name).as_str()),
+                Logger::gray(&command.description),
             );
+        }
+    }
+
+    fn log_internal_commands(internals: &HashMap<String, Box<dyn InternalExecutable>>) {
+        if internals.is_empty() {
+            return;
+        }
+        let sorted_internals = Help::sort_internal(internals);
+        Logger::space_around("Internal Commands:");
+        for internal in sorted_internals {
+            Help::log_internal_command(internal.get_definition());
+            println!();
+        }
+    }
+
+    fn log_root_commands(root_commands: &HashMap<String, Command>) {
+        if root_commands.is_empty() {
+            return;
+        }
+        let sorted_commands = Help::sort_root_commands(root_commands);
+        Logger::info("Project Level Commands:");
+        println!();
+        for command in sorted_commands {
+            Help::log_root_command(&command);
+        }
+        println!();
+    }
+
+    fn log_external_commands(externals: &HashMap<String, DevKitCommand>) {
+        if externals.is_empty() {
+            return;
+        }
+        let sorted_externals = Help::sort_external(externals);
+        Logger::info("Package Level Commands:");
+        println!();
+        for external in sorted_externals {
+            Help::log_external_command(external);
+            println!();
         }
     }
 
     fn print_args(map: &HashMap<&'static str, &'static str>) {
         for (name, description) in map {
             println!(
-                "{}",
-                format!(
-                    "{}{}{}",
-                    Logger::indent(Some(6)),
-                    Logger::green(format!("{}: ", name).as_str()),
-                    Logger::gray(description),
-                )
+                "{}{}{}",
+                Logger::indent(Some(6)),
+                Logger::green(format!("{}: ", name).as_str()),
+                Logger::gray(description),
             );
         }
     }
@@ -94,5 +123,14 @@ impl Help {
         let mut vector: Vec<&DevKitCommand> = (commands).values().collect();
         vector.sort_by_key(|x| &x.name);
         vector
+    }
+
+    fn sort_root_commands(commands: &HashMap<String, Command>) -> Vec<ParsedCommand> {
+        let mut vector: Vec<&String> = (commands).keys().collect();
+        vector.sort();
+        vector
+            .iter()
+            .map(|&name| ParsedCommand::from(name, commands.get(name).expect("known keys only")))
+            .collect()
     }
 }
