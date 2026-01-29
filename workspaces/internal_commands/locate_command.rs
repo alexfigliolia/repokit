@@ -1,5 +1,5 @@
 use ::futures::executor;
-use std::collections::HashMap;
+use std::{collections::HashMap, process::exit};
 
 use crate::{
     executables::{
@@ -27,6 +27,26 @@ impl LocateCommand {
             },
         }
     }
+
+    fn search_externals(&self, command: &str) {
+        let finder = ExternalCommands::new(self.root.clone());
+        let commands = executor::block_on(finder.find_all());
+        if commands.contains_key(command) {
+            let interface = commands.get(command).expect("exists");
+            Logger::log_file_path(&interface.location);
+            exit(0);
+        }
+    }
+
+    fn search_root(&self, command: &str) {
+        let finder = ExternalCommands::new(self.root.clone());
+        let commands = executor::block_on(finder.find_all());
+        if commands.contains_key(command) {
+            let interface = commands.get(command).expect("exists");
+            Logger::log_file_path(&interface.location);
+            exit(0);
+        }
+    }
 }
 
 impl InternalExecutable for LocateCommand {
@@ -36,12 +56,7 @@ impl InternalExecutable for LocateCommand {
         }
         let command = &args[0];
         Logger::info(format!("Locating a command named {}", Logger::blue_bright(command)).as_str());
-        let finder = ExternalCommands::new(self.root.clone());
-        let commands = executor::block_on(finder.find_all());
-        if commands.contains_key(command) {
-            let interface = commands.get(command).expect("exists");
-            return Logger::log_file_path(&interface.location);
-        }
+        self.search_externals(command);
         Logger::exit_with_error(
             format!(
                 "I could not find a command named {}",
