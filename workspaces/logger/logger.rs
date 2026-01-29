@@ -45,7 +45,7 @@ impl Logger {
     }
 
     pub fn blue(message: &str) -> ColoredString {
-        message.blue()
+        message.bright_blue()
     }
 
     pub fn blue_bright(message: &str) -> ColoredString {

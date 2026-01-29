@@ -36,7 +36,7 @@ impl Help {
         println!(
             "{}{} {}",
             Logger::indent(Some(3)),
-            Logger::blue_bright(&command.name),
+            Logger::blue(&command.name),
             Logger::gray(&command.description),
         );
     }
