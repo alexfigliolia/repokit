@@ -8,9 +8,11 @@ use std::{
 use walkdir::{DirEntry, Error, WalkDir};
 
 use crate::{
-    concurrency::thread_pool::ThreadPool, devkit::interfaces::DevKitCommand,
+    concurrency::thread_pool::ThreadPool,
+    devkit::interfaces::{Command, DevKitCommand},
     executables::intenal_executable::InternalExecutable,
-    internal_commands::typescript_command::TypescriptCommand, logger::logger::Logger,
+    internal_commands::typescript_command::TypescriptCommand,
+    logger::logger::Logger,
 };
 
 pub struct ExternalCommands {
@@ -43,7 +45,7 @@ impl ExternalCommands {
         self.collect_instances(paths)
     }
 
-    pub fn validate(
+    pub fn detect_collisions_between_internals_and_externals(
         internals: &HashMap<String, Box<dyn InternalExecutable>>,
         externals: &HashMap<String, DevKitCommand>,
     ) {
@@ -52,19 +54,53 @@ impl ExternalCommands {
                 Logger::info(
                     format!(
                         "I encountered a command named {} that conflicts with one of my internals",
-                        Logger::cyan_bright(name),
+                        Logger::blue_bright(name),
                     )
                     .as_str(),
                 );
+                Logger::info("Here's where it's located:");
+                Logger::log_file_path(&command.location);
+                Logger::exitWithInfo("Please rename it");
+            }
+        }
+    }
+
+    pub fn detect_collisions_between_internals_and_root_commands(
+        internals: &HashMap<String, Box<dyn InternalExecutable>>,
+        root_commands: &HashMap<String, Command>,
+    ) {
+        for (name, _) in internals {
+            if root_commands.contains_key(name) {
                 Logger::info(
                     format!(
-                        "{}{}",
-                        Logger::indent(None),
-                        Logger::cyan_bright(&command.location),
+                        "I encountered a command named {} in your {} file that conflicts with one of my internals",
+                        Logger::blue_bright(name),
+                        Logger::blue_bright("devkit.ts"),
                     )
                     .as_str(),
                 );
                 Logger::exitWithInfo("Please rename it");
+            }
+        }
+    }
+
+    pub fn detect_collisions_between_root_commands_and_externals(
+        externals: &HashMap<String, DevKitCommand>,
+        root_commands: &HashMap<String, Command>,
+    ) {
+        for (name, command) in externals {
+            if root_commands.contains_key(name) {
+                Logger::info(
+                    format!(
+                        "I encountered a command named {} that conflicts with a command in your {} file",
+                        Logger::blue_bright(name),
+                        Logger::blue_bright("devkit.ts")
+                    )
+                    .as_str(),
+                );
+                Logger::info("Here's where it's located:");
+                Logger::log_file_path(&command.location);
+                Logger::exitWithInfo("Please rename one of these");
             }
         }
     }

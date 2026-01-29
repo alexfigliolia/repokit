@@ -31,14 +31,12 @@ impl DevKit {
     }
 
     pub fn invoke(&self) {
+        let (internals, externals) = self.collect_and_validate();
         let (command, args) = self.parse();
-        let internals = self.internal_commands();
         if internals.contains_key(&command) {
             let interface = internals.get(&command).expect("exists");
             return interface.run(args);
         }
-        let externals = self.external_commands();
-        ExternalCommands::validate(&internals, &externals);
         if externals.contains_key(&command) {
             let interface = externals.get(&command).expect("exists");
             if args.len() <= 0 {
@@ -61,12 +59,36 @@ impl DevKit {
     fn parse(&self) -> (String, Vec<String>) {
         let argv: Vec<String> = args().collect();
         if argv.len() < 2 {
-            Help::list_all(&self.internal_commands(), &self.external_commands());
+            Help::list_all(
+                &self.configuration.commands,
+                &self.internal_commands(),
+                &self.external_commands(),
+            );
             process::exit(0);
         }
         let command = &argv[1];
         let args = &(&argv)[2..];
         (command.clone(), args.to_vec())
+    }
+
+    fn collect_and_validate(
+        &self,
+    ) -> (
+        HashMap<String, Box<dyn InternalExecutable>>,
+        HashMap<String, DevKitCommand>,
+    ) {
+        let internals = self.internal_commands();
+        ExternalCommands::detect_collisions_between_internals_and_root_commands(
+            &internals,
+            &self.configuration.commands,
+        );
+        let externals = self.external_commands();
+        ExternalCommands::detect_collisions_between_internals_and_externals(&internals, &externals);
+        ExternalCommands::detect_collisions_between_root_commands_and_externals(
+            &externals,
+            &self.configuration.commands,
+        );
+        (internals, externals)
     }
 
     fn internal_commands(&self) -> HashMap<String, Box<dyn InternalExecutable>> {
@@ -91,26 +113,26 @@ impl DevKit {
         Logger::info(
             format!(
                 "I'm not aware of a command named {}",
-                Logger::cyan_bright(command)
+                Logger::blue_bright(command)
             )
             .as_str(),
         );
-        Help::list_all(internals, externals);
+        Help::list_all(&self.configuration.commands, internals, externals);
     }
 
     fn subcommand_not_found(&self, command: &DevKitCommand, sub_command: &str) {
         Logger::info(
             format!(
                 "The command {} was not found on {}",
-                Logger::cyan_bright(sub_command),
-                Logger::cyan_bright(&command.name)
+                Logger::blue_bright(sub_command),
+                Logger::blue_bright(&command.name)
             )
             .as_str(),
         );
         Logger::info(
             format!(
                 "Here are the commands that belong to {}",
-                Logger::cyan_bright(&command.name)
+                Logger::blue_bright(&command.name)
             )
             .as_str(),
         );
@@ -121,7 +143,7 @@ impl DevKit {
         Logger::info(
             format!(
                 "Listing available commands for {}",
-                Logger::cyan_bright(&command.name)
+                Logger::blue_bright(&command.name)
             )
             .as_str(),
         );

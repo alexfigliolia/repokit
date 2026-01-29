@@ -35,6 +35,10 @@ impl Logger {
         println!("\n{}{}\n", Logger::info_prefix(), message);
     }
 
+    pub fn log_file_path(path: &str) {
+        println!("\n{}{}\n", Logger::indent(None), Logger::blue_bright(path));
+    }
+
     pub fn indent(times: Option<i32>) -> String {
         let indentation: i32 = times.unwrap_or(5);
         " ".repeat(indentation.try_into().unwrap())

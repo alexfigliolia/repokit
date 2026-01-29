@@ -17,11 +17,7 @@ impl Configuration {
         let mut target = File::create(Path::new(&file_path)).expect("creating");
         io::copy(&mut source, &mut target).expect("writing");
         target.sync_all().expect("Flushing");
-        println!(
-            "\n{}{}\n",
-            Logger::indent(None),
-            Logger::blue_bright(file_path.as_str()),
-        );
+        Logger::log_file_path(file_path.as_str());
         Logger::info("Please fill out this file with your desired settings");
         exit(0);
     }
