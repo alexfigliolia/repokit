@@ -1,5 +1,4 @@
-use normalize_path::NormalizePath;
-use std::{collections::HashMap, path::Path, process::exit};
+use std::collections::HashMap;
 
 use crate::{
     devkit::interfaces::DevKitConfig,
@@ -38,7 +37,7 @@ impl InternalExecutable for Onboarder {
             "Devkit is a tool designed to self-document and publish developer facing workflows in a single CLI",
         );
         Logger::info(
-            format!("As you develop new features in your codebase, you can publish commands, API's, and tools to the {} CLI simply by running", Logger::blue_bright("Devkit")).as_str()
+            format!("As you develop new features in your codebase, you can publish commands, API's, and tools to the {} CLI by running", Logger::blue_bright("Devkit")).as_str()
         );
         Logger::log_file_path("devkit register-command ./path/to/your-feature");
         Logger::info(

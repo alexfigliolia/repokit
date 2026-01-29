@@ -39,7 +39,7 @@ impl UpgradeDevKit {
             ("bun", ("bun.lockb", "bun add -d")),
         ]);
         for (manager, (lock_file, command_prefix)) in manager_map {
-            let path = Path::new(&self.root).join(&lock_file).normalize();
+            let path = Path::new(&self.root).join(lock_file).normalize();
             if path.exists() && path.is_file() {
                 Logger::info(
                     format!("Detected {} installation", Logger::blue_bright(manager)).as_str(),
