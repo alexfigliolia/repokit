@@ -27,7 +27,8 @@ impl CommandValidations {
     }
 
     pub fn collect_and_validate_internals(&self) -> HashMap<String, Box<dyn InternalExecutable>> {
-        let internals = InternalRegistry::new(self.root.clone()).get_all();
+        let internals =
+            InternalRegistry::new(self.root.clone(), self.configuration.clone()).get_all();
         self.detect_collisions_between_internals_and_root_commands(&internals);
         internals
     }

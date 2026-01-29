@@ -9,6 +9,7 @@ use std::{
 };
 
 use crate::{
+    devkit::interfaces::DevKitConfig,
     executables::{
         intenal_executable::InternalExecutable,
         internal_executable_definition::InternalExecutableDefinition,
@@ -19,13 +20,15 @@ use crate::{
 
 pub struct RegisterCommand {
     pub root: String,
+    pub configuration: DevKitConfig,
     pub definition: InternalExecutableDefinition,
 }
 
 impl RegisterCommand {
-    pub fn new(root: String) -> RegisterCommand {
+    pub fn new(root: String, configuration: DevKitConfig) -> RegisterCommand {
         RegisterCommand {
             root,
+            configuration,
             definition: InternalExecutableDefinition {
                 name: "register-command",
                 description: "Creates new Devkit commands",
