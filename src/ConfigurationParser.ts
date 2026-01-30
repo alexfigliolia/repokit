@@ -14,8 +14,7 @@ export class ConfigurationParser {
     const config = await import(path);
     for (const key in config) {
       if (config[key] instanceof DevKitConfig) {
-        console.log(JSON.stringify(config[key]));
-        return;
+        return console.log(JSON.stringify(config[key]));
       }
     }
   }

@@ -17,3 +17,5 @@ export interface ICommand {
 export interface ILocatedCommand extends IDevKitCommand {
   location: string;
 }
+
+export type AsyncTask<T> = () => Promise<T>;

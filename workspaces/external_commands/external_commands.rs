@@ -47,7 +47,13 @@ impl ExternalCommands {
             let clone = path.clone();
             let async_task = pool.spawn(move || ExternalCommands::read(&path));
             if async_task.await.unwrap() {
-                paths.push((clone).into_os_string().into_string().expect("stringify"));
+                paths.push(
+                    (clone)
+                        .into_os_string()
+                        .into_string()
+                        .expect("stringify")
+                        .replace(&self.root, ""),
+                );
             }
         }
         self.collect_instances(paths)
@@ -55,7 +61,7 @@ impl ExternalCommands {
 
     fn collect_instances(&self, paths: Vec<String>) -> HashMap<String, DevKitCommand> {
         let mut map = HashMap::new();
-        let commands = TypescriptCommand::parse_commands(&self.root, paths);
+        let commands = TypescriptCommand::new(self.root.clone()).parse_commands(paths);
         for command in commands {
             map.insert(command.name.clone(), command);
         }

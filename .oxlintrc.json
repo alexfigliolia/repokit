@@ -25,7 +25,7 @@
   "ignorePatterns": ["node_modules/**", "./target/**"],
   "overrides": [
     {
-      "files": ["**/*.{ts,tsx}"],
+      "files": ["**/*.{ts}"],
       "plugins": ["node", "eslint", "import", "promise", "typescript", "oxc"],
       "rules": {
         "typescript/no-explicit-any": "error",

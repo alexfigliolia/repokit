@@ -6,10 +6,14 @@
   "author": "Alex Figliolia",
   "main": "dist/cjs/index.js",
   "scripts": {
-    "postinstall": "chmod +x ./install.sh && ./install.sh"
+    "postinstall": "chmod +x ./install.sh && ./install.sh",
+    "build:ts": "yarn ts-packager -e src",
+    "build:rust": "cargo build --release",
+    "install:devkit": "yarn build:rust && cargo install --path .",
+    "devkit": "yarn build:ts && yarn install:devkit && devkit"
   },
   "devDependencies": {
-    "@figliolia/child-process": "^1.0.4",
+    "@figliolia/event-emitter": "^1.1.6",
     "@figliolia/ts-packager": "^1.2.1",
     "@types/node": "^25.0.10",
     "oxfmt": "^0.27.0",
