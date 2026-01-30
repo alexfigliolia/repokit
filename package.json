@@ -5,12 +5,21 @@
   "license": "MIT",
   "author": "Alex Figliolia",
   "main": "dist/cjs/index.js",
+  "module": "dist/mjs/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/mjs/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "scripts": {
-    "postinstall": "chmod +x ./install.sh && ./install.sh",
-    "build:ts": "yarn ts-packager -e src",
     "build:rust": "cargo build --release",
+    "build:ts": "yarn ts-packager -e src",
+    "devkit": "yarn build:ts && yarn install:devkit && devkit",
     "install:devkit": "yarn build:rust && cargo install --path .",
-    "devkit": "yarn build:ts && yarn install:devkit && devkit"
+    "postinstall": "chmod +x ./install.sh && ./install.sh"
   },
   "devDependencies": {
     "@figliolia/event-emitter": "^1.1.6",
@@ -21,14 +30,5 @@
     "oxlint-tsgolint": "^0.11.3",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/mjs/index.js",
-      "require": "./dist/cjs/index.js",
-      "types": "./dist/types/index.d.ts"
-    }
-  },
-  "module": "dist/mjs/index.js",
-  "types": "dist/types/index.d.ts"
+  }
 }
