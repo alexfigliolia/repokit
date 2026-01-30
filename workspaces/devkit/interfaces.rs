@@ -34,6 +34,7 @@ pub struct DevKitConfig {
 #[derive(Debug, Deserialize, Clone)]
 pub struct DevKitCommand {
     pub name: String,
+    pub owner: String,
     pub location: String,
     pub description: String,
     pub commands: HashMap<String, Command>,

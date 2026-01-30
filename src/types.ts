@@ -5,6 +5,7 @@ export interface IDevKitConfig {
 
 export interface IDevKitCommand {
   name: string;
+  owner?: string;
   description: string;
   commands: Record<string, ICommand>;
 }

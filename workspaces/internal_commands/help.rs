@@ -51,6 +51,14 @@ impl Help {
             Logger::gray(&command.description),
         );
         Help::print_commands(&command.commands, Some(6));
+        if !command.owner.is_empty() {
+            println!(
+                "\n{}{}{}",
+                Logger::indent(Some(9)),
+                Logger::gray("Owned by: "),
+                Logger::cyan(&command.owner),
+            );
+        }
     }
 
     pub fn print_commands(map: &HashMap<String, Command>, indentation: Option<i32>) {

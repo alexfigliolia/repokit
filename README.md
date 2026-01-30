@@ -108,6 +108,7 @@ import { DevKitCommand } from "@devkit/core";
 
 export const Commands = new DevKitCommand({
   name: "example-package",
+  owner: "Name of Team or Individual"
   description: "A package designed to do important things",
   commands: {
     "build:local": {

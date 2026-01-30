@@ -4,8 +4,8 @@ use crate::{
     devkit::interfaces::DevKitConfig,
     executables::intenal_executable::InternalExecutable,
     internal_commands::{
-        list_commands::ListCommands, locate_command::LocateCommand, onboarder::Onboarder,
-        register_command::RegisterCommand, upgrade_devkit::UpgradeDevKit,
+        list_commands::ListCommands, list_owners::ListOwners, locate_command::LocateCommand,
+        onboarder::Onboarder, register_command::RegisterCommand, upgrade_devkit::UpgradeDevKit,
     },
 };
 
@@ -23,12 +23,16 @@ impl InternalRegistry {
     }
 
     pub fn get_all(&self) -> HashMap<String, Box<dyn InternalExecutable>> {
-        let internals: [Box<dyn InternalExecutable>; 5] = [
+        let internals: [Box<dyn InternalExecutable>; 6] = [
             Box::new(Onboarder::new(
                 self.root.clone(),
                 self.configuration.clone(),
             )),
             Box::new(ListCommands::new(
+                self.root.clone(),
+                self.configuration.clone(),
+            )),
+            Box::new(ListOwners::new(
                 self.root.clone(),
                 self.configuration.clone(),
             )),

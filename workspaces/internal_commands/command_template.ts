@@ -5,6 +5,7 @@ import { DevKitCommand } from "@devkit/core";
  */
 export const Commands = new DevKitCommand({
   name: "<Your Package Name>",
+  owner: "<Optional Team or Individual>",
   description: "<Your Package Description>",
   commands: {
     "<your-first-command>": {

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    devkit::interfaces::DevKitConfig,
+    devkit::interfaces::{DevKitCommand, DevKitConfig},
     executables::{
         intenal_executable::InternalExecutable,
         internal_executable_definition::InternalExecutableDefinition,
@@ -17,7 +17,7 @@ pub struct ListCommands {
     pub definition: InternalExecutableDefinition,
 }
 
-static SCOPES: [&str; 3] = ["internal", "external", "root"];
+static SCOPES: [&str; 4] = ["internal", "external", "root", "<owner>"];
 
 impl ListCommands {
     pub fn new(root: String, configuration: DevKitConfig) -> ListCommands {
@@ -31,12 +31,17 @@ impl ListCommands {
                     "<scope>",
                     format!(
                         "The scope of the commands you wish to list. Specify one of {}",
-                        Logger::blue_bright(SCOPES.join(" | ").as_str())
+                        Logger::blue(SCOPES.join(" | ").as_str())
                     )
                     .leak() as &'static str,
                 )]),
             },
         }
+    }
+
+    fn collect_registered_commands(&self) -> HashMap<String, DevKitCommand> {
+        let validators = CommandValidations::new(self.root.clone(), self.configuration.clone());
+        validators.collect_and_validate_externals()
     }
 
     fn exit_on_invalid_scope(&self) {
@@ -55,22 +60,40 @@ impl InternalExecutable for ListCommands {
         if args.is_empty() {
             return self.exit_on_invalid_scope();
         }
-        let scope = args[0].as_str();
-        if !SCOPES.contains(&scope) {
-            return self.exit_on_invalid_scope();
-        }
+        let query = args[0].as_str();
+        let scope = &query.to_lowercase();
         if scope == SCOPES[0] {
             return Help::log_internal_commands(internals);
-        }
-        if scope == SCOPES[1] {
-            let validators = CommandValidations::new(self.root.clone(), self.configuration.clone());
-            let externals = validators.collect_and_validate_externals();
-            return Help::log_external_commands(&externals);
         }
         if scope == SCOPES[2] {
             return Help::log_root_commands(&self.configuration.commands);
         }
-        self.exit_on_invalid_scope()
+        let registered_commands = self.collect_registered_commands();
+        if scope == SCOPES[1] {
+            return Help::log_external_commands(&registered_commands);
+        }
+        let full_query = args.join(" ");
+        let full_scope = &full_query.to_lowercase();
+        Logger::info("Searching registered commands");
+        let matches: HashMap<String, DevKitCommand> = registered_commands
+            .iter()
+            .filter_map(|(name, x)| {
+                if x.owner.to_lowercase().contains(full_scope) {
+                    return Some((name.clone(), x.clone()));
+                }
+                None
+            })
+            .collect();
+        if matches.is_empty() {
+            Logger::exit_with_info(
+                format!(
+                    "I could not find any commands matching {}",
+                    Logger::blue_bright(&full_query)
+                )
+                .as_str(),
+            );
+        }
+        Help::log_external_commands(&matches);
     }
 
     fn help(&self) {
