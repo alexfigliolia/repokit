@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     fs::File,
     io::{BufRead, BufReader},
     path::Path,
@@ -21,7 +20,7 @@ impl ExternalCommands {
         ExternalCommands { root }
     }
 
-    pub async fn find_all(&self) -> HashMap<String, DevKitCommand> {
+    pub async fn find_all(&self) -> Vec<DevKitCommand> {
         let mut paths: Vec<String> = vec![];
         let mut pool = ThreadPool::new(None, None);
         for entry in WalkDir::new(&self.root).into_iter().filter_map(|e| {
@@ -56,16 +55,7 @@ impl ExternalCommands {
                 );
             }
         }
-        self.collect_instances(paths)
-    }
-
-    fn collect_instances(&self, paths: Vec<String>) -> HashMap<String, DevKitCommand> {
-        let mut map = HashMap::new();
-        let commands = TypescriptCommand::new(self.root.clone()).parse_commands(paths);
-        for command in commands {
-            map.insert(command.name.clone(), command);
-        }
-        map
+        TypescriptCommand::new(self.root.clone()).parse_commands(paths)
     }
 
     fn read(path: &Path) -> bool {

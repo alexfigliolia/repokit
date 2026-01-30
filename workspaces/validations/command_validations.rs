@@ -36,8 +36,7 @@ impl CommandValidations {
     pub fn collect_and_validate_externals(&self) -> HashMap<String, DevKitCommand> {
         let finder = ExternalCommands::new(self.root.clone());
         let externals = executor::block_on(finder.find_all());
-        self.detect_collisions_between_root_commands_and_externals(&externals);
-        externals
+        self.detect_collisions_between_root_commands_and_externals(&externals)
     }
 
     pub fn detect_collisions_between_internals_and_externals(
@@ -81,22 +80,54 @@ impl CommandValidations {
 
     fn detect_collisions_between_root_commands_and_externals(
         &self,
-        externals: &HashMap<String, DevKitCommand>,
-    ) {
-        for (name, command) in externals {
-            if self.configuration.commands.contains_key(name) {
-                Logger::info(
-                    format!(
-                        "I encountered a package command named {} that conflicts with a command in your {} file",
-                        Logger::blue_bright(name),
-                        Logger::blue_bright("devkit.ts")
-                    )
-                    .as_str(),
-                );
-                Logger::info("Here's where it's located:");
-                Logger::log_file_path(&command.location);
-                Logger::exit_with_info("Please rename one of these");
+        externals: &Vec<DevKitCommand>,
+    ) -> HashMap<String, DevKitCommand> {
+        let mut map: HashMap<String, DevKitCommand> = HashMap::new();
+        for command in externals {
+            if map.contains_key(&command.name) {
+                let original = map.get(&command.name).expect("existent key");
+                self.on_external_duplicate_collision(command, &original.location);
+            }
+            map.insert(command.name.clone(), command.clone());
+            if self.configuration.commands.contains_key(&command.name) {
+                self.on_external_root_collision(command);
             }
         }
+        map
+    }
+
+    fn on_external_root_collision(&self, command: &DevKitCommand) {
+        Logger::info(format!(
+                "I encountered a package command named {} that conflicts with a command in your {} file",
+                Logger::blue_bright(&command.name),
+                Logger::blue_bright("devkit.ts")
+            )
+            .as_str(),
+        );
+        Logger::info("Here's where it's located:");
+        Logger::log_file_path(&command.location);
+        Logger::exit_with_info("Please rename one of these");
+    }
+
+    fn on_external_duplicate_collision(&self, command: &DevKitCommand, collision_path: &str) {
+        Logger::info(
+            format!(
+                "I encountered two packages with the name {}",
+                Logger::blue_bright(&command.name),
+            )
+            .as_str(),
+        );
+        Logger::info("Here's where they're located:\n");
+        println!(
+            "{}1. {}",
+            Logger::indent(None),
+            Logger::blue_bright(collision_path)
+        );
+        println!(
+            "{}2. {}\n",
+            Logger::indent(None),
+            Logger::blue_bright(&command.location)
+        );
+        Logger::exit_with_info("Please rename one of these");
     }
 }

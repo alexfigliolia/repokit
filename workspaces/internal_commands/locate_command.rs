@@ -1,5 +1,8 @@
 use ::futures::executor;
-use std::{collections::HashMap, process::exit};
+use std::{
+    collections::HashMap,
+    process::exit,
+};
 
 use crate::{
     devkit::interfaces::DevKitConfig,
@@ -31,13 +34,14 @@ impl LocateCommand {
         }
     }
 
-    fn search_externals(&self, command: &str) {
+    fn search_externals(&self, query: &str) {
         let finder = ExternalCommands::new(self.root.clone());
         let commands = executor::block_on(finder.find_all());
-        if commands.contains_key(command) {
-            let interface = commands.get(command).expect("exists");
-            Logger::log_file_path(&interface.location);
-            exit(0);
+        for command in commands {
+            if command.name == query {
+                Logger::log_file_path(&command.location);
+                exit(0);
+            }
         }
     }
 
