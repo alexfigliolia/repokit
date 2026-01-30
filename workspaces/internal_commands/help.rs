@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use alphanumeric_sort::{sort_slice_by_str_key, sort_str_slice};
+
 use crate::{
     devkit::interfaces::{Command, DevKitCommand, ParsedCommand},
     executables::{
@@ -115,19 +117,19 @@ impl Help {
         commands: &HashMap<String, Box<dyn InternalExecutable>>,
     ) -> Vec<&Box<dyn InternalExecutable>> {
         let mut vector: Vec<&Box<dyn InternalExecutable>> = commands.values().collect();
-        vector.sort_by_key(|x| &x.get_definition().name);
+        sort_slice_by_str_key(&mut vector, |x| &x.get_definition().name);
         vector
     }
 
     fn sort_external(commands: &HashMap<String, DevKitCommand>) -> Vec<&DevKitCommand> {
         let mut vector: Vec<&DevKitCommand> = (commands).values().collect();
-        vector.sort_by_key(|x| &x.name);
+        sort_slice_by_str_key(&mut vector, |x| &x.name);
         vector
     }
 
     fn sort_root_commands(commands: &HashMap<String, Command>) -> Vec<ParsedCommand> {
         let mut vector: Vec<&String> = (commands).keys().collect();
-        vector.sort();
+        sort_str_slice(&mut vector);
         vector
             .iter()
             .map(|&name| ParsedCommand::from(name, commands.get(name).expect("known keys only")))

@@ -8,7 +8,7 @@ export const DevKit = new DevKitConfig({
       description: "Lints rust files",
     },
     "format:rust": {
-      command: "cargo clippy --fix",
+      command: "cargo clippy --fix --allow-dirty",
       description: "Formats rust files",
     },
     "build:rust": {
@@ -16,8 +16,8 @@ export const DevKit = new DevKitConfig({
       description: "Build CLI in production mode",
     },
     "run:rust": {
-      command: "cargo run",
-      description: "Run CLI in production mode",
+      command: "cargo run --package devkit --bin devkit",
+      description: "Run CLI in development mode",
     },
     "install:rust": {
       command: "cargo install --path .",
