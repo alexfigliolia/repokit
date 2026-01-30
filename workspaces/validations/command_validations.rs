@@ -19,6 +19,13 @@ pub struct CommandValidations {
 }
 
 impl CommandValidations {
+    pub fn new(root: String, configuration: DevKitConfig) -> CommandValidations {
+        CommandValidations {
+            root,
+            configuration,
+        }
+    }
+
     pub fn from(kit: &DevKit) -> CommandValidations {
         CommandValidations {
             root: kit.root.clone(),

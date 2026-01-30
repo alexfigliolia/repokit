@@ -1,8 +1,5 @@
 use ::futures::executor;
-use std::{
-    collections::HashMap,
-    process::exit,
-};
+use std::{collections::HashMap, process::exit};
 
 use crate::{
     devkit::interfaces::DevKitConfig,
@@ -54,7 +51,7 @@ impl LocateCommand {
 }
 
 impl InternalExecutable for LocateCommand {
-    fn run(&self, args: Vec<String>) {
+    fn run(&self, args: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         if args.is_empty() {
             Logger::exit_with_info("Please specify a command to locate");
         }

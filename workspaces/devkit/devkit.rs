@@ -34,7 +34,7 @@ impl DevKit {
         let internals = validator.collect_and_validate_internals();
         if internals.contains_key(&command) {
             let interface = internals.get(&command).expect("exists");
-            return interface.run(args);
+            return interface.run(args, &internals);
         }
         if self.configuration.commands.contains_key(&command) {
             let root_script = self.configuration.commands.get(&command).expect("exists");

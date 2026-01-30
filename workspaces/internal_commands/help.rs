@@ -64,7 +64,7 @@ impl Help {
         }
     }
 
-    fn log_internal_commands(internals: &HashMap<String, Box<dyn InternalExecutable>>) {
+    pub fn log_internal_commands(internals: &HashMap<String, Box<dyn InternalExecutable>>) {
         if internals.is_empty() {
             return;
         }
@@ -76,7 +76,7 @@ impl Help {
         }
     }
 
-    fn log_root_commands(root_commands: &HashMap<String, Command>) {
+    pub fn log_root_commands(root_commands: &HashMap<String, Command>) {
         if root_commands.is_empty() {
             return;
         }
@@ -89,7 +89,7 @@ impl Help {
         println!();
     }
 
-    fn log_external_commands(externals: &HashMap<String, DevKitCommand>) {
+    pub fn log_external_commands(externals: &HashMap<String, DevKitCommand>) {
         if externals.is_empty() {
             return;
         }

@@ -95,7 +95,7 @@ impl RegisterCommand {
 }
 
 impl InternalExecutable for RegisterCommand {
-    fn run(&self, args: Vec<String>) {
+    fn run(&self, args: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Registering a new command");
         let command_path = self.validate_path(args);
         let mut source = File::open(RegisterCommand::template_path()).expect("Template");

@@ -31,7 +31,7 @@ impl Onboarder {
 }
 
 impl InternalExecutable for Onboarder {
-    fn run(&self, _: Vec<String>) {
+    fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info(format!("Welcome to {}", Logger::blue_bright("Devkit")).as_str());
         Logger::info(
             "Devkit is a tool designed to self-document and publish developer facing workflows in a single CLI",

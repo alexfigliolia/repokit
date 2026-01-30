@@ -56,7 +56,7 @@ impl UpgradeDevKit {
 }
 
 impl InternalExecutable for UpgradeDevKit {
-    fn run(&self, _: Vec<String>) {
+    fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Upgrading installation");
         let command_prefix = self.get_package_manager();
         Executor::exec(
