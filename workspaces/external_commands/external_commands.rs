@@ -55,6 +55,7 @@ impl ExternalCommands {
                 );
             }
         }
+        pool.pool.shutdown_background();
         TypescriptCommand::new(self.root.clone()).parse_commands(paths)
     }
 

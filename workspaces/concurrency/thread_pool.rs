@@ -4,7 +4,7 @@ use tokio::{
 };
 
 pub struct ThreadPool {
-    pool: Runtime,
+    pub pool: Runtime,
 }
 
 impl ThreadPool {
@@ -17,8 +17,7 @@ impl ThreadPool {
         &mut self,
         task: F,
     ) -> JoinHandle<T> {
-        self.pool
-            .block_on(async { tokio::spawn(async move { task() }) })
+        self.pool.spawn(async move { task() })
     }
 
     fn create_pool(threads: Option<usize>) -> Runtime {
