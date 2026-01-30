@@ -17,7 +17,7 @@ pub struct ListCommands {
     pub definition: InternalExecutableDefinition,
 }
 
-static SCOPES: [&str; 4] = ["internal", "external", "root", "<owner>"];
+static SCOPES: [&str; 4] = ["internal", "registered", "root", "<owner>"];
 
 impl ListCommands {
     pub fn new(root: String, configuration: DevKitConfig) -> ListCommands {

@@ -102,7 +102,7 @@ impl Help {
             return;
         }
         let sorted_externals = Help::sort_external(externals);
-        Logger::info("Package Level Commands:");
+        Logger::info("Registered Commands:");
         println!();
         for external in sorted_externals {
             Help::log_external_command(external);
