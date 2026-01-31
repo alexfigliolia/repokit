@@ -81,7 +81,7 @@ devkit onboard
 
 ### Building Your CLI
 
-To begin building your CLI, you can run:
+To begin building your CLI, run:
 
 ```bash
 devkit register ./path/to/your/feature
@@ -101,13 +101,13 @@ devkit <your-tool-name> <your-command-name>
 
 ### Reasoning about your toolchain
 
-As your toolchain grows, it's possible to find yourself with hundreds, if not thousands of registered commands.
+As your toolchain grows it's possible to find yourself with hundreds, if not thousands of registered commands.
 
-To make reasoning about your commands easier, there are a few internal commands getting to know
+To make reasoning about your commands easier, there are a few internal commands worth getting to know
 
 #### `devkit search`
 
-`devkit search` is a blanket brute force search over all command definitions. Using it you can search for commands by name, owner, definition, location, or even the tools that in invokes in it's commands.
+`devkit search` is a blanket search over all command definitions. Using it you can search for commands by name, owner, definition, location, or even the tools that it invokes.
 
 For example, let's say you wanted to list all commands that invoke `cargo`, you could run
 
@@ -121,7 +121,7 @@ If you wanted to search for all commands owned by an individual or team you coul
 devkit search <person or team name>
 ```
 
-If you wanted to search for all recursively under a given path you could run
+If you wanted to search for commands under a given path you could run
 
 ```bash
 devkit search path/within/your/codebase
@@ -145,7 +145,7 @@ If your team makes use of the `owners` attribute when defining your commands, yo
 devkit list <owner>
 ```
 
-`devkit` list can also accept `internal | registered | root` as an argument.
+`devkit list` can also accept `internal | registered | root` as an argument.
 
 `internal` will cause devkit to list out all of its internal commands
 
@@ -155,7 +155,7 @@ devkit list <owner>
 
 ### Best Practices for Registering Commands
 
-First and most simply - use verbose descriptions. Document flags, positionals, and environment variables required to invoke your tool. The idea behind devkit is to not leave your teammates combing through your code to find these parameters.
+First and most simply - use verbose descriptions. Document flags, positionals, and environment variables required to invoke your tool.
 
 If your tool requires arguments, abstract common combinations of arguments into their own sub-commands. For example, instead of a single `build` command requiring flags to configure it, create sub commands that abstract commonly used combinations of parameters:
 
