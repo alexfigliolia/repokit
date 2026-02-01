@@ -1,5 +1,5 @@
 {
-  "name": "repokit",
+  "name": "@repokit/core",
   "version": "0.0.1",
   "description": "A knowledgebase for your repository - wrapped in a CLI",
   "license": "MIT",

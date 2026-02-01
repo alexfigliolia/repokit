@@ -60,7 +60,7 @@ impl InternalExecutable for UpgradeRepoKit {
         Logger::info("Upgrading installation");
         let command_prefix = self.get_package_manager();
         Executor::exec(
-            format!("{} repkit@latest", command_prefix).as_str(),
+            format!("{} @repokit/core@latest", command_prefix).as_str(),
             |cmd| cmd.current_dir(&self.root),
         );
         Logger::info("Upgrade complete!");

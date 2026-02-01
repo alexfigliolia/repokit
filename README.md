@@ -31,11 +31,11 @@ npm i -D typescript && tsc --init
 Next, install repokit:
 
 ```bash
-npm i -D repkit
+npm i -D @repokit/core
 # or
-yarn add -D repkit
+yarn add -D @repokit/core
 # or
-pnpm add -D repkit
+pnpm add -D @repokit/core
 ```
 
 Repokit will automatically create a config file named `repokit.ts` for you upon installing. Fill out this file with your desired settings.
@@ -43,7 +43,7 @@ Repokit will automatically create a config file named `repokit.ts` for you upon 
 Here's an example of what Repokit's internal config looks like:
 
 ```typescript
-import { RepoKitConfig } from "repkit";
+import { RepoKitConfig } from "@repokit/core";
 
 export const RepoKit = new RepoKitConfig({
   project: "Repokit",
@@ -164,7 +164,7 @@ First and most simply - use verbose descriptions. Document flags, positionals, a
 If your tool requires arguments, abstract common combinations of arguments into their own sub-commands. For example, instead of a single `build` command requiring flags to configure it, create sub commands that abstract commonly used combinations of parameters:
 
 ```typescript
-import { RepoKitCommand } from "repkit";
+import { RepoKitCommand } from "@repokit/core";
 
 export const Commands = new RepoKitCommand({
   // ... command definition

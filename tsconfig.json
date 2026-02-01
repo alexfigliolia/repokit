@@ -18,7 +18,7 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "paths": {
-      "repkit": ["./src/index.ts"]
+      "@repokit/core": ["./src/index.ts"]
     }
   }
 }

@@ -1,4 +1,4 @@
-import { RepoKitConfig } from "repkit";
+import { RepoKitConfig } from "@repokit/core";
 
 export const RepoKit = new RepoKitConfig({
   project: "Repokit",

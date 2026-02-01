@@ -1,4 +1,4 @@
-import { RepoKitCommand } from "repkit";
+import { RepoKitCommand } from "@repokit/core";
 
 /**
  * Please fill out this command file with your desired settings
