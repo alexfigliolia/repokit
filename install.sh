@@ -38,6 +38,6 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 cd "$SCRIPT_DIR"
 
 . "$HOME/.cargo/env"
-RUSTFLAGS="-Awarnings" cargo build --release
-cargo install --path .
+RUSTFLAGS="-Awarnings" cargo build --release > /dev/null
+cargo install --path . > /dev/null
 devkit

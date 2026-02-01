@@ -11,12 +11,12 @@ pub struct Configuration;
 
 impl Configuration {
     pub fn create(root: &str) {
-        Configuration::welcome();
         let file_path = format!("{root}/devkit.ts");
         let path_buf = Path::new(&file_path);
         if path_buf.exists() {
             return;
         }
+        Configuration::welcome();
         let mut source = File::open(Configuration::template_path()).expect("Template");
         let mut target = File::create(path_buf).expect("creating");
         io::copy(&mut source, &mut target).expect("writing");

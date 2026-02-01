@@ -32,6 +32,10 @@ Next, install devkit:
 
 ```bash
 npm i -D @devkit/core
+# or
+yarn add -D @devkit/core
+# or
+pnpm add -D @devkit/core
 ```
 
 Devkit will automatically create a config file named `devkit.ts` for you upon installing. Fill out this file with your desired settings.

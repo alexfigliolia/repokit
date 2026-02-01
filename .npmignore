@@ -1,0 +1,7 @@
+.git
+media
+target
+test-path
+node_modules
+.oxfmtrc.json
+.oxlintrc.json

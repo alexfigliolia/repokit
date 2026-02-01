@@ -1,6 +1,6 @@
 {
   "name": "@devkit/core",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Monorepo tools powered by rust",
   "license": "MIT",
   "author": "Alex Figliolia",
@@ -14,6 +14,9 @@
       "require": "./dist/cjs/index.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build:all": "yarn build:ts && yarn lint:all && yarn install:devkit",
     "build:rust": "cargo build --release",
@@ -21,7 +24,8 @@
     "devkit": "yarn build:ts && yarn install:devkit && devkit",
     "install:devkit": "yarn build:rust && cargo install --path .",
     "lint:all": "devkit format:rust && devkit lint:ts",
-    "postinstall": "chmod +x ./install.sh && ./install.sh"
+    "postinstall": "chmod +x ./install.sh && ./install.sh",
+    "run:dev": "cargo run --package devkit --bin devkit"
   },
   "devDependencies": {
     "@figliolia/event-emitter": "^1.1.6",
