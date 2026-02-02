@@ -2,6 +2,12 @@
   "name": "@repokit/core",
   "version": "1.0.0",
   "description": "A knowledgebase for your repository - wrapped in a CLI",
+  "keywords": [
+    "cli",
+    "developer tool",
+    "repository",
+    "toolchain"
+  ],
   "homepage": "https://github.com/alexfigliolia/repokit#readme",
   "license": "MIT",
   "author": "Alex Figliolia",
