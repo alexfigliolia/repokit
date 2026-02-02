@@ -1,6 +1,6 @@
 {
   "name": "@repokit/core",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A knowledgebase for your repository - wrapped in a CLI",
   "homepage": "https://github.com/alexfigliolia/repokit#readme",
   "license": "MIT",

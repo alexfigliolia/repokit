@@ -57,7 +57,7 @@ impl RepoKit {
                 let script = interface.commands.get(sub_command).expect("exists");
                 let working_dir = Path::new(&interface.location).parent().expect("exists");
                 return Executor::with_stdio(
-                    format!("{}{}", &script.command, &args[1..].join(" ")),
+                    format!("{} {}", &script.command, &args[1..].join(" ")),
                     |cmd| cmd.current_dir(working_dir),
                 );
             }
