@@ -1,12 +1,12 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use normalize_path::NormalizePath;
 use serde_json::from_str;
 
 use crate::{
     configuration::configuration::Configuration,
-    repokit::interfaces::{RepoKitCommand, RepoKitConfig},
     executor::executor::Executor,
+    internal_filesystem::internal_filesystem::InternalFileSystem,
+    repokit::interfaces::{RepoKitCommand, RepoKitConfig},
 };
 
 pub struct TypescriptCommand {
@@ -19,7 +19,7 @@ impl TypescriptCommand {
     }
 
     pub fn parse_configuration(&self) -> RepoKitConfig {
-        let executable = self.path_to_command("parse_configuration.ts");
+        let executable = InternalFileSystem::resolve_command("parse_configuration.ts");
         let stdout = self.execute(format!("{executable} --root {}", &self.root).as_str());
         if stdout.is_empty() {
             Configuration::create(&self.root);
@@ -31,32 +31,15 @@ impl TypescriptCommand {
 
     pub fn parse_commands(&self, path_list: Vec<String>) -> Vec<RepoKitCommand> {
         let paths = path_list.join(",");
-        let executable = self.path_to_command("parse_commands.ts");
+        let executable = InternalFileSystem::resolve_command("parse_commands.ts");
         let stdout =
             self.execute(format!("{executable} --paths {paths} --root {}", self.root).as_str());
         let commands: Vec<RepoKitCommand> = serde_json::from_str(&stdout).expect("parse");
         commands
     }
 
-    fn commands_dir(&self) -> PathBuf {
-        let file_path = file!();
-        let dir = Path::new(file_path)
-            .parent()
-            .expect("Failed to get parent directory");
-        let resolved = Path::new(&self.root).join(dir);
-        resolved.join("../../src/commands").normalize()
-    }
-
-    fn path_to_command(&self, command_file: &str) -> String {
-        self.commands_dir()
-            .join(command_file)
-            .into_os_string()
-            .into_string()
-            .expect("Cannot construct path")
-    }
-
     fn execute(&self, args: &str) -> String {
-        Executor::exec(format!("npx tsx {}", args), |cmd| {
+        Executor::exec(format!("npx tsx {args}"), |cmd| {
             cmd.current_dir(Path::new(&self.root))
         })
     }

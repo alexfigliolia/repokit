@@ -1,11 +1,6 @@
-use std::{
-    fs::File,
-    io,
-    path::{Path, PathBuf},
-    process::exit,
-};
+use std::{fs::File, io, path::Path, process::exit};
 
-use crate::logger::logger::Logger;
+use crate::{internal_filesystem::internal_filesystem::InternalFileSystem, logger::logger::Logger};
 
 pub struct Configuration;
 
@@ -17,7 +12,8 @@ impl Configuration {
             return;
         }
         Configuration::welcome();
-        let mut source = File::open(Configuration::template_path()).expect("Template");
+        let template_path = InternalFileSystem::resolve_template("configuration_template.ts");
+        let mut source = File::open(template_path).expect("Template");
         let mut target = File::create(path_buf).expect("creating");
         io::copy(&mut source, &mut target).expect("writing");
         target.sync_all().expect("Flushing");
@@ -35,13 +31,5 @@ impl Configuration {
     fn welcome() {
         Logger::info("Welcome to Repokit! Let's get you setup");
         Logger::info("Creating your configuration file:");
-    }
-
-    fn template_path() -> PathBuf {
-        let file_path = file!();
-        let dir = Path::new(file_path)
-            .parent()
-            .expect("Failed to get parent directory");
-        dir.join("configuration_template.ts")
     }
 }

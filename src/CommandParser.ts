@@ -6,6 +6,7 @@ import { existsSync } from "node:fs";
 import type { ILocatedCommand } from "./types";
 import { TaskPooler } from "./TaskPooler";
 import { RepoKitCommand } from "./RepoKitCommand";
+/* oxlint-disable typescript-eslint(no-misused-spread) */
 
 export class CommandParser {
   public static async parse() {
@@ -28,7 +29,7 @@ export class CommandParser {
     const declaredExports = await import(path);
     for (const key in declaredExports) {
       if (declaredExports[key] instanceof RepoKitCommand) {
-        commands.push({ ...declaredExports[key].toJSON(), location: path });
+        commands.push({ ...declaredExports[key], location: path });
       }
     }
     return commands;

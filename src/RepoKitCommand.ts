@@ -16,9 +16,4 @@ export class RepoKitCommand {
     this.commands = commands;
     this.description = description;
   }
-
-  public toJSON() {
-    const { name, owner, commands, description } = this;
-    return { name, owner, commands, description };
-  }
 }

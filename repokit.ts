@@ -28,9 +28,5 @@ export const RepoKit = new RepoKitConfig({
         "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
       description: "Lints typescript files",
     },
-    "build:ts": {
-      command: "yarn ts-packager -e src",
-      description: "Builds the typescript package",
-    },
   },
 });

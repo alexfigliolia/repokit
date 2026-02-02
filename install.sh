@@ -1,11 +1,12 @@
 set -e 
 
+SCRIPT_ORIGIN=$(pwd)
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
 cd $REPO_ROOT
 
 command_exists() {
-    command -v "$1" >/dev/null 2>&1
+    command -v "$1"
 }
 
 if command_exists rustc && command_exists cargo; then
@@ -15,16 +16,16 @@ else
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 fi
 
-if npm list --depth=0 tsx >/dev/null 2>&1; then
+if npm list --depth=0 tsx; then
     echo "Found tsx installation"
 else
     # Node Dependencies installation
     if [ -f "${REPO_ROOT}/yarn.lock" ]; then
-        yarn add -D tsx
+        yarn global add tsx
     elif [ -f "${REPO_ROOT}/pnpm-lock.yaml" ]; then
-        pnpm add -D tsx
+        pnpm add -g tsx
     elif [ -f "${REPO_ROOT}/package-lock.json" ]; then
-        npm i -D tsx
+        npm i -g tsx
     else
         echo "No node.js package manager detected"
         echo "Run npm init to create your node.js project"
@@ -34,10 +35,13 @@ fi
 
 echo "Installing Repokit CLI"
 
-SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
-cd "$SCRIPT_DIR"
+cd "$SCRIPT_ORIGIN"
+
+echo "Compiling from $SCRIPT_ORIGIN"
 
 . "$HOME/.cargo/env"
-RUSTFLAGS="-Awarnings" cargo build --release > /dev/null
-cargo install --path . > /dev/null
+RUSTFLAGS="-Awarnings" cargo build --release
+cargo install --path .
+
+cd "$REPO_ROOT"
 repokit

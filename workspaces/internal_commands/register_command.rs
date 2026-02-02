@@ -8,13 +8,14 @@ use std::{
 };
 
 use crate::{
-    repokit::interfaces::RepoKitConfig,
     executables::{
         intenal_executable::InternalExecutable,
         internal_executable_definition::InternalExecutableDefinition,
     },
     internal_commands::help::Help,
+    internal_filesystem::internal_filesystem::InternalFileSystem,
     logger::logger::Logger,
+    repokit::interfaces::RepoKitConfig,
 };
 
 pub struct RegisterCommand {
@@ -84,21 +85,14 @@ impl RegisterCommand {
             "Please specify a path to a directory relative to the root of your repository",
         );
     }
-
-    pub fn template_path() -> PathBuf {
-        let file_path = file!();
-        let dir = Path::new(file_path)
-            .parent()
-            .expect("Failed to get parent directory");
-        dir.join("command_template.ts")
-    }
 }
 
 impl InternalExecutable for RegisterCommand {
     fn run(&self, args: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Registering a new command");
         let command_path = self.validate_path(args);
-        let mut source = File::open(RegisterCommand::template_path()).expect("Template");
+        let template_path = InternalFileSystem::resolve_template("command_template.ts");
+        let mut source = File::open(template_path).expect("Template");
         let mut target = File::create(&command_path).expect("creating");
         io::copy(&mut source, &mut target).expect("writing");
         target.sync_all().expect("Flushing");

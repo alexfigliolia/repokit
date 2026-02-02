@@ -73,7 +73,7 @@ impl ExternalCommands {
 
     fn allowed(&self, path: &str) -> bool {
         let restricted_paths = ["node_modules", "target", "dist"];
-        let restricted_extensions = ["internal_commands/command_template.ts"];
+        let restricted_extensions = ["templates/command_template.ts"];
         let relative_path = path.replace(format!("{}/", &self.root).as_str(), "");
         if ExternalCommands::restrict(
             &relative_path,

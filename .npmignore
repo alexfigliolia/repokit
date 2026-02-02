@@ -4,3 +4,8 @@ test-path
 node_modules
 .oxfmtrc.json
 .oxlintrc.json
+.npmignore
+.gitignore
+repokit.ts
+tsconfig.json
+yarn.lock
