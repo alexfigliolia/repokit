@@ -14,7 +14,7 @@ The Repokit CLI exists as a living source of documentation and knowledge - growi
 
 If you do not have node.js setup in your repository, you'll first want to install node.js.
 
-[NVM is a populat posix compliant installer](https://github.com/nvm-sh/nvm)
+[NVM is a popular posix compliant installer](https://github.com/nvm-sh/nvm)
 
 Once installed, you can run the following in the root of your repository
 
