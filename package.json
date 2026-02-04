@@ -27,7 +27,7 @@
     "lint:rust": "cargo clippy --fix --allow-dirty",
     "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
     "postinstall": "yarn grant:exec && ./installation/install.sh",
-    "repokit": "yarn install:repokit && repokit",
+    "repokit": "yarn install:rust && repokit",
     "run:dev": "yarn symlink && cargo run --package repokit --bin repokit",
     "symlink": "yarn grant:exec && ./installation/symlink.sh"
   },
