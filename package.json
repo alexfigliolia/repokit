@@ -32,7 +32,7 @@
     "symlink": "yarn grant:exec && ./installation/symlink.sh"
   },
   "dependencies": {
-    "@figliolia/event-emitter": "^1.1.6",
+    "@figliolia/event-emitter": "^1.2.0",
     "tsx": "^4.21.0"
   },
   "devDependencies": {
