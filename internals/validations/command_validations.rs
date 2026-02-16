@@ -98,7 +98,7 @@ impl CommandValidations {
         let mut map: HashMap<String, RepoKitCommand> = HashMap::new();
         for command in externals {
             if map.contains_key(&command.name) {
-                let original = map.get(&command.name).expect("existent key");
+                let original = map.get(&command.name).expect("Unknown command");
                 self.on_external_duplicate_collision(command, &original.location);
             }
             map.insert(command.name.clone(), command.clone());

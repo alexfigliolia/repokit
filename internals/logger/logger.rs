@@ -1,5 +1,6 @@
+use std::process::exit;
+use std::sync::LazyLock;
 use std::sync::Mutex;
-use std::{process, sync::LazyLock};
 
 use colored::{ColoredString, Colorize, CustomColor};
 
@@ -23,12 +24,12 @@ impl Logger {
 
     pub fn exit_with_info(message: &str) {
         Logger::info(message);
-        process::exit(0);
+        exit(0);
     }
 
     pub fn exit_with_error(message: &str) {
         Logger::error(message);
-        process::exit(0);
+        exit(0);
     }
 
     pub fn space_around(message: &str) {
@@ -90,6 +91,33 @@ impl Logger {
             g: 247,
             b: 7,
         })
+    }
+
+    pub fn file_create_error() {
+        Logger::file_error("create a file");
+    }
+
+    pub fn file_directory_error() {
+        Logger::file_error("create a directory");
+    }
+
+    pub fn open_file_error() {
+        Logger::file_error("read a file");
+    }
+
+    pub fn file_write_error() {
+        Logger::file_error("write to a file");
+    }
+
+    pub fn log_issue_link() {
+        Logger::log_file_path("https://github.com/alexfigliolia/repokit/issues");
+    }
+
+    fn file_error(operation: &str) {
+        Logger::info(format!("I was unable to {operation} in your repository").as_str());
+        Logger::error("Please verify the permissions on your working directory or file a bug here");
+        Logger::log_issue_link();
+        exit(0);
     }
 
     fn info_prefix() -> ColoredString {

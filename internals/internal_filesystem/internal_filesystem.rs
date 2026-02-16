@@ -1,7 +1,13 @@
 use normalize_path::NormalizePath;
-use std::path::{Path, PathBuf};
+use std::{
+    fs::File,
+    path::{Path, PathBuf},
+};
 
-use crate::{executor::executor::Executor, logger::logger::Logger};
+use crate::{
+    executor::executor::Executor, internal_filesystem::file_builder::FileBuilder,
+    logger::logger::Logger,
+};
 
 pub struct InternalFileSystem {
     root: String,
@@ -23,8 +29,13 @@ impl InternalFileSystem {
         self.path_buf_to_str(self.commands_directory().join(file_name))
     }
 
-    pub fn resolve_template(&self, file_name: &str) -> String {
-        self.path_buf_to_str(self.templates_directory().join(file_name))
+    pub fn resolve_template(&self, file_name: &str) -> File {
+        let path = self.path_buf_to_str(self.templates_directory().join(file_name));
+        FileBuilder::open(&path, |_| {
+            Logger::error(format!("Unable to locate internal {file_name}").as_str());
+            Logger::error("Please file a bug here");
+            Logger::log_issue_link();
+        })
     }
 
     pub fn find_root() -> String {

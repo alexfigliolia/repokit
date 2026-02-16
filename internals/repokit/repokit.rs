@@ -36,7 +36,7 @@ impl RepoKit {
         let validator = CommandValidations::from(self);
         let internals = validator.collect_and_validate_internals();
         if internals.contains_key(&command) {
-            let interface = internals.get(&command).expect("exists");
+            let interface = internals.get(&command).expect("Unknown command");
             return interface.run(args, &internals);
         }
         if self.scope.configuration.commands.contains_key(&command) {
@@ -45,7 +45,7 @@ impl RepoKit {
                 .configuration
                 .commands
                 .get(&command)
-                .expect("exists");
+                .expect("Unknown command");
             return Executor::with_stdio(
                 format!("{} {}", root_script.command, &args.join(" ")),
                 |cmd| cmd.current_dir(Path::new(&self.scope.root)),
@@ -56,14 +56,16 @@ impl RepoKit {
             &internals, &externals,
         );
         if externals.contains_key(&command) {
-            let interface = externals.get(&command).expect("exists");
+            let interface = externals.get(&command).expect("Unknown command");
             if args.is_empty() {
                 return self.log_external_command(interface);
             }
             let sub_command = &args[0];
             if interface.commands.contains_key(sub_command) {
-                let script = interface.commands.get(sub_command).expect("exists");
-                let working_dir = Path::new(&interface.location).parent().expect("exists");
+                let script = interface.commands.get(sub_command).expect("Unknown script");
+                let working_dir = Path::new(&interface.location)
+                    .parent()
+                    .expect("Working directory not found");
                 return Executor::with_stdio(
                     format!("{} {}", &script.command, &args[1..].join(" ")),
                     |cmd| cmd.current_dir(working_dir),

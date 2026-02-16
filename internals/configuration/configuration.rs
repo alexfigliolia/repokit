@@ -1,23 +1,24 @@
-use std::{fs::File, io, path::Path, process::exit};
+use std::{path::Path, process::exit};
 
-use crate::{internal_filesystem::internal_filesystem::InternalFileSystem, logger::logger::Logger};
+use crate::{
+    internal_filesystem::{file_builder::FileBuilder, internal_filesystem::InternalFileSystem},
+    logger::logger::Logger,
+};
 
 pub struct Configuration;
 
 impl Configuration {
     pub fn create(root: &str) {
         let file_path = format!("{root}/repokit.ts");
-        let path_buf = Path::new(&file_path);
-        if path_buf.exists() {
+        let path = Path::new(&file_path);
+        if path.exists() {
             return;
         }
         Configuration::welcome();
-        let template_path =
+        let mut source =
             InternalFileSystem::new(root).resolve_template("configuration_template.ts");
-        let mut source = File::open(template_path).expect("Template");
-        let mut target = File::create(path_buf).expect("creating");
-        io::copy(&mut source, &mut target).expect("writing");
-        target.sync_all().expect("Flushing");
+        let mut target = FileBuilder::create(path, |_| Logger::file_create_error());
+        FileBuilder::copy_to(&mut source, &mut target, |_| Logger::file_write_error());
         Logger::info(
             format!(
                 "Please fill out this file with your desired settings. Then run {}",
