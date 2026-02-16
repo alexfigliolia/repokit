@@ -145,7 +145,14 @@ impl Help {
         sort_str_slice(&mut vector);
         vector
             .iter()
-            .map(|&name| RootCommand::from(name, commands.get(name).expect("known keys only")))
+            .map(|&name| {
+                RootCommand::from(
+                    name,
+                    commands
+                        .get(name)
+                        .expect("iteration is over known keys only"),
+                )
+            })
             .collect()
     }
 }

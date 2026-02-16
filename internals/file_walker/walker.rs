@@ -7,6 +7,8 @@ use std::{
 use ignore::{DirEntry, Error, ParallelVisitor, ParallelVisitorBuilder, WalkState};
 use regex::Regex;
 
+use crate::{internal_filesystem::file_builder::FileBuilder, logger::logger::Logger};
+
 pub struct TSFileVisitor {
     root: String,
     paths: Arc<Mutex<Vec<String>>>,
@@ -26,7 +28,7 @@ impl ParallelVisitor for TSFileVisitor {
                 && !template_matcher.is_match(path_string)
             {
                 let mut open_comment = false;
-                let file: File = File::open(path).expect("file");
+                let file: File = FileBuilder::open(path_string, |_| Logger::open_file_error());
                 let reader: BufReader<File> = BufReader::new(file);
                 for line_result in reader.lines() {
                     let unwrapped = line_result.unwrap();

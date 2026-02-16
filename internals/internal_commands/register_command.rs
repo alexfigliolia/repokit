@@ -1,8 +1,6 @@
 use normalize_path::NormalizePath;
 use std::{
     collections::HashMap,
-    fs::{File, create_dir_all},
-    io,
     path::{Path, PathBuf},
     process,
 };
@@ -15,7 +13,7 @@ use crate::{
         },
     },
     internal_commands::help::Help,
-    internal_filesystem::internal_filesystem::InternalFileSystem,
+    internal_filesystem::{file_builder::FileBuilder, internal_filesystem::InternalFileSystem},
     logger::logger::Logger,
 };
 
@@ -56,7 +54,7 @@ impl RegisterCommand {
                 )
                 .as_str(),
             );
-            create_dir_all(&path).expect("");
+            FileBuilder::create_dir_all(&path, |_| Logger::file_directory_error());
         }
         if !path.is_dir() {
             RegisterCommand::exit_on_missing_path();
@@ -90,12 +88,10 @@ impl InternalExecutable for RegisterCommand {
     fn run(&self, args: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Registering a new command");
         let command_path = self.validate_path(args);
-        let template_path =
+        let mut source =
             InternalFileSystem::new(&self.scope.root).resolve_template("command_template.ts");
-        let mut source = File::open(template_path).expect("Template");
-        let mut target = File::create(&command_path).expect("creating");
-        io::copy(&mut source, &mut target).expect("writing");
-        target.sync_all().expect("Flushing");
+        let mut target = FileBuilder::create(&command_path, |_| Logger::file_create_error());
+        FileBuilder::copy_to(&mut source, &mut target, |_| Logger::file_write_error());
         Logger::info("Creating command file");
         Logger::info("Please fill out your command file located at:");
         Logger::log_file_path(command_path.to_str().expect("path"));

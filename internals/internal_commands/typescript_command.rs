@@ -1,4 +1,4 @@
-use std::{path::Path, sync::MutexGuard};
+use std::{path::Path, process::exit, sync::MutexGuard};
 
 use serde_json::from_str;
 
@@ -6,6 +6,7 @@ use crate::{
     configuration::configuration::Configuration,
     executor::executor::Executor,
     internal_filesystem::internal_filesystem::InternalFileSystem,
+    logger::logger::Logger,
     repokit::interfaces::{RepoKitCommand, RepoKitConfig},
 };
 
@@ -36,8 +37,18 @@ impl TypescriptCommand {
         let executable = InternalFileSystem::new(&self.root).resolve_command("parse_commands.ts");
         let stdout =
             self.execute(format!("{executable} --paths {paths} --root {}", self.root).as_str());
-        let commands: Vec<RepoKitCommand> = serde_json::from_str(&stdout).expect("parse");
-        commands
+        let result: Result<Vec<RepoKitCommand>, serde_json::Error> = serde_json::from_str(&stdout);
+        match result {
+            Ok(commands) => commands,
+            Err(_) => {
+                Logger::info("There was an error parsing one of your commands");
+                Logger::info(
+                    "You can validate a command file's syntactical correctness by running",
+                );
+                Logger::log_file_path("tsc --noEmit");
+                exit(0);
+            }
+        }
     }
 
     fn execute(&self, args: &str) -> String {
