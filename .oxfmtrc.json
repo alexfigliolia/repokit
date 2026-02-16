@@ -18,7 +18,7 @@
       ["parent", "type-parent"],
       ["sibling", "type-sibling"],
       ["index", "type-index"],
-      ["side-effect"]
+      ["side_effect"]
     ]
   },
   "experimentalSortPackageJson": {
