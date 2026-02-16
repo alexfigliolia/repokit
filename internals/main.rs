@@ -6,7 +6,7 @@ use crate::{
 mod configuration;
 mod executables;
 mod executor;
-mod external_commands;
+mod file_walker;
 mod internal_commands;
 mod internal_filesystem;
 mod logger;

@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{path::Path, sync::MutexGuard};
 
 use serde_json::from_str;
 
@@ -31,7 +31,7 @@ impl TypescriptCommand {
         config
     }
 
-    pub fn parse_commands(&self, path_list: Vec<String>) -> Vec<RepoKitCommand> {
+    pub fn parse_commands(&self, path_list: &MutexGuard<Vec<String>>) -> Vec<RepoKitCommand> {
         let paths = path_list.join(",");
         let executable = InternalFileSystem::new(&self.root).resolve_command("parse_commands.ts");
         let stdout =

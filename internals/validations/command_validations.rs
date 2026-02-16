@@ -1,13 +1,18 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
-use futures::executor;
+use ignore::WalkBuilder;
 
 use crate::{
     executables::{
         intenal_executable::InternalExecutable, internal_executable_definition::RepoKitScope,
     },
-    external_commands::external_commands::ExternalCommands,
-    internal_commands::internal_registry::InternalRegistry,
+    file_walker::walker::TSFileVisitorBuilder,
+    internal_commands::{
+        internal_registry::InternalRegistry, typescript_command::TypescriptCommand,
+    },
     logger::logger::Logger,
     repokit::{interfaces::RepoKitCommand, repokit::RepoKit},
 };
@@ -36,8 +41,13 @@ impl CommandValidations {
     }
 
     pub fn collect_and_validate_externals(&self) -> HashMap<String, RepoKitCommand> {
-        let finder = ExternalCommands::new(&self.scope.root);
-        let externals = executor::block_on(finder.find_all());
+        let paths: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
+        let mut visitor = TSFileVisitorBuilder::new(&self.scope.root, &paths);
+        WalkBuilder::new(&self.scope.root)
+            .build_parallel()
+            .visit(&mut visitor);
+        let result = paths.lock().unwrap();
+        let externals = TypescriptCommand::new(&self.scope.root).parse_commands(&result);
         let all = [&externals[..], &self.scope.configuration.thirdParty[..]].concat();
         self.detect_collisions_between_root_commands_and_externals(&all)
     }
