@@ -23,7 +23,7 @@ impl TypescriptCommand {
 
     pub fn parse_configuration(&self) -> RepoKitConfig {
         let executable =
-            InternalFileSystem::new(&self.root).resolve_command("parse_configuration.ts");
+            InternalFileSystem::new(&self.root).resolve_command("parse_configuration.js");
         let stdout = self.execute(format!("{executable} --root {}", &self.root).as_str());
         if stdout.is_empty() {
             Configuration::create(&self.root);
@@ -34,7 +34,7 @@ impl TypescriptCommand {
 
     pub fn parse_commands(&self, path_list: &MutexGuard<Vec<String>>) -> Vec<RepoKitCommand> {
         let paths = path_list.join(",");
-        let executable = InternalFileSystem::new(&self.root).resolve_command("parse_commands.ts");
+        let executable = InternalFileSystem::new(&self.root).resolve_command("parse_commands.js");
         let stdout =
             self.execute(format!("{executable} --paths {paths} --root {}", self.root).as_str());
         let result: Result<Vec<RepoKitCommand>, serde_json::Error> = serde_json::from_str(&stdout);
@@ -52,7 +52,7 @@ impl TypescriptCommand {
     }
 
     fn execute(&self, args: &str) -> String {
-        Executor::exec(format!("npx tsx {args}"), |cmd| {
+        Executor::exec(format!("node {args}"), |cmd| {
             cmd.current_dir(Path::new(&self.root))
         })
     }

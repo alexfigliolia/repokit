@@ -56,15 +56,15 @@ impl InternalFileSystem {
     }
 
     fn commands_directory(&self) -> PathBuf {
-        self.absolute(format!("{}/commands", self.package_directory()).as_str())
+        self.absolute(format!("{}/dist/commands", self.package_directory()).as_str())
     }
 
     fn templates_directory(&self) -> PathBuf {
-        self.absolute(format!("{}/templates", self.package_directory()).as_str())
+        self.absolute(format!("{}/externals/templates", self.package_directory()).as_str())
     }
 
     fn package_directory(&self) -> String {
-        format!("./node_modules/{}/externals", self.package_name())
+        format!("./node_modules/{}", self.package_name())
     }
 
     fn package_name(&self) -> String {

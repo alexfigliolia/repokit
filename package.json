@@ -8,6 +8,15 @@
     "repository",
     "toolchain"
   ],
+  "files": [
+    "media",
+    "dist",
+    "externals",
+    "internals",
+    "installation",
+    "Cargo.lock",
+    "Cargo.toml"
+  ],
   "homepage": "https://github.com/alexfigliolia/repokit#readme",
   "license": "MIT",
   "author": "Alex Figliolia",
@@ -15,7 +24,9 @@
     "type": "git",
     "url": "git+https://github.com/alexfigliolia/repokit.git"
   },
-  "main": "externals/index.ts",
+  "main": "dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
@@ -25,21 +36,26 @@
     "grant:exec": "chmod -R +x ./installation",
     "install:rust": "yarn build:rust && cargo install --path .",
     "lint:rust": "cargo clippy --fix --allow-dirty",
-    "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
+    "lint:ts": "yarn build:ts && yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
     "postinstall": "yarn grant:exec && ./installation/install.sh",
     "repokit": "yarn install:rust && repokit",
-    "run:dev": "yarn symlink && cargo run --package repokit --bin repokit",
-    "symlink": "yarn grant:exec && ./installation/symlink.sh"
+    "build:ts": "tsx devserver/run.ts",
+    "watch:ts": "tsx devserver/run.ts -w",
+    "clean:ts": "tsx devserver/run.ts -c",
+    "run:dev": "yarn build:ts && cargo run --package repokit --bin repokit"
   },
   "dependencies": {
     "@figliolia/event-emitter": "^1.2.0",
-    "tsx": "^4.21.0"
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {
-    "@types/node": "^25.2.1",
+    "@figliolia/child-process": "^1.0.4",
+    "@types/node": "^25.3.0",
     "oxfmt": "^0.33.0",
     "oxlint": "^1.42.0",
     "oxlint-tsgolint": "^0.14.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

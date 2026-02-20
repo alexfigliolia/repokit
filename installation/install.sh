@@ -1,13 +1,6 @@
 
 CWD=$(pwd)
 
-MODULE_DIRECTORY="node_modules"
-
-if [[ "$CWD" != *"$MODULE_DIRECTORY"* ]]; then
-    yarn symlink;
-    exit 0;
-fi
-
 REPLACEMENT="/node_modules"
 FALLBACK_ROOT="${CWD%${REPLACEMENT}*}"
 
@@ -28,23 +21,6 @@ else
     echo "Installing rust"
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 fi
-
-if npm list --depth=0 tsx; then
-    echo "Found tsx installation"
-else
-    # Node Dependencies installation
-    if [ -f "${REPO_ROOT}/yarn.lock" ]; then
-        yarn global add tsx
-    elif [ -f "${REPO_ROOT}/pnpm-lock.yaml" ]; then
-        pnpm add -g tsx
-    elif [ -f "${REPO_ROOT}/package-lock.json" ]; then
-        npm i -g tsx
-    else
-        echo "No node.js package manager detected"
-        echo "Run npm init to create your node.js project"
-    fi
-fi
-
 
 echo "Installing Repokit CLI"
 
