@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "externals",
-    "declaration": true
+    "declaration": true,
+    "paths": {}
   },
   "include": ["./externals"]
 }

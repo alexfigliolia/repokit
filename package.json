@@ -8,6 +8,13 @@
     "repository",
     "toolchain"
   ],
+  "homepage": "https://github.com/alexfigliolia/repokit#readme",
+  "license": "MIT",
+  "author": "Alex Figliolia",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexfigliolia/repokit.git"
+  },
   "files": [
     "media",
     "dist",
@@ -17,13 +24,6 @@
     "Cargo.lock",
     "Cargo.toml"
   ],
-  "homepage": "https://github.com/alexfigliolia/repokit#readme",
-  "license": "MIT",
-  "author": "Alex Figliolia",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/alexfigliolia/repokit.git"
-  },
   "main": "dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -33,16 +33,16 @@
   "scripts": {
     "build:all": "yarn lint:ts && yarn lint:rust && yarn install:rust",
     "build:rust": "cargo build --release",
+    "build:ts": "tsx devserver/run.ts",
+    "clean:ts": "tsx devserver/run.ts -c",
     "grant:exec": "chmod -R +x ./installation",
     "install:rust": "yarn build:rust && cargo install --path .",
     "lint:rust": "cargo clippy --fix --allow-dirty",
-    "lint:ts": "yarn build:ts && yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
+    "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
     "postinstall": "yarn grant:exec && ./installation/install.sh",
     "repokit": "yarn install:rust && repokit",
-    "build:ts": "tsx devserver/run.ts",
-    "watch:ts": "tsx devserver/run.ts -w",
-    "clean:ts": "tsx devserver/run.ts -c",
-    "run:dev": "yarn build:ts && cargo run --package repokit --bin repokit"
+    "run:dev": "yarn build:ts && cargo run --package repokit --bin repokit",
+    "watch:ts": "tsx devserver/run.ts -w"
   },
   "dependencies": {
     "@figliolia/event-emitter": "^1.2.0",
