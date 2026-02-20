@@ -52,7 +52,7 @@
   "devDependencies": {
     "@figliolia/child-process": "^1.0.4",
     "@types/node": "^25.3.0",
-    "oxfmt": "^0.33.0",
+    "oxfmt": "^0.34.0",
     "oxlint": "^1.42.0",
     "oxlint-tsgolint": "^0.14.0",
     "tsx": "^4.21.0",

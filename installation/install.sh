@@ -8,6 +8,10 @@ SCRIPT_ORIGIN=$(pwd)
 GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 REPO_ROOT=${GIT_ROOT:-$FALLBACK_ROOT}
 
+if [[ "$CWD" != *"$REPLACEMENT"* ]]; then
+    exit 0;
+fi
+
 
 cd $REPO_ROOT
 
