@@ -1,5 +1,5 @@
-import { Watcher } from "./Watcher";
+import { Compiler } from "./Compiler";
 
 void (async () => {
-  await Watcher.run();
+  await Compiler.run();
 })();

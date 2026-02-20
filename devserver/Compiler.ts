@@ -7,7 +7,7 @@ import type { ChildProcess as Child_Process } from "node:child_process";
 
 import { ChildProcess } from "@figliolia/child-process";
 
-export class Watcher {
+export class Compiler {
   private static TS_PROCESS?: Child_Process;
   private static readonly TSC_COMMAND = "yarn tsc -p tsconfig.build.json";
   // @ts-ignore

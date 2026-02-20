@@ -19,14 +19,10 @@ impl ParallelVisitor for TSFileVisitor {
         let root_replacer = format!("{}/", self.root);
         let repokit_import_matcher =
             Regex::new(r#"(require\(|from[\s*]?)['"]@repokit/core["'][\)]?[;]?$"#).unwrap();
-        let template_matcher = Regex::new(r"externals\/templates\/[^\s]*?_template\.ts$").unwrap();
         if let Ok(entry) = entry {
             let path = entry.path();
             let path_string = path.to_str().map_or("", |f| f);
-            if entry.file_type().is_some_and(|ft| ft.is_file())
-                && path_string.ends_with(".ts")
-                && !template_matcher.is_match(path_string)
-            {
+            if entry.file_type().is_some_and(|ft| ft.is_file()) && path_string.ends_with(".ts") {
                 let mut open_comment = false;
                 let file: File = FileBuilder::open(path_string, |_| Logger::open_file_error());
                 let reader: BufReader<File> = BufReader::new(file);

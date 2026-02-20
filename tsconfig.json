@@ -17,9 +17,6 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
-    "paths": {
-      "@repokit/core": ["./externals/index.ts"]
-    }
+    "skipLibCheck": true
   }
 }

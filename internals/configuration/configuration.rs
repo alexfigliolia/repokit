@@ -16,7 +16,7 @@ impl Configuration {
         }
         Configuration::welcome();
         let mut source =
-            InternalFileSystem::new(root).resolve_template("configuration_template.ts");
+            InternalFileSystem::new(root).resolve_template("configuration_template.txt");
         let mut target = FileBuilder::create(path, |_| Logger::file_create_error());
         FileBuilder::copy_to(&mut source, &mut target, |_| Logger::file_write_error());
         Logger::info(
