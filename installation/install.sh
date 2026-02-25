@@ -4,7 +4,6 @@ CWD=$(pwd)
 REPLACEMENT="/node_modules"
 FALLBACK_ROOT="${CWD%${REPLACEMENT}*}"
 
-SCRIPT_ORIGIN=$(pwd)
 GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 REPO_ROOT=${GIT_ROOT:-$FALLBACK_ROOT}
 
@@ -28,9 +27,9 @@ fi
 
 echo "Installing Repokit CLI"
 
-cd $SCRIPT_ORIGIN
+cd $CWD
 
-echo "Compiling from $SCRIPT_ORIGIN"
+echo "Compiling from $CWD"
 
 . "$HOME/.cargo/env"
 RUSTFLAGS="-Awarnings" cargo build --release

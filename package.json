@@ -24,7 +24,7 @@
     "Cargo.lock",
     "Cargo.toml"
   ],
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "publishConfig": {
@@ -39,6 +39,7 @@
     "install:rust": "yarn build:rust && cargo install --path .",
     "lint:rust": "cargo clippy --fix --allow-dirty",
     "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
+    "package:ts": "yarn lint:ts && yarn lint:rust && yarn build:ts",
     "postinstall": "yarn grant:exec && ./installation/install.sh",
     "repokit": "yarn install:rust && repokit",
     "run:dev": "yarn build:ts && cargo run --package repokit --bin repokit",
@@ -46,8 +47,7 @@
   },
   "dependencies": {
     "@figliolia/event-emitter": "^1.2.0",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0"
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@figliolia/child-process": "^1.0.4",

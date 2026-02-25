@@ -6,7 +6,7 @@ import { TSCompiler } from "./TSCompiler";
 import { RepoKitConfig } from "./RepoKitConfig";
 
 export class ConfigurationParser extends TSCompiler {
-  public static async parse() {
+  public static parse() {
     const root = this.parseRoot();
     const path = join(root, "repokit.ts");
     if (!existsSync(path)) {
