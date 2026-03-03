@@ -6,13 +6,14 @@ import { TSCompiler } from "./TSCompiler";
 import { RepoKitConfig } from "./RepoKitConfig";
 
 export class ConfigurationParser extends TSCompiler {
-  public static parse() {
+  public static async parse() {
     const root = this.parseRoot();
     const path = join(root, "repokit.ts");
     if (!existsSync(path)) {
       return;
     }
-    const config = require(path);
+    const compiler = new TSCompiler(root, "parse_configuration");
+    const config = await compiler.compile(path);
     for (const key in config) {
       if (config[key] instanceof RepoKitConfig) {
         return console.log(JSON.stringify(config[key].toScoped(path)));

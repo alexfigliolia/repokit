@@ -1,3 +1,5 @@
 import { ConfigurationParser } from "../ConfigurationParser";
 
-ConfigurationParser.parse();
+void (async () => {
+  await ConfigurationParser.parse();
+})();

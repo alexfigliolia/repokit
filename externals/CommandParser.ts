@@ -1,27 +1,33 @@
 import { parseArgs } from "node:util";
-import { join } from "node:path";
 import { stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 
 import type { ILocatedCommand } from "./types";
 import { TSCompiler } from "./TSCompiler";
 import { RepoKitCommand } from "./RepoKitCommand";
+import { ConcurrencyPool } from "./ConcurrencyPool";
 /* oxlint-disable typescript-eslint(no-misused-spread) */
 
-export class CommandParser extends TSCompiler {
+export class CommandParser {
+  private static compiler?: TSCompiler;
+
   public static async parse() {
     const { paths, root } = this.parsePaths();
     if (!root || !existsSync(root) || !(await stat(root)).isDirectory()) {
       return console.log(JSON.stringify([]));
     }
+    this.compiler = new TSCompiler(root, "parse_commands");
+    const pool = new ConcurrencyPool<ILocatedCommand[]>();
     const pathList = paths.split(",").filter(Boolean);
-    const results = pathList.map(path => this.parseCommand(join(root, path)));
-    console.log(JSON.stringify(results.flat()));
+    const commands = await Promise.all(
+      pathList.map(path => pool.enqueue(() => this.parseCommand(path))),
+    );
+    console.log(JSON.stringify(commands.flat()));
   }
 
-  private static parseCommand(path: string) {
+  private static async parseCommand(path: string) {
     const commands: ILocatedCommand[] = [];
-    const declaredExports = require(path);
+    const declaredExports = await this.compiler?.compile?.(path);
     for (const key in declaredExports) {
       if (declaredExports[key] instanceof RepoKitCommand) {
         commands.push({ ...declaredExports[key], location: path });

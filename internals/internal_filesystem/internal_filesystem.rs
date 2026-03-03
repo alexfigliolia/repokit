@@ -25,8 +25,11 @@ impl InternalFileSystem {
         path.join(segment).normalize()
     }
 
-    pub fn resolve_command(&self, file_name: &str) -> String {
-        self.path_buf_to_str(self.commands_directory().join(file_name))
+    pub fn resolve_command(&self, command_name: &str) -> String {
+        self.path_buf_to_str(
+            self.commands_directory()
+                .join(format!("{command_name}.mjs")),
+        )
     }
 
     pub fn resolve_template(&self, file_name: &str) -> File {

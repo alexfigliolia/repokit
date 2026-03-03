@@ -12,7 +12,14 @@ impl Configuration {
         let file_path = format!("{root}/repokit.ts");
         let path = Path::new(&file_path);
         if path.exists() {
-            return;
+            Logger::info(
+                format!(
+                    "I found a Repokit configuration without an exported {} instance",
+                    Logger::blue("RepokitConfig")
+                )
+                .as_str(),
+            );
+            return Logger::exit_with_info("Please create an instance and export it");
         }
         Configuration::welcome();
         let mut source =

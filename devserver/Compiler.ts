@@ -9,7 +9,7 @@ import { ChildProcess } from "@figliolia/child-process";
 
 export class Compiler {
   private static TS_PROCESS?: Child_Process;
-  private static readonly TSC_COMMAND = "yarn tsc -p tsconfig.build.json";
+  private static readonly TSC_COMMAND = "yarn tsdown";
   // @ts-ignore
   private static readonly FILE = fileURLToPath(import.meta.url);
   private static readonly SCRIPT_ORIGIN = dirname(this.FILE);
