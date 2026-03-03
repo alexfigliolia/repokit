@@ -1,6 +1,6 @@
 {
   "name": "@repokit/core",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "A knowledgebase for your repository - wrapped in a CLI",
   "keywords": [
     "cli",
@@ -26,7 +26,7 @@
   ],
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mjs",
+  "types": "./dist/index.d.mts",
   "publishConfig": {
     "access": "public"
   },
