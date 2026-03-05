@@ -4,8 +4,7 @@ export const RepoKit = new RepoKitConfig({
   project: "Repokit",
   thirdParty: [
     new RepoKitCommand({
-      name: "test-external-package",
-      owner: "Test Owner",
+      name: "third-party-command",
       description: "Test description",
       commands: {
         TEST: {

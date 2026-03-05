@@ -50,7 +50,7 @@ export class Compiler {
   }
 
   public static async watch() {
-    await this.createSymlinks();
+    await this.build();
     this.bindToExit();
     const { handler, process } = new ChildProcess(
       `${this.TSC_COMMAND} --watch`,
