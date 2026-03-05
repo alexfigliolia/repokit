@@ -1,6 +1,6 @@
 {
   "name": "@repokit/core",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "description": "A knowledgebase for your repository - wrapped in a CLI",
   "keywords": [
     "cli",
