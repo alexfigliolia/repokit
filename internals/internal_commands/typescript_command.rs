@@ -38,7 +38,16 @@ impl TypescriptCommand {
             self.execute(format!("{executable} --paths {paths} --root {}", self.root).as_str());
         let result: Result<Vec<RepoKitCommand>, serde_json::Error> = serde_json::from_str(&stdout);
         match result {
-            Ok(commands) => commands,
+            Ok(mut commands) => {
+                for command in commands.iter_mut() {
+                    let relative_location = &command.location;
+                    command.location = Path::join(Path::new(&self.root), relative_location)
+                        .to_str()
+                        .expect("str")
+                        .to_string()
+                }
+                commands
+            }
             Err(_) => {
                 Logger::info("There was an error parsing one of your commands");
                 Logger::info(

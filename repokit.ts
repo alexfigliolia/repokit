@@ -12,7 +12,7 @@ export const RepoKit = new RepoKitConfig({
           command: "cargo test",
           description: "run some tests",
           args: {
-            "--coverage | c": "Whether to report coverage",
+            "--coverage | -c": "Whether to report coverage",
           },
         },
       },

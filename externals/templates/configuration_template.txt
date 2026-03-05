@@ -9,15 +9,15 @@ export const RepoKit = new RepoKitConfig({
   commands: {
     "<your-first-command>": {
       command: "<insert shell command here>",
-      description: "A description for using your command",
+      description: "A description for your command",
     },
     "<your-second-command>": {
       command: "<insert shell command here>",
-      description: "A description for using your command",
+      description: "A description for your command",
     },
     "<your-third-command>": {
       command: "<insert shell command here>",
-      description: "A description for using your command",
+      description: "A description for your command",
     },
   },
 });

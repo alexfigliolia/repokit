@@ -1,4 +1,5 @@
 import { parseArgs } from "node:util";
+import { join } from "node:path";
 import { stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 
@@ -20,14 +21,14 @@ export class CommandParser {
     const pool = new ConcurrencyPool<ILocatedCommand[]>();
     const pathList = paths.split(",").filter(Boolean);
     const commands = await Promise.all(
-      pathList.map(path => pool.enqueue(() => this.parseCommand(path))),
+      pathList.map(path => pool.enqueue(() => this.parseCommand(root, path))),
     );
     console.log(JSON.stringify(commands.flat()));
   }
 
-  private static async parseCommand(path: string) {
+  private static async parseCommand(root: string, path: string) {
     const commands: ILocatedCommand[] = [];
-    const declaredExports = await this.compiler?.compile?.(path);
+    const declaredExports = await this.compiler?.compile?.(join(root, path));
     for (const key in declaredExports) {
       if (declaredExports[key] instanceof RepoKitCommand) {
         commands.push({ ...declaredExports[key], location: path });
