@@ -34,6 +34,3 @@ echo "Compiling from $CWD"
 . "$HOME/.cargo/env"
 RUSTFLAGS="-Awarnings" cargo build --release
 cargo install --path .
-
-cd $REPO_ROOT
-repokit

@@ -38,9 +38,15 @@ yarn add -D @repokit/core
 pnpm add -D @repokit/core
 ```
 
-Repokit will automatically create a config file named `repokit.ts` for you upon installing. Fill out this file with your desired settings.
+Once installed, run
 
-Here's an example of what Repokit's internal config looks like:
+```bash
+repokit
+```
+
+Repokit will create a config file named `repokit.ts` on your first run. Fill out this file with your desired settings.
+
+Here's an example of what our intenral Repokit config looks like:
 
 ```typescript
 import { RepoKitConfig } from "@repokit/core";
@@ -65,7 +71,7 @@ export const RepoKit = new RepoKitConfig({
 });
 ```
 
-Commands are optional, but your `repokit.ts` config is a good place to store any commonly run commands that aren't specific to any library or package in your repository.
+Commands in your config file are optional, but in your `repokit.ts` config is a good place to store any commonly run commands that aren't specific to any library or package in your repository.
 
 To verify your configuration, run
 
