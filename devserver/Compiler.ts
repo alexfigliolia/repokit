@@ -1,10 +1,9 @@
-import { parseArgs } from "node:util";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-import { mkdir, rm, symlink } from "node:fs/promises";
-import { existsSync } from "node:fs";
 import type { ChildProcess as Child_Process } from "node:child_process";
-
+import { existsSync } from "node:fs";
+import { mkdir, rm, symlink } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { parseArgs } from "node:util";
 import { ChildProcess } from "@figliolia/child-process";
 
 export class Compiler {
