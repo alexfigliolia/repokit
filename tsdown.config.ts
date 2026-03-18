@@ -1,11 +1,10 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["externals/**/*"],
+  entry: ["externals/index.ts", "externals/commands/*.ts"],
   dts: true,
   shims: true,
   clean: true,
   unbundle: true,
-  skipNodeModulesBundle: true,
   tsconfig: "./tsconfig.build.json",
 });
