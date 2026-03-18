@@ -1,5 +1,5 @@
-import type { ICommand, IRepoKitConfig } from "./types";
 import { RepoKitCommand } from "./RepoKitCommand";
+import type { ICommand, IRepoKitConfig } from "./types";
 /* eslint-disable typescript-eslint(no-misused-spread */
 
 export class RepoKitConfig implements Required<IRepoKitConfig> {

@@ -1,11 +1,10 @@
 import { AutoIncrementingID } from "@figliolia/event-emitter";
-
 import type { AsyncTask } from "./types";
 
 export class ConcurrencyPool<T> {
   private readonly IDs = new AutoIncrementingID();
   private readonly activeTasks = new Map<string, Promise<T>>();
-  constructor(public readonly maxConcurrency: number = 10) {}
+  constructor(public readonly maxConcurrency = 10) {}
 
   public async enqueue(task: AsyncTask<T>) {
     if (this.activeTasks.size === this.maxConcurrency) {

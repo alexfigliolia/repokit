@@ -1,4 +1,3 @@
-
 CWD=$(pwd)
 
 REPLACEMENT="/node_modules"

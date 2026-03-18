@@ -1,19 +1,17 @@
-import { parseArgs } from "node:util";
-import { join } from "node:path";
 import { existsSync } from "node:fs";
-
-import { TSCompiler } from "./TSCompiler";
+import { join } from "node:path";
+import { parseArgs } from "node:util";
 import { RepoKitConfig } from "./RepoKitConfig";
+import { TSCompiler } from "./TSCompiler";
 
 export class ConfigurationParser extends TSCompiler {
-  public static async parse() {
+  public static parse() {
     const root = this.parseRoot();
     const path = join(root, "repokit.ts");
     if (!existsSync(path)) {
       return;
     }
-    const compiler = new TSCompiler(root, "parse_configuration");
-    const config = await compiler.compile(path);
+    const config = super.compile(path);
     for (const key in config) {
       if (config[key] instanceof RepoKitConfig) {
         return console.log(JSON.stringify(config[key].toScoped(path)));
