@@ -9,18 +9,6 @@
   "singleQuote": false,
   "trailingComma": "all",
   "endOfLine": "lf",
-  "experimentalSortImports": {
-    "order": "desc",
-    "groups": [
-      ["builtin"],
-      ["external", "type-external"],
-      ["internal", "type-internal"],
-      ["parent", "type-parent"],
-      ["sibling", "type-sibling"],
-      ["index", "type-index"],
-      ["side_effect"]
-    ]
-  },
   "experimentalSortPackageJson": {
     "sortScripts": true
   },
