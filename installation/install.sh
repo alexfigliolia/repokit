@@ -1,4 +1,4 @@
-CURRENT_VERSION="0.1.0"
+CURRENT_VERSION="2.0.3"
 CWD=$(pwd)
 
 REPLACEMENT="/node_modules"
