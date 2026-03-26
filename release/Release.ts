@@ -52,10 +52,10 @@ export class Release {
     let nextVersion: string = version;
     switch (releaseType) {
       case "major":
-        nextVersion = `${parseInt(major) + 1}.${minor}.${patch}`;
+        nextVersion = `${parseInt(major) + 1}.0.0`;
         break;
       case "minor":
-        nextVersion = `${major}.${parseInt(minor) + 1}.${patch}`;
+        nextVersion = `${major}.${parseInt(minor) + 1}.0`;
         break;
       case "patch":
         nextVersion = `${major}.${minor}.${parseInt(patch) + 1}`;
