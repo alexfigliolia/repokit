@@ -1,3 +1,4 @@
+CURRENT_VERSION="0.1.0"
 CWD=$(pwd)
 
 REPLACEMENT="/node_modules"
@@ -25,6 +26,19 @@ else
 fi
 
 echo "Installing Repokit CLI"
+
+cd
+
+if [ -f .repokit ]; then
+    read -r first_line < ".repokit"
+    if [ "$first_line" = "$CURRENT_VERSION" ]; then
+        exit 0;    
+    fi
+fi
+
+touch ".repokit"
+printf "$CURRENT_VERSION" > ".repokit"
+
 
 cd $CWD
 
