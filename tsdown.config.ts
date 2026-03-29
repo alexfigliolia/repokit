@@ -6,5 +6,4 @@ export default defineConfig({
   shims: true,
   clean: true,
   unbundle: true,
-  tsconfig: "./tsconfig.build.json",
 });

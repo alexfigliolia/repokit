@@ -12,9 +12,6 @@ export class Release extends SemverRelease {
     "install.sh",
   );
   private static readonly CARGO_FILE_PATH = join(this.ROOT, "Cargo.toml");
-  static {
-    console.log(this.ROOT);
-  }
   constructor() {
     super({
       onComplete: async version => {
@@ -71,6 +68,7 @@ export class Release extends SemverRelease {
     for await (const line of reader) {
       lines.push(onLine(line));
     }
+    reader.close();
     return lines.join("\n");
   }
 }

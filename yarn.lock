@@ -276,8 +276,10 @@
   resolved "https://registry.yarnpkg.com/@figliolia/event-emitter/-/event-emitter-1.2.0.tgz#21184d19ac1819affbc057dae5e4442bdd8cc821"
   integrity sha512-cEuKUJx8cG5ED7p4xGm5x/OUjZUAcz28P8syO5tnvoiRnd33RkMvsz249YBX97vQGTPYLIi18A1ZeUwyr4ITbw==
 
-"@figliolia/semver@file:../semver":
+"@figliolia/semver@^1.0.0":
   version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@figliolia/semver/-/semver-1.0.0.tgz#bc2be6f79b7de8fc1c18e1c3c3bc312f785e51b8"
+  integrity sha512-8+HBxSsbdvfFJKvSwKRGdeq6dV5BjoMGu7AQEooXFnUXGedgvnIxAgolnykGMUcF5hBC6hQB0a9FZuq79HYOgw==
 
 "@humanfs/core@^0.19.1":
   version "0.19.1"
