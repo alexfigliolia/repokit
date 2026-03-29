@@ -1,6 +1,6 @@
 {
   "name": "@repokit/core",
-  "version": "1.9.0",
+  "version": "2.0.6",
   "description": "A knowledgebase for your repository - wrapped in a CLI",
   "keywords": [
     "cli",
@@ -37,6 +37,7 @@
     "clean:ts": "tsx devserver/run.ts -c",
     "grant:exec": "chmod -R +x ./installation",
     "install:rust": "yarn build:rust && cargo install --path .",
+    "lint:all": "yarn lint:ts && yarn lint:rust",
     "lint:rust": "cargo clippy --fix --allow-dirty",
     "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
     "package:ts": "yarn lint:ts && yarn lint:rust && yarn build:ts",
@@ -55,6 +56,7 @@
     "@types/node": "^25.3.0",
     "@typescript-eslint/eslint-plugin": "^8.57.1",
     "@typescript-eslint/parser": "^8.57.1",
+    "chalk": "^5.6.2",
     "eslint": "^10.0.3",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",

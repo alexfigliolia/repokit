@@ -1,6 +1,6 @@
 [package]
 name = "repokit"
-version = "0.1.0"
+version = "2.0.6"
 edition = "2024"
 
 [[bin]]
@@ -16,5 +16,3 @@ alphanumeric-sort = "1.5.5"
 tokio = "1.49.0"
 ignore = "0.4.25"
 regex = { version = "1.12.3", features = ["std", "unicode"] }
-
-

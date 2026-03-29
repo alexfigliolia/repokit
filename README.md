@@ -81,6 +81,8 @@ repokit
 
 The CLI will list out its internal commands as well as any commands you registered in your config file.
 
+<img src="media/post-init.webp" alt="Help screen after initialization" width="100%" />
+
 Next run:
 
 ```bash
@@ -95,16 +97,49 @@ To begin building your CLI, run:
 repokit register ./path/to/your/feature
 ```
 
-This command generates a tool definition for your feature that you can fill out using your tool's API's. When complete, save the file and run:
+This command generates a tool definition for your feature that you can fill out using your tool's API's. A tool definition might look something like the following:
 
-```bash
-repokit <your-tool-name>
+```typescript
+import { RepoKitCommand } from "@repokit/core";
+
+export const Commands = new RepoKitCommand({
+  name: "user-interface",
+  description: "Build commands for the UI",
+  commands: {
+    "build:production": {
+      command: "vite build",
+      description: "Build the UI for production",
+      args: {
+        "(--optimization | -o)":
+          "Run post-build optimizers such as compression and css purging",
+      },
+    },
+    "run:development": {
+      command: "vite",
+      description: "Run the UI in development mode",
+      args: {
+        "(--port | -p)":
+          "Specifies the port number to run the development server on",
+        "(--open | -o)": "Opens your OS' preferred browser",
+      },
+    },
+  },
+});
 ```
 
-The CLI will list out your new tool's API's. To invoke any of them, run:
+When finished with your definition, save the file and run:
 
 ```bash
-repokit <your-tool-name> <your-command-name>
+repokit user-interface
+```
+
+The CLI will list out your new tool's API's:
+<img src="media/new-command.webp" alt="Command definition" width="100%" />
+
+To invoke any of them, run:
+
+```bash
+repokit user-interface <sub-command> <args>
 ```
 
 ### Reasoning about your toolchain
@@ -197,7 +232,7 @@ If your command needs to reason about the file system, keep this in mind.
 
 I worked in a codebase at Google that used just about every programming language in existence. Each team had their own methodology for exposing commands, scripts, and API's for their team's day-to-day development needs.
 
-Some teams used shell scripts, some used a tool called `bazel`, and some relied on good old `python ./path/to/my-script.py` or something similar.
+Some teams used shell scripts, some used a tool called `bazel`, and some relied on good old `python ./path/to/my-script.py` (or something similar).
 
 For engineers new and old to onboard to new features, they were often left stuck combing through these undocumented scripts and tools - tracking down environment variables, positionals, and flags to get necessary commands to succeed.
 

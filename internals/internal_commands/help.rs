@@ -120,7 +120,7 @@ impl Help {
                     "{}{}{}",
                     Logger::indent(Some(indentation.unwrap_or(6))),
                     Logger::green(name.as_str()),
-                    Logger::gray(format!(": {}", description).as_str()),
+                    Logger::gray(format!(" {}", description).as_str()),
                 );
             }
         }
