@@ -7,5 +7,5 @@ export const SeeingRed = new RepoKitTheme({
   argColor: "rgb(220, 205, 36)",
   descriptionColor: "rgb(179, 100, 151)",
   errorPrefixColor: "rgb(220, 36, 39)",
-  highlightColor: "rgb(8, 98, 255)",
+  highlightColor: "rgb(237, 175, 41)",
 });
