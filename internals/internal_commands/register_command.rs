@@ -50,7 +50,7 @@ impl RegisterCommand {
             Logger::info(
                 format!(
                     "Creating the path {} in your file system",
-                    Logger::blue_bright(path_arg.as_str())
+                    Logger::with_theme(|theme| theme.highlight(path_arg.as_str()))
                 )
                 .as_str(),
             );
@@ -64,13 +64,13 @@ impl RegisterCommand {
             Logger::error(
                 format!(
                     "A {} file already exists in this directory",
-                    Logger::blue_bright("Commands.ts")
+                    Logger::with_theme(|theme| theme.highlight("Commands.ts"))
                 )
                 .as_str(),
             );
             Logger::info(format!(
                 "You can append additional commands to the existing {} instance or export another one",
-                Logger::blue_bright("RepoKitCommand")
+                Logger::with_theme(|theme| theme.highlight("RepoKitCommand"))
             ).as_str());
             process::exit(0);
         }

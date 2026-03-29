@@ -41,7 +41,11 @@ impl UpgradeRepoKit {
             let path = Path::new(&self.scope.root).join(lock_file).normalize();
             if path.exists() && path.is_file() {
                 Logger::info(
-                    format!("Detected {} installation", Logger::blue_bright(manager)).as_str(),
+                    format!(
+                        "Detected {} installation",
+                        Logger::with_theme(|theme| theme.highlight(manager))
+                    )
+                    .as_str(),
                 );
                 return command_prefix;
             }

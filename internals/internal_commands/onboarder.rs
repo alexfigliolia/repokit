@@ -31,12 +31,18 @@ impl Onboarder {
 
 impl InternalExecutable for Onboarder {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
-        Logger::info(format!("Welcome to {}", Logger::blue_bright("Repokit")).as_str());
+        Logger::info(
+            format!(
+                "Welcome to {}",
+                Logger::with_theme(|theme| theme.highlight("Repokit"))
+            )
+            .as_str(),
+        );
         Logger::info(
             "Repokit is a tool designed to self-document and publish developer facing workflows in a single CLI",
         );
         Logger::info(
-            format!("As you develop new features in your codebase, you can publish commands, API's, and tools to the {} CLI by running", Logger::blue_bright("Repokit")).as_str()
+            format!("As you develop new features in your codebase, you can publish commands, API's, and tools to the {} CLI by running", Logger::with_theme(|theme|theme.highlight("Repokit"))).as_str()
         );
         Logger::log_file_path("repokit register ./path/to/your-feature");
         Logger::info(
@@ -45,12 +51,12 @@ impl InternalExecutable for Onboarder {
         Logger::info(
             format!(
                 "The {} CLI will automatically detect these files and add them to its toolchain",
-                Logger::blue_bright("Repokit")
+                Logger::with_theme(|theme| theme.highlight("Repokit"))
             )
             .as_str(),
         );
         Logger::info(
-            format!("As your codebase grows, your {} CLI will continue to track all of the published workflows created by your team", Logger::blue_bright("Repokit")).as_str()
+            format!("As your codebase grows, your {} CLI will continue to track all of the published workflows created by your team", Logger::with_theme(|theme|theme.highlight("Repokit"))).as_str()
         );
         Logger::space_around("It's your living source of knowledge and documentation");
     }

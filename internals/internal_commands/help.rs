@@ -25,52 +25,62 @@ impl Help {
     }
 
     pub fn log_internal_command(command: &InternalExecutableDefinition) {
-        println!(
-            "{}{} {}",
-            Logger::indent(Some(3)),
-            Logger::blue(&command.name),
-            Logger::gray(&command.description),
-        );
+        Logger::with_theme(|theme| {
+            println!(
+                "{}{} {}",
+                Logger::indent(Some(3)),
+                theme.command(&command.name),
+                theme.description(&command.description),
+            );
+        });
         Help::log_args(&command.args, None);
     }
 
     pub fn log_root_command(command: &RootCommand) {
-        println!(
-            "{}{} {}",
-            Logger::indent(Some(3)),
-            Logger::blue(&command.name),
-            Logger::gray(&command.description),
-        );
+        Logger::with_theme(|theme| {
+            println!(
+                "{}{} {}",
+                Logger::indent(Some(3)),
+                theme.command(&command.name),
+                theme.description(&command.description),
+            );
+        });
         Help::log_args(&command.args, None)
     }
 
     pub fn log_external_command(command: &RepoKitCommand) {
-        println!(
-            "{}{} {}",
-            Logger::indent(Some(3)),
-            Logger::blue(&command.name),
-            Logger::gray(&command.description),
-        );
+        Logger::with_theme(|theme| {
+            println!(
+                "{}{} {}",
+                Logger::indent(Some(3)),
+                theme.command(&command.name),
+                theme.description(&command.description),
+            );
+        });
         println!();
         Help::log_external_subcommands(&command.commands, 6);
         if !command.owner.is_empty() {
-            println!(
-                "\n{}{}{}",
-                Logger::indent(Some(9)),
-                Logger::gray("Owned by: "),
-                Logger::cyan(&command.owner),
-            );
+            Logger::with_theme(|theme| {
+                println!(
+                    "\n{}{}{}",
+                    Logger::indent(Some(9)),
+                    theme.description("Owned by: "),
+                    Logger::cyan(&command.owner),
+                );
+            });
         }
     }
 
     pub fn log_external_subcommands(map: &HashMap<String, CommandDefinition>, indentation: i32) {
         for (name, command) in map {
-            println!(
-                "{}{}{}",
-                Logger::indent(Some(indentation)),
-                Logger::lime(format!("{}: ", name).as_str()),
-                Logger::gray(&command.description),
-            );
+            Logger::with_theme(|theme| {
+                println!(
+                    "{}{}: {}",
+                    Logger::indent(Some(indentation)),
+                    theme.sub_command(name),
+                    theme.description(&command.description),
+                );
+            });
             Help::log_args(&command.args, Some(indentation + 3));
         }
     }
@@ -114,16 +124,18 @@ impl Help {
     }
 
     fn log_args(map: &Option<HashMap<String, String>>, indentation: Option<i32>) {
-        if let Some(args) = map {
-            for (name, description) in args {
-                println!(
-                    "{}{}{}",
-                    Logger::indent(Some(indentation.unwrap_or(6))),
-                    Logger::green(name.as_str()),
-                    Logger::gray(format!(" {}", description).as_str()),
-                );
+        Logger::with_theme(|theme| {
+            if let Some(args) = map {
+                for (name, description) in args {
+                    println!(
+                        "{}{} {}",
+                        Logger::indent(Some(indentation.unwrap_or(6))),
+                        theme.arg(name),
+                        theme.description(description)
+                    );
+                }
             }
-        }
+        });
     }
 
     fn sort_internal(

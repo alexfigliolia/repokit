@@ -98,7 +98,7 @@ impl SearchCommands {
         Logger::info(
             format!(
                 "Matched {} command{} in your repokit config",
-                Logger::blue_bright(total.to_string().as_str()),
+                Logger::with_theme(|theme| theme.highlight(total.to_string().as_str())),
                 plural_appendage,
             )
             .as_str(),
@@ -124,7 +124,7 @@ impl SearchCommands {
         Logger::info(
             format!(
                 "Matched {} internal command{}",
-                Logger::blue_bright(total.to_string().as_str()),
+                Logger::with_theme(|theme| theme.highlight(total.to_string().as_str())),
                 plural_appendage,
             )
             .as_str(),
@@ -140,7 +140,7 @@ impl SearchCommands {
         Logger::info(
             format!(
                 "Matched {} registered command{}",
-                Logger::blue_bright(total.to_string().as_str()),
+                Logger::with_theme(|theme| theme.highlight(total.to_string().as_str())),
                 plural_appendage,
             )
             .as_str(),

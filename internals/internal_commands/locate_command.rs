@@ -54,13 +54,19 @@ impl InternalExecutable for LocateCommand {
             Logger::exit_with_info("Please specify a command to locate");
         }
         let command = &args[0];
-        Logger::info(format!("Locating a command named {}", Logger::blue_bright(command)).as_str());
+        Logger::info(
+            format!(
+                "Locating a command named {}",
+                Logger::with_theme(|theme| theme.highlight(command))
+            )
+            .as_str(),
+        );
         self.search_externals(command);
         self.search_root(command);
         Logger::exit_with_error(
             format!(
                 "I could not find a command named {}",
-                Logger::blue_bright(command)
+                Logger::with_theme(|theme| theme.highlight(command))
             )
             .as_str(),
         );

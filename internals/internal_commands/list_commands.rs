@@ -31,7 +31,7 @@ impl ListCommands {
                     "<scope>",
                     format!(
                         "The scope of the commands you wish to list. Specify one of {}",
-                        Logger::blue(SCOPES.join(" | ").as_str())
+                        Logger::with_theme(|theme| theme.highlight(SCOPES.join(" | ").as_str()))
                     )
                     .as_str(),
                 )],
@@ -48,7 +48,7 @@ impl ListCommands {
         Logger::exit_with_info(
             format!(
                 "Please specify a scope to list the commands of. Select one of {}",
-                Logger::blue_bright(SCOPES.join(" | ").as_str())
+                Logger::with_theme(|theme| theme.highlight(SCOPES.join(" | ").as_str()))
             )
             .as_str(),
         );
@@ -88,7 +88,7 @@ impl InternalExecutable for ListCommands {
             Logger::exit_with_info(
                 format!(
                     "I could not find any commands matching {}",
-                    Logger::blue_bright(&full_query)
+                    Logger::with_theme(|theme| theme.highlight(&full_query))
                 )
                 .as_str(),
             );

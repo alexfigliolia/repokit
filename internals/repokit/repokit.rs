@@ -23,6 +23,9 @@ pub struct RepoKit {
 impl RepoKit {
     pub fn new(root: String, configuration: RepoKitConfig) -> RepoKit {
         Logger::set_name(&configuration.project);
+        if let Some(theme) = &configuration.theme {
+            Logger::with_registry(|mut registry| registry.register(theme))
+        }
         RepoKit {
             scope: RepoKitScope {
                 root,
@@ -113,7 +116,7 @@ impl RepoKit {
         Logger::info(
             format!(
                 "I'm not aware of a command named {}",
-                Logger::blue_bright(command)
+                Logger::with_theme(|theme| theme.highlight(command))
             )
             .as_str(),
         );
@@ -123,15 +126,15 @@ impl RepoKit {
         Logger::info(
             format!(
                 "The command {} was not found on {}",
-                Logger::blue_bright(sub_command),
-                Logger::blue_bright(&command.name)
+                Logger::with_theme(|theme| theme.highlight(sub_command)),
+                Logger::with_theme(|theme| theme.highlight(&command.name))
             )
             .as_str(),
         );
         Logger::info(
             format!(
                 "Here are the commands that belong to {}",
-                Logger::blue_bright(&command.name)
+                Logger::with_theme(|theme| theme.highlight(&command.name))
             )
             .as_str(),
         );
@@ -142,7 +145,7 @@ impl RepoKit {
         Logger::info(
             format!(
                 "Listing available commands for {}\n",
-                Logger::blue(&command.name)
+                Logger::with_theme(|theme| theme.command(&command.name))
             )
             .as_str(),
         );
