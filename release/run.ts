@@ -1,5 +1,6 @@
 import { Release } from "./Release";
 
 void (async () => {
-  await Release.run();
+  const release = new Release();
+  await release.run();
 })();
