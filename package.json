@@ -53,6 +53,7 @@
   },
   "devDependencies": {
     "@figliolia/child-process": "^1.0.4",
+    "@figliolia/semver": "file:../semver",
     "@types/node": "^25.3.0",
     "@typescript-eslint/eslint-plugin": "^8.57.1",
     "@typescript-eslint/parser": "^8.57.1",
