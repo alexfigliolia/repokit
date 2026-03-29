@@ -1,4 +1,4 @@
-import { RGBString } from "./types";
+import type { RGBString } from "./types";
 
 /**
  * Repokit Theme
