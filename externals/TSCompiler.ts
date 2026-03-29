@@ -19,13 +19,8 @@ export class TSCompiler {
   public static compile<T extends Record<string, unknown>>(path: string) {
     const compiler = register(this.compilerOptions);
     compiler.enabled(true);
-    const result = this.import(path) as T;
+    const result = require(path) as T;
     compiler.enabled(false);
     return result;
-  }
-
-  private static import(filePath: string) {
-    const _module = require(filePath);
-    return _module?.__esModule ? _module : { default: _module };
   }
 }
