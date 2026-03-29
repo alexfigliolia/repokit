@@ -232,7 +232,7 @@ If your command needs to reason about the file system, keep this in mind.
 
 I worked in a codebase at Google that used just about every programming language in existence. Each team had their own methodology for exposing commands, scripts, and API's for their team's day-to-day development needs.
 
-Some teams used shell scripts, some used a tool called `bazel`, and some relied on good old `python ./path/to/my-script.py` or something similar.
+Some teams used shell scripts, some used a tool called `bazel`, and some relied on good old `python ./path/to/my-script.py` (or something similar).
 
 For engineers new and old to onboard to new features, they were often left stuck combing through these undocumented scripts and tools - tracking down environment variables, positionals, and flags to get necessary commands to succeed.
 
