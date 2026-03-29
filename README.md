@@ -81,7 +81,7 @@ repokit
 
 The CLI will list out its internal commands as well as any commands you registered in your config file.
 
-<img src="media/post-init.webp" alt="Help screen after initialization" />
+<img src="media/post-init.webp" alt="Help screen after initialization" width="100%" />
 
 Next run:
 
@@ -134,7 +134,7 @@ repokit user-interface
 ```
 
 The CLI will list out your new tool's API's:
-<img src="media/new-command.webp" alt="Command definition" />
+<img src="media/new-command.webp" alt="Command definition" width="100%" />
 
 To invoke any of them, run:
 
