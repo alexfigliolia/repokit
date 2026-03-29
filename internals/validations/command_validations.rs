@@ -61,7 +61,7 @@ impl CommandValidations {
                 Logger::info(
                     format!(
                         "I encountered a command named {} that conflicts with one of my internals",
-                        Logger::blue_bright(name),
+                        Logger::with_theme(|theme| theme.highlight(name)),
                     )
                     .as_str(),
                 );
@@ -81,8 +81,8 @@ impl CommandValidations {
                 Logger::info(
                     format!(
                         "I encountered a command named {} in your {} file that conflicts with one of my internals",
-                        Logger::blue_bright(name),
-                        Logger::blue_bright("repokit.ts"),
+                        Logger::with_theme(|theme|theme.highlight(name)),
+                        Logger::with_theme(|theme|theme.highlight("repokit.ts")),
                     )
                     .as_str(),
                 );
@@ -117,8 +117,8 @@ impl CommandValidations {
     fn on_external_root_collision(&self, command: &RepoKitCommand) {
         Logger::info(format!(
                 "I encountered a package command named {} that conflicts with a command in your {} file",
-                Logger::blue_bright(&command.name),
-                Logger::blue_bright("repokit.ts")
+                Logger::with_theme(|theme|theme.highlight(&command.name)),
+                Logger::with_theme(|theme|theme.highlight("repokit.ts"))
             )
             .as_str(),
         );
@@ -131,7 +131,7 @@ impl CommandValidations {
         Logger::info(
             format!(
                 "I encountered two packages with the name {}",
-                Logger::blue_bright(&command.name),
+                Logger::with_theme(|theme| theme.highlight(&command.name)),
             )
             .as_str(),
         );
@@ -139,12 +139,12 @@ impl CommandValidations {
         println!(
             "{}1. {}",
             Logger::indent(None),
-            Logger::blue_bright(collision_path)
+            Logger::with_theme(|theme| theme.highlight(collision_path))
         );
         println!(
             "{}2. {}\n",
             Logger::indent(None),
-            Logger::blue_bright(&command.location)
+            Logger::with_theme(|theme| theme.highlight(&command.location))
         );
         Logger::exit_with_info("Please rename one of these");
     }

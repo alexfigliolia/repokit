@@ -1,11 +1,17 @@
 use std::process::exit;
 use std::sync::LazyLock;
 use std::sync::Mutex;
+use std::sync::MutexGuard;
 
-use colored::{ColoredString, Colorize, CustomColor};
+use colored::{ColoredString, Colorize};
+
+use crate::themes::theme::Theme;
+use crate::themes::theme_registry::ThemeRegistry;
 
 static REGISTERED_NAME: LazyLock<Mutex<String>> =
     LazyLock::new(|| Mutex::new("Repokit".to_string()));
+
+static THEMES: LazyLock<Mutex<ThemeRegistry>> = LazyLock::new(|| Mutex::new(ThemeRegistry::new()));
 
 pub struct Logger {}
 
@@ -37,7 +43,11 @@ impl Logger {
     }
 
     pub fn log_file_path(path: &str) {
-        println!("\n{}{}\n", Logger::indent(None), Logger::blue_bright(path));
+        println!(
+            "\n{}{}\n",
+            Logger::indent(None),
+            Logger::with_theme(|theme| theme.highlight(path))
+        );
     }
 
     pub fn indent(times: Option<i32>) -> String {
@@ -45,52 +55,8 @@ impl Logger {
         " ".repeat(indentation.try_into().unwrap())
     }
 
-    pub fn blue(message: &str) -> ColoredString {
-        message.bright_blue()
-    }
-
-    pub fn blue_bright(message: &str) -> ColoredString {
-        message.bright_blue().bold()
-    }
-
-    pub fn magenta_bright(message: &str) -> ColoredString {
-        message.bright_magenta().bold()
-    }
-
-    pub fn magenta(message: &str) -> ColoredString {
-        message.magenta()
-    }
-
-    pub fn green(message: &str) -> ColoredString {
-        message.green()
-    }
-
-    pub fn green_bright(message: &str) -> ColoredString {
-        message.bright_green()
-    }
-
     pub fn cyan(message: &str) -> ColoredString {
         message.cyan()
-    }
-
-    pub fn cyan_bright(message: &str) -> ColoredString {
-        message.bright_cyan().bold()
-    }
-
-    pub fn gray(message: &str) -> ColoredString {
-        message.custom_color(CustomColor {
-            r: 128,
-            g: 128,
-            b: 128,
-        })
-    }
-
-    pub fn lime(message: &str) -> ColoredString {
-        message.custom_color(CustomColor {
-            r: 175,
-            g: 247,
-            b: 7,
-        })
     }
 
     pub fn file_create_error() {
@@ -113,6 +79,15 @@ impl Logger {
         Logger::log_file_path("https://github.com/alexfigliolia/repokit/issues");
     }
 
+    pub fn with_theme<R>(func: impl Fn(&Theme) -> R) -> R {
+        Logger::with_registry(|registry| func(&registry.theme))
+    }
+
+    pub fn with_registry<R>(func: impl Fn(MutexGuard<'_, ThemeRegistry>) -> R) -> R {
+        let registry = THEMES.lock().unwrap();
+        func(registry)
+    }
+
     fn file_error(operation: &str) {
         Logger::info(format!("I was unable to {operation} in your repository").as_str());
         Logger::error("Please verify the permissions on your working directory or file a bug here");
@@ -120,15 +95,13 @@ impl Logger {
         exit(0);
     }
 
-    fn info_prefix() -> ColoredString {
-        format!("{}: ", *REGISTERED_NAME.lock().unwrap())
-            .bright_magenta()
-            .bold()
+    fn info_prefix() -> String {
+        Logger::with_theme(|theme| format!("{}: ", theme.prefix(&REGISTERED_NAME.lock().unwrap())))
     }
 
-    fn error_prefix() -> ColoredString {
-        format!("{}: ", *REGISTERED_NAME.lock().unwrap())
-            .red()
-            .bold()
+    fn error_prefix() -> String {
+        Logger::with_theme(|theme| {
+            format!("{}: ", theme.error_prefix(&REGISTERED_NAME.lock().unwrap()))
+        })
     }
 }

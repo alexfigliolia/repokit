@@ -11,6 +11,7 @@ mod internal_commands;
 mod internal_filesystem;
 mod logger;
 mod repokit;
+mod themes;
 mod validations;
 
 fn main() {

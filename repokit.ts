@@ -1,4 +1,4 @@
-import { RepoKitCommand, RepoKitConfig } from "@repokit/core";
+import { RepoKitCommand, RepoKitConfig, SeeingRed } from "@repokit/core";
 
 export const RepoKit = new RepoKitConfig({
   project: "Repokit",
@@ -17,4 +17,5 @@ export const RepoKit = new RepoKitConfig({
       },
     }),
   ],
+  theme: SeeingRed,
 });

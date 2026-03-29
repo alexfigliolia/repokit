@@ -1,9 +1,11 @@
 import type { RepoKitCommand } from "./RepoKitCommand";
+import type { RepoKitTheme } from "./RepoKitTheme";
 
 export interface IRepoKitConfig {
   project: string;
   thirdParty?: RepoKitCommand[];
   commands?: Record<string, ICommand>;
+  theme?: RepoKitTheme;
 }
 
 export interface IRepoKitCommand {
@@ -24,3 +26,8 @@ export interface ILocatedCommand extends IRepoKitCommand {
 }
 
 export type AsyncTask<T> = () => Promise<T>;
+
+type OptionalSpace = " " | "";
+
+export type RGBString =
+  `rgb(${number},${OptionalSpace}${number},${OptionalSpace}${number})`;

@@ -49,8 +49,8 @@ impl InternalFileSystem {
             Logger::exit_with_info(
                 format!(
                     "To start using {}, please initialize your git repository by running {}",
-                    Logger::blue("Repokit"),
-                    Logger::green_bright("git init")
+                    Logger::with_theme(|theme| theme.highlight("Repokit")),
+                    Logger::with_theme(|theme| theme.highlight("git init"))
                 )
                 .as_str(),
             );

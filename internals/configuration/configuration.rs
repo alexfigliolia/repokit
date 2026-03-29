@@ -15,7 +15,7 @@ impl Configuration {
             Logger::info(
                 format!(
                     "I found a Repokit configuration without an exported {} instance",
-                    Logger::blue("RepokitConfig")
+                    Logger::with_theme(|theme| theme.highlight("RepokitConfig"))
                 )
                 .as_str(),
             );
@@ -29,7 +29,7 @@ impl Configuration {
         Logger::info(
             format!(
                 "Please fill out this file with your desired settings. Then run {}",
-                Logger::blue_bright("repokit onboard")
+                Logger::with_theme(|theme| theme.highlight("repokit onboard"))
             )
             .as_str(),
         );
