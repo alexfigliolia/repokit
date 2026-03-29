@@ -4,7 +4,8 @@ import { RGBString } from "./types";
  * Repokit Theme
  *
  * A repokit theme allows you to customize the color
- * usage of repokit:
+ * usage of the CLI by adding a `RepoKitTheme` instance
+ * to your `RepoKitConfig`
  *
  * ```typescript
  * import { RepoKitConfig, RepoKitTheme } from "@repokit/core";

@@ -17,7 +17,7 @@ impl Theme {
     }
 
     pub fn prefix(&self, msg: &str) -> ColoredString {
-        msg.color(self.prefixColor)
+        msg.color(self.prefixColor).bold()
     }
 
     pub fn command(&self, msg: &str) -> ColoredString {
@@ -37,7 +37,7 @@ impl Theme {
     }
 
     pub fn error_prefix(&self, msg: &str) -> ColoredString {
-        msg.color(self.errorPrefixColor)
+        msg.color(self.errorPrefixColor).bold()
     }
 
     pub fn highlight(&self, msg: &str) -> ColoredString {

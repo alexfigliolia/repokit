@@ -228,6 +228,51 @@ The commands you register onto the repokit toolchain will always be invoked usin
 
 If your command needs to reason about the file system, keep this in mind.
 
+### Themes
+
+The Repokit CLI can be customized to support themes that better match your team's visual preferences.
+
+Repokit comes with 4 pre-built themes that you can use in your `RepoKitConfig`.
+
+```typescript
+import {
+  RepoKitConfig,
+  SeeingRed, // A red theme
+  TheBlues, // A blue theme
+  Green, // A green theme
+} from "@repokit/core";
+
+export const Kit = new RepoKitConfig({
+  project: "My Project",
+  theme: SeeingRed, // Specify a theme here
+});
+```
+
+By omitting the `theme` property `RepoKit` will use its default visuals.
+
+In addition to built-in themes, you can create your own using the `RepoKitTheme`
+
+```typescript
+import { RepoKitConfig, RepoKitTheme } from "@repokit/core";
+
+export const Kit = new RepoKitConfig({
+  project: "My Project",
+  theme: new RepoKitTheme({
+    prefixColor: "rgb(220, 36, 91)",
+    commandColor: "rgb(220, 36, 36)",
+    subcommandColor: "rgb(220, 131, 36)",
+    argColor: "rgb(220, 205, 36)",
+    descriptionColor: "rgb(179, 100, 151)",
+    errorPrefixColor: "rgb(220, 36, 39)",
+    highlightColor: "rgb(237, 175, 41)",
+  }),
+});
+```
+
+All properties on the `RepoKitTheme` are optional overrides for `RepoKit`'s default styling. A color can be any CSS-valid `rgb()` string.
+
+<img src="media/seeing-red.webp" width="100%" alt="seeing red theme" />
+
 ## Motivation
 
 I worked in a codebase at Google that used just about every programming language in existence. Each team had their own methodology for exposing commands, scripts, and API's for their team's day-to-day development needs.
