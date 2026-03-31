@@ -5,16 +5,16 @@ import type { ICommand, IRepoKitConfig } from "./types";
 
 export class RepoKitConfig {
   project: string;
-  theme?: RepoKitTheme;
+  themes: RepoKitTheme[];
   thirdParty: RepoKitCommand[];
   commands: Record<string, ICommand>;
   constructor({
-    theme,
     project,
+    themes = [],
     commands = {},
     thirdParty = [],
   }: IRepoKitConfig) {
-    this.theme = theme;
+    this.themes = themes;
     this.project = project;
     this.commands = commands;
     this.thirdParty = thirdParty.map(command => new RepoKitCommand(command));

@@ -5,6 +5,7 @@ use std::sync::MutexGuard;
 
 use colored::{ColoredString, Colorize};
 
+use crate::repokit::interfaces::RepoKitConfig;
 use crate::themes::theme::Theme;
 use crate::themes::theme_registry::ThemeRegistry;
 
@@ -16,8 +17,11 @@ static THEMES: LazyLock<Mutex<ThemeRegistry>> = LazyLock::new(|| Mutex::new(Them
 pub struct Logger {}
 
 impl Logger {
-    pub fn set_name(value: &str) {
-        *REGISTERED_NAME.lock().unwrap() = value.to_string();
+    pub fn configure(configuration: &RepoKitConfig) {
+        Logger::set_name(&configuration.project);
+        for theme in &configuration.themes {
+            Logger::with_registry(|mut registry| registry.register_user_theme(theme))
+        }
     }
 
     pub fn info(message: &str) {
@@ -40,6 +44,13 @@ impl Logger {
 
     pub fn space_around(message: &str) {
         println!("\n{}{}\n", Logger::info_prefix(), message);
+    }
+
+    pub fn with_surrounding_space<F>(mut func: impl FnMut() -> F) -> F {
+        println!();
+        let result = func();
+        println!();
+        result
     }
 
     pub fn log_file_path(path: &str) {
@@ -80,7 +91,7 @@ impl Logger {
     }
 
     pub fn with_theme<R>(func: impl Fn(&Theme) -> R) -> R {
-        Logger::with_registry(|registry| func(&registry.theme))
+        Logger::with_registry(|registry| func(registry.current_theme()))
     }
 
     pub fn with_registry<R>(func: impl Fn(MutexGuard<'_, ThemeRegistry>) -> R) -> R {
@@ -103,5 +114,9 @@ impl Logger {
         Logger::with_theme(|theme| {
             format!("{}: ", theme.error_prefix(&REGISTERED_NAME.lock().unwrap()))
         })
+    }
+
+    fn set_name(value: &str) {
+        *REGISTERED_NAME.lock().unwrap() = value.to_string();
     }
 }

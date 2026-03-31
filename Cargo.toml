@@ -16,3 +16,4 @@ alphanumeric-sort = "1.5.5"
 tokio = "1.50.0"
 ignore = "0.4.25"
 regex = { version = "1.12.3", features = ["std", "unicode"] }
+shellexpand = "3.1.2"

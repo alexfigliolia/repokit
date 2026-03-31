@@ -1,11 +1,10 @@
-import type { RepoKitCommand } from "./RepoKitCommand";
-import type { RepoKitTheme } from "./RepoKitTheme";
+import type { RepoKitConfig } from "./RepoKitConfig";
 
-export interface IRepoKitConfig {
+export interface IRepoKitConfig extends Omit<
+  Partial<RepoKitConfig>,
+  "project"
+> {
   project: string;
-  thirdParty?: RepoKitCommand[];
-  commands?: Record<string, ICommand>;
-  theme?: RepoKitTheme;
 }
 
 export interface IRepoKitCommand {
@@ -31,3 +30,18 @@ type OptionalSpace = " " | "";
 
 export type RGBString =
   `rgb(${number},${OptionalSpace}${number},${OptionalSpace}${number})`;
+
+export interface RepoKitThemeColors {
+  prefixColor?: RGBString;
+  commandColor?: RGBString;
+  subcommandColor?: RGBString;
+  argColor?: RGBString;
+  descriptionColor?: RGBString;
+  errorPrefixColor?: RGBString;
+  highlightColor?: RGBString;
+}
+
+export interface IRepoKitTheme {
+  name: string;
+  colors: RepoKitThemeColors;
+}

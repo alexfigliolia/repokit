@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::Deserialize;
 
-use crate::themes::theme::RepoKitTheme;
+use crate::themes::theme_inputs::RepoKitTheme;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct CommandDefinition {
@@ -35,7 +35,7 @@ pub struct RepoKitConfig {
     pub project: String,
     pub thirdParty: Vec<RepoKitCommand>,
     pub commands: HashMap<String, CommandDefinition>,
-    pub theme: Option<RepoKitTheme>,
+    pub themes: Vec<RepoKitTheme>,
 }
 
 #[derive(Debug, Deserialize, Clone)]

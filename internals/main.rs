@@ -3,6 +3,7 @@ use crate::{
     internal_filesystem::internal_filesystem::InternalFileSystem, repokit::repokit::RepoKit,
 };
 
+mod argv;
 mod configuration;
 mod executables;
 mod executor;
