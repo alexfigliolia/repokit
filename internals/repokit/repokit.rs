@@ -23,7 +23,10 @@ pub struct RepoKit {
 
 impl RepoKit {
     pub fn new(root: String, configuration: RepoKitConfig) -> RepoKit {
-        Logger::configure(&configuration);
+        Logger::set_name(&configuration.project);
+        for theme in &configuration.themes {
+            Logger::with_registry(|mut registry| registry.register_user_theme(theme))
+        }
         let theme = InternalFileSystem::new(&root).read_theme_preference();
         Logger::with_registry(|mut registry| registry.set_theme(&root, &theme));
         RepoKit {

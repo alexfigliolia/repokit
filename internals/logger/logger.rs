@@ -5,7 +5,6 @@ use std::sync::MutexGuard;
 
 use colored::{ColoredString, Colorize};
 
-use crate::repokit::interfaces::RepoKitConfig;
 use crate::themes::theme::Theme;
 use crate::themes::theme_registry::ThemeRegistry;
 
@@ -17,11 +16,8 @@ static THEMES: LazyLock<Mutex<ThemeRegistry>> = LazyLock::new(|| Mutex::new(Them
 pub struct Logger {}
 
 impl Logger {
-    pub fn configure(configuration: &RepoKitConfig) {
-        Logger::set_name(&configuration.project);
-        for theme in &configuration.themes {
-            Logger::with_registry(|mut registry| registry.register_user_theme(theme))
-        }
+    pub fn set_name(value: &str) {
+        *REGISTERED_NAME.lock().unwrap() = value.to_string();
     }
 
     pub fn info(message: &str) {
@@ -40,6 +36,16 @@ impl Logger {
     pub fn exit_with_error(message: &str) {
         Logger::error(message);
         exit(0);
+    }
+
+    pub fn list(items: &[&str], indentation: Option<i32>) {
+        Logger::with_surrounding_space(|| {
+            let mut pointer = 0;
+            for item in items {
+                println!("{}{}. {}", Logger::indent(indentation), pointer + 1, item);
+                pointer += 1
+            }
+        })
     }
 
     pub fn space_around(message: &str) {
@@ -114,9 +120,5 @@ impl Logger {
         Logger::with_theme(|theme| {
             format!("{}: ", theme.error_prefix(&REGISTERED_NAME.lock().unwrap()))
         })
-    }
-
-    fn set_name(value: &str) {
-        *REGISTERED_NAME.lock().unwrap() = value.to_string();
     }
 }
