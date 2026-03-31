@@ -232,46 +232,53 @@ If your command needs to reason about the file system, keep this in mind.
 
 The Repokit CLI can be customized to support themes that better match your team's visual preferences.
 
-Repokit comes with 4 pre-built themes that you can use in your `RepoKitConfig`.
+Repokit comes with 4 pre-built themes that you view by running
 
-```typescript
-import {
-  RepoKitConfig,
-  SeeingRed, // A red theme
-  TheBlues, // A blue theme
-  Green, // A green theme
-} from "@repokit/core";
-
-export const Kit = new RepoKitConfig({
-  project: "My Project",
-  theme: SeeingRed, // Specify a theme here
-});
+```bash
+repokit themes
 ```
 
-By omitting the `theme` property `RepoKit` will use its default visuals.
+To Set your desired theme, you can run
 
-In addition to built-in themes, you can create your own using the `RepoKitTheme`
+```bash
+repokit themes --set <theme-name>
+```
+
+RepoKit also allows you to design your own themes using the `themes` property on your `RepoKitConfig`:
 
 ```typescript
 import { RepoKitConfig, RepoKitTheme } from "@repokit/core";
 
 export const Kit = new RepoKitConfig({
   project: "My Project",
-  theme: new RepoKitTheme({
-    prefixColor: "rgb(220, 36, 91)",
-    commandColor: "rgb(220, 36, 36)",
-    subcommandColor: "rgb(220, 131, 36)",
-    argColor: "rgb(220, 205, 36)",
-    descriptionColor: "rgb(179, 100, 151)",
-    errorPrefixColor: "rgb(220, 36, 39)",
-    highlightColor: "rgb(237, 175, 41)",
-  }),
+  themes: [
+    new RepoKitTheme({
+      name: "my-awesome-theme",
+      colors: {
+        prefixColor: "rgb(220, 36, 91)",
+        commandColor: "rgb(220, 36, 36)",
+        subcommandColor: "rgb(220, 131, 36)",
+        argColor: "rgb(220, 205, 36)",
+        descriptionColor: "rgb(179, 100, 151)",
+        errorPrefixColor: "rgb(220, 36, 39)",
+        highlightColor: "rgb(237, 175, 41)",
+      },
+    }),
+  ],
 });
 ```
 
-All properties on the `RepoKitTheme` are optional overrides for `RepoKit`'s default styling. A color can be any CSS-valid `rgb()` string.
+All properties on the `RepoKitTheme.colors` are optional overrides for `RepoKit`'s default styling. A color can be any CSS-valid `rgb()` string.
 
 <img src="media/seeing-red.webp" width="100%" alt="seeing red theme" />
+
+Once a theme is added to your `RepoKitConfig`, it becomes available by running
+
+```bash
+repokit themes
+```
+
+<img src="media/list-themes.webp" width="100%" alt="listing-themes" />
 
 ## Motivation
 
