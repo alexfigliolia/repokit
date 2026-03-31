@@ -77,7 +77,7 @@ impl ThemeRegistry {
 
     fn built_in_color_schemes() -> (String, [(&'static str, ThemeColors); 4]) {
         let default_theme_name = "default";
-        return (
+        (
             default_theme_name.to_string(),
             [
                 (default_theme_name, ThemeRegistry::create_default()),
@@ -85,7 +85,7 @@ impl ThemeRegistry {
                 ("the-blues", THE_BLUES),
                 ("money", MONEY),
             ],
-        );
+        )
     }
 
     fn create_default() -> ThemeColors {
