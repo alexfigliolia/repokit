@@ -18,20 +18,10 @@ pub struct ThemeRegistry {
 
 impl ThemeRegistry {
     pub fn new() -> ThemeRegistry {
-        let mut themes: HashMap<String, Theme> = HashMap::new();
         let (default_theme_name, built_in_themes) = ThemeRegistry::built_in_themes();
-        for (name, colors) in built_in_themes {
-            themes.insert(
-                name.to_string(),
-                Theme {
-                    name: name.to_string(),
-                    colors,
-                },
-            );
-        }
         ThemeRegistry {
+            themes: HashMap::from(built_in_themes),
             theme: default_theme_name.to_string(),
-            themes,
             default_theme: default_theme_name.to_string(),
         }
     }
@@ -69,6 +59,35 @@ impl ThemeRegistry {
         self.themes.contains_key(theme)
     }
 
+    fn built_in_themes() -> (String, [(String, Theme); 4]) {
+        let (default_theme_name, built_in_color_schemes) = ThemeRegistry::built_in_color_schemes();
+        (
+            default_theme_name,
+            built_in_color_schemes.map(|(name, colors)| {
+                (
+                    name.to_string(),
+                    Theme {
+                        colors,
+                        name: name.to_string(),
+                    },
+                )
+            }),
+        )
+    }
+
+    fn built_in_color_schemes() -> (String, [(&'static str, ThemeColors); 4]) {
+        let default_theme_name = "default";
+        return (
+            default_theme_name.to_string(),
+            [
+                (default_theme_name, ThemeRegistry::create_default()),
+                ("seeing-red", SEEING_RED),
+                ("the-blues", THE_BLUES),
+                ("money", MONEY),
+            ],
+        );
+    }
+
     fn create_default() -> ThemeColors {
         ThemeColors::from_options(ThemeInputColors {
             prefixColor: None,
@@ -79,18 +98,5 @@ impl ThemeRegistry {
             errorPrefixColor: None,
             highlightColor: None,
         })
-    }
-
-    fn built_in_themes() -> (&'static str, [(&'static str, ThemeColors); 4]) {
-        let default_theme_name = "default";
-        (
-            default_theme_name,
-            [
-                (default_theme_name, ThemeRegistry::create_default()),
-                ("seeing-red", SEEING_RED),
-                ("the-blues", THE_BLUES),
-                ("money", MONEY),
-            ],
-        )
     }
 }
