@@ -46,6 +46,9 @@ impl ThemeRegistry {
     }
 
     pub fn register_user_theme(&mut self, theme: &RepoKitTheme) {
+        if self.themes.contains_key(&theme.name) {
+            self.on_naming_conflict(&theme.name);
+        }
         self.themes
             .insert(theme.name.clone(), Theme::from_configuration(theme));
     }
@@ -98,5 +101,25 @@ impl ThemeRegistry {
             errorPrefixColor: None,
             highlightColor: None,
         })
+    }
+
+    fn on_naming_conflict(&self, name: &str) {
+        if ThemeRegistry::built_in_color_schemes()
+            .1
+            .map(|t| t.0)
+            .contains(&name)
+        {
+            println!(
+                "{}: I've discovered a theme that conflicts with one of my iternals. Please rename your {} theme",
+                self.current_theme().error_prefix("RepoKit"),
+                self.current_theme().highlight(name)
+            )
+        } else {
+            println!(
+                "{}: I've discovered two themes with the name {}. Please rename one of them",
+                self.current_theme().error_prefix("RepoKit"),
+                self.current_theme().highlight(name)
+            )
+        }
     }
 }
