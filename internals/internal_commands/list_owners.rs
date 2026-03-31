@@ -51,17 +51,17 @@ impl InternalExecutable for ListOwners {
         if owners.is_empty() {
             return Logger::exit_with_info("No owners found");
         }
-        println!();
         let mut list: Vec<String> = owners.into_iter().collect();
-        sort_str_slice(&mut list);
-        for (index, owner) in list.iter().enumerate() {
-            println!(
-                "{}{}",
-                Logger::indent(None),
-                Logger::cyan(format!("{}. {}", index + 1, &owner).as_str()),
-            );
-        }
-        println!();
+        Logger::with_surrounding_space(|| {
+            sort_str_slice(&mut list);
+            for (index, owner) in list.iter().enumerate() {
+                println!(
+                    "{}{}",
+                    Logger::indent(None),
+                    Logger::cyan(format!("{}. {}", index + 1, &owner).as_str()),
+                );
+            }
+        });
     }
 
     fn help(&self) {

@@ -101,13 +101,13 @@ impl Help {
         if root_commands.is_empty() {
             return;
         }
-        let sorted_commands = Help::sort_root_commands(root_commands);
         Logger::info("Project Level Commands:");
-        println!();
-        for command in sorted_commands {
-            Help::log_root_command(&command);
-        }
-        println!();
+        Logger::with_surrounding_space(|| {
+            let sorted_commands = Help::sort_root_commands(root_commands);
+            for command in sorted_commands {
+                Help::log_root_command(&command);
+            }
+        });
     }
 
     pub fn log_external_commands(externals: &HashMap<String, RepoKitCommand>) {

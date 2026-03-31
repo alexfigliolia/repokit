@@ -11,6 +11,7 @@ use crate::{
     },
     executor::executor::Executor,
     internal_commands::help::Help,
+    internal_filesystem::internal_filesystem::InternalFileSystem,
     logger::logger::Logger,
     repokit::interfaces::{RepoKitCommand, RepoKitConfig},
     validations::command_validations::CommandValidations,
@@ -22,10 +23,9 @@ pub struct RepoKit {
 
 impl RepoKit {
     pub fn new(root: String, configuration: RepoKitConfig) -> RepoKit {
-        Logger::set_name(&configuration.project);
-        if let Some(theme) = &configuration.theme {
-            Logger::with_registry(|mut registry| registry.register(theme))
-        }
+        Logger::configure(&configuration);
+        let theme = InternalFileSystem::new(&root).read_theme_preference();
+        Logger::with_registry(|mut registry| registry.set_theme(&root, &theme));
         RepoKit {
             scope: RepoKitScope {
                 root,

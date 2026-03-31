@@ -1,63 +1,84 @@
 use colored::{Color, ColoredString, Colorize};
-use serde::Deserialize;
 
+use crate::themes::{
+    theme_colors::ThemeColors,
+    theme_inputs::{RepoKitTheme, ThemeInput, ThemeInputColors},
+};
+
+#[derive(Clone)]
 pub struct Theme {
-    prefixColor: Color,
-    commandColor: Color,
-    subcommandColor: Color,
-    argColor: Color,
-    descriptionColor: Color,
-    errorPrefixColor: Color,
-    highlightColor: Color,
+    pub name: String,
+    pub colors: ThemeColors,
 }
 
 impl Theme {
-    pub fn new(colors: ThemeInputColors) -> Theme {
-        Theme::from(colors)
+    pub fn new(input: ThemeInput) -> Theme {
+        Theme {
+            name: input.name,
+            colors: ThemeColors {
+                prefixColor: input.colors.prefixColor.unwrap_or(Color::BrightMagenta),
+                commandColor: input.colors.commandColor.unwrap_or(Color::BrightBlue),
+                subcommandColor: input.colors.subcommandColor.unwrap_or(Color::TrueColor {
+                    r: 175,
+                    g: 247,
+                    b: 7,
+                }),
+                argColor: input.colors.argColor.unwrap_or(Color::Green),
+                descriptionColor: input.colors.descriptionColor.unwrap_or(Color::TrueColor {
+                    r: 128,
+                    g: 128,
+                    b: 128,
+                }),
+                errorPrefixColor: input.colors.errorPrefixColor.unwrap_or(Color::Red),
+                highlightColor: input.colors.highlightColor.unwrap_or(Color::BrightBlue),
+            },
+        }
     }
 
     pub fn prefix(&self, msg: &str) -> ColoredString {
-        msg.color(self.prefixColor).bold()
+        msg.color(self.colors.prefixColor).bold()
     }
 
     pub fn command(&self, msg: &str) -> ColoredString {
-        msg.color(self.commandColor)
+        msg.color(self.colors.commandColor)
     }
 
     pub fn sub_command(&self, msg: &str) -> ColoredString {
-        msg.color(self.subcommandColor)
+        msg.color(self.colors.subcommandColor)
     }
 
     pub fn arg(&self, msg: &str) -> ColoredString {
-        msg.color(self.argColor)
+        msg.color(self.colors.argColor)
     }
 
     pub fn description(&self, msg: &str) -> ColoredString {
-        msg.color(self.descriptionColor)
+        msg.color(self.colors.descriptionColor)
     }
 
     pub fn error_prefix(&self, msg: &str) -> ColoredString {
-        msg.color(self.errorPrefixColor).bold()
+        msg.color(self.colors.errorPrefixColor).bold()
     }
 
     pub fn highlight(&self, msg: &str) -> ColoredString {
-        msg.color(self.highlightColor)
+        msg.color(self.colors.highlightColor)
     }
 
     pub fn from_configuration(theme: &RepoKitTheme) -> Theme {
-        let copy = theme.clone();
-        Theme::new(ThemeInputColors {
-            prefixColor: Theme::parse_rgb(copy.prefixColor),
-            commandColor: Theme::parse_rgb(copy.commandColor),
-            subcommandColor: Theme::parse_rgb(copy.subcommandColor),
-            argColor: Theme::parse_rgb(copy.argColor),
-            descriptionColor: Theme::parse_rgb(copy.descriptionColor),
-            errorPrefixColor: Theme::parse_rgb(copy.errorPrefixColor),
-            highlightColor: Theme::parse_rgb(copy.highlightColor),
+        Theme::new(ThemeInput {
+            name: theme.name.clone(),
+            colors: ThemeInputColors {
+                prefixColor: Theme::parse_rgb(&theme.colors.prefixColor),
+                commandColor: Theme::parse_rgb(&theme.colors.commandColor),
+                subcommandColor: Theme::parse_rgb(&theme.colors.subcommandColor),
+                argColor: Theme::parse_rgb(&theme.colors.argColor),
+                descriptionColor: Theme::parse_rgb(&theme.colors.descriptionColor),
+                errorPrefixColor: Theme::parse_rgb(&theme.colors.errorPrefixColor),
+                highlightColor: Theme::parse_rgb(&theme.colors.highlightColor),
+            },
         })
     }
 
-    fn parse_rgb(rgb_str: Option<String>) -> Option<Color> {
+    fn parse_rgb(rgb_str: &Option<String>) -> Option<Color> {
         match rgb_str {
             Some(rgb) => {
                 let trimmed = rgb
@@ -84,47 +105,4 @@ impl Theme {
             None => None,
         }
     }
-}
-
-pub struct ThemeInputColors {
-    pub prefixColor: Option<Color>,
-    pub commandColor: Option<Color>,
-    pub subcommandColor: Option<Color>,
-    pub argColor: Option<Color>,
-    pub descriptionColor: Option<Color>,
-    pub errorPrefixColor: Option<Color>,
-    pub highlightColor: Option<Color>,
-}
-
-impl From<ThemeInputColors> for Theme {
-    fn from(input: ThemeInputColors) -> Theme {
-        Theme {
-            prefixColor: input.prefixColor.unwrap_or(Color::BrightMagenta),
-            commandColor: input.commandColor.unwrap_or(Color::BrightBlue),
-            subcommandColor: input.subcommandColor.unwrap_or(Color::TrueColor {
-                r: 175,
-                g: 247,
-                b: 7,
-            }),
-            argColor: input.argColor.unwrap_or(Color::Green),
-            descriptionColor: input.descriptionColor.unwrap_or(Color::TrueColor {
-                r: 128,
-                g: 128,
-                b: 128,
-            }),
-            errorPrefixColor: input.errorPrefixColor.unwrap_or(Color::Red),
-            highlightColor: input.highlightColor.unwrap_or(Color::BrightBlue),
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct RepoKitTheme {
-    pub prefixColor: Option<String>,
-    pub commandColor: Option<String>,
-    pub subcommandColor: Option<String>,
-    pub argColor: Option<String>,
-    pub descriptionColor: Option<String>,
-    pub errorPrefixColor: Option<String>,
-    pub highlightColor: Option<String>,
 }
