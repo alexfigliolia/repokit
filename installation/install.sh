@@ -36,8 +36,14 @@ if [ -f .repokit ]; then
     fi
 fi
 
-touch ".repokit"
-printf "$CURRENT_VERSION" > ".repokit"
+DOT_FILE=".repokit"
+TEMP_FILE=".repokit_tmp";
+
+touch "$DOT_FILE"
+
+printf "$CURRENT_VERSION\n" > "$TEMP_FILE"
+tail +2 "$DOT_FILE" >> "$TEMP_FILE"
+mv "$TEMP_FILE" "$DOT_FILE"
 
 
 cd $CWD
