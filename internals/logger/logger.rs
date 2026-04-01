@@ -40,10 +40,8 @@ impl Logger {
 
     pub fn list(items: &[&str], indentation: Option<i32>) {
         Logger::with_surrounding_space(|| {
-            let mut pointer = 0;
-            for item in items {
-                println!("{}{}. {}", Logger::indent(indentation), pointer + 1, item);
-                pointer += 1
+            for (index, item) in items.iter().enumerate() {
+                println!("{}{}. {}", Logger::indent(indentation), index + 1, item);
             }
         })
     }

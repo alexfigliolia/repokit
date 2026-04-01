@@ -69,10 +69,9 @@ impl RepoKitConstructValidator<Vec<Value>, Vec<RepoKitCommand>> for RepoKitComma
             let repokit_command: Result<RepoKitCommand, serde_json::Error> =
                 from_value(command.clone());
             if !RepoKitCommand::is_valid(&validator, &command) || repokit_command.is_err() {
-                let path = RepoKitCommand::on_parsing_error(root, command);
                 failures += 1;
-                if path.is_some() {
-                    failed_paths.push(path.unwrap());
+                if let Some(path) = RepoKitCommand::on_parsing_error(root, command) {
+                    failed_paths.push(path);
                 }
             } else {
                 let mut valid_command = repokit_command.expect("assertion success");

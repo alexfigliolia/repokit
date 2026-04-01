@@ -223,7 +223,7 @@ impl InternalFileSystem {
         }
         let lines = BufReader::new(file.unwrap()).lines();
         let version_matcher = Regex::new(r#""([^"]*)""#).unwrap();
-        for line in lines.flatten() {
+        for line in lines.map_while(Result::ok) {
             if line.contains("\"version\": ") {
                 let captures: Vec<String> = version_matcher
                     .captures_iter(&line)
@@ -232,12 +232,10 @@ impl InternalFileSystem {
                             .map(|match_text| match_text.as_str().to_string())
                     })
                     .collect();
-                let version = captures.get(1);
-                if version.is_some() {
-                    return Some(version.unwrap().to_string());
-                } else {
-                    return None;
+                if let Some(version) = captures.get(1) {
+                    return Some(version.to_string());
                 }
+                return None;
             }
         }
         None
