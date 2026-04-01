@@ -7,12 +7,16 @@ use std::{
     fs::{self, File},
     io::{BufRead, BufReader, Lines},
     path::{Path, PathBuf},
+    sync::LazyLock,
 };
 
 use crate::{
     executor::executor::Executor, internal_filesystem::file_builder::FileBuilder,
     logger::logger::Logger,
 };
+
+pub static VERSION_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"\d*\.\d*.\d*"#).unwrap());
 
 pub struct InternalFileSystem {
     root: String,
@@ -169,8 +173,7 @@ impl InternalFileSystem {
             .collect();
         let fallback_version = "5.0.0";
         let version = lines.last().unwrap_or(&fallback_version);
-        let matcher = Regex::new(r#"\d*\.\d*.\d*"#).unwrap();
-        let captures: Vec<String> = matcher
+        let captures: Vec<String> = VERSION_REGEX
             .captures_iter(version)
             .filter_map(|item| {
                 item.get(0)
