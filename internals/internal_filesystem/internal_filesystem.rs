@@ -155,6 +155,38 @@ impl InternalFileSystem {
         manager_map.get(package_manager).unwrap_or(&npx)
     }
 
+    pub fn get_typescript_version(node_executor: &str) -> u32 {
+        let stdout = Executor::exec(format!("{} tsc --version", node_executor), |cmd| cmd);
+        let lines: Vec<&str> = stdout
+            .split("\n")
+            .filter_map(|s| {
+                let trimmed = s.trim();
+                if trimmed.is_empty() {
+                    return None;
+                }
+                Some(trimmed)
+            })
+            .collect();
+        let fallback_version = "5.0.0";
+        let version = lines.last().unwrap_or(&fallback_version);
+        let matcher = Regex::new(r#"\d*\.\d*.\d*"#).unwrap();
+        let captures: Vec<String> = matcher
+            .captures_iter(version)
+            .filter_map(|item| {
+                item.get(0)
+                    .map(|match_text| match_text.as_str().to_string())
+            })
+            .collect();
+        let fallback_version_str = fallback_version.to_string();
+        let semver = captures.first().unwrap_or(&fallback_version_str);
+        semver
+            .chars()
+            .next()
+            .unwrap_or('5')
+            .to_digit(10)
+            .unwrap_or(5)
+    }
+
     fn commands_directory(&self) -> PathBuf {
         self.absolute(format!("{}/dist/commands", self.package_directory()).as_str())
     }

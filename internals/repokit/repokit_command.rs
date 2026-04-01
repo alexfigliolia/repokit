@@ -48,13 +48,11 @@ impl RepoKitCommand {
                 Logger::list_file_paths(&failed_paths);
             } else {
                 Logger::info("There was an error parsing one or more of your commands");
-                Logger::info(
-                    "You can validate a command file's syntactical correctness by running",
-                );
-                Logger::log_file_path(
-                    &Recovery::new(&root_clone).get_typecheck_command("<optional-path-to-file>"),
-                );
             }
+            Logger::info("You can validate a command file's syntactical correctness by running");
+            Logger::log_file_path(
+                &Recovery::new(&root_clone).get_typecheck_command("<optional-path-to-file>"),
+            );
         });
     }
 }

@@ -21,7 +21,13 @@ impl Recovery {
 
     pub fn get_typecheck_command(&self, file_path: &str) -> String {
         let executor = InternalFileSystem::get_node_executor(&self.root);
-        let tsc_command = format!("{} tsc {} --noEmit --ignoreConfig", executor, file_path);
+        let typescript_version = InternalFileSystem::get_typescript_version(executor);
+        let ignore_config = if typescript_version >= 6 {
+            " --ignoreConfig".to_string()
+        } else {
+            "".to_string()
+        };
+        let tsc_command = format!("{} tsc {} --noEmit{}", executor, file_path, ignore_config);
         tsc_command
     }
 
