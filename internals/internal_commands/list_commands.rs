@@ -2,14 +2,14 @@ use std::collections::HashMap;
 
 use crate::{
     executables::{
-        intenal_executable::InternalExecutable,
+        internal_executable::InternalExecutable,
         internal_executable_definition::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
         },
     },
     internal_commands::help::Help,
     logger::logger::Logger,
-    repokit::interfaces::RepoKitCommand,
+    repokit::repokit_command::RepoKitCommand,
     validations::command_validations::CommandValidations,
 };
 

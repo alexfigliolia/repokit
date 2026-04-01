@@ -4,11 +4,14 @@ use alphanumeric_sort::{sort_slice_by_str_key, sort_str_slice};
 
 use crate::{
     executables::{
-        intenal_executable::InternalExecutable,
+        internal_executable::InternalExecutable,
         internal_executable_definition::InternalExecutableDefinition,
     },
     logger::logger::Logger,
-    repokit::interfaces::{CommandDefinition, RepoKitCommand, RootCommand},
+    repokit::{
+        command_definition::CommandDefinition, repokit_command::RepoKitCommand,
+        repokit_config::RootCommand,
+    },
 };
 
 pub struct Help;

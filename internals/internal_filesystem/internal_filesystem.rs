@@ -3,6 +3,7 @@ use normalize_path::NormalizePath;
 use regex::Regex;
 use shellexpand::tilde;
 use std::{
+    collections::HashMap,
     fs::{self, File},
     io::{BufRead, BufReader, Lines},
     path::{Path, PathBuf},
@@ -112,6 +113,46 @@ impl InternalFileSystem {
             return Some(path);
         }
         None
+    }
+
+    pub fn get_package_manager(root: &str) -> &str {
+        let manager_map = HashMap::from([
+            ("npm", "package-lock.json"),
+            ("yarn", "yarn.lock"),
+            ("pnpm", "pnpm-lock.yaml"),
+            ("bun", "bun.lockb"),
+        ]);
+        for (manager, lock_file) in manager_map {
+            let path = Path::new(&root).join(lock_file).normalize();
+            if path.exists() && path.is_file() {
+                return manager;
+            }
+        }
+        "npm"
+    }
+
+    pub fn get_install_command(root: &str) -> &str {
+        let npm_install = "npm i -D";
+        let package_manager = InternalFileSystem::get_package_manager(root);
+        let manager_map = HashMap::from([
+            ("npm", npm_install),
+            ("yarn", "yarn add -D"),
+            ("pnpm", "pnpm i -D"),
+            ("bun", "bun add -D"),
+        ]);
+        manager_map.get(package_manager).unwrap_or(&npm_install)
+    }
+
+    pub fn get_node_executor(root: &str) -> &str {
+        let npx = "npx";
+        let package_manager = InternalFileSystem::get_package_manager(root);
+        let manager_map = HashMap::from([
+            ("npm", "npx"),
+            ("yarn", "yarn run -T"),
+            ("pnpm", "pnpm run"),
+            ("bun", "bunx"),
+        ]);
+        manager_map.get(package_manager).unwrap_or(&npx)
     }
 
     fn commands_directory(&self) -> PathBuf {

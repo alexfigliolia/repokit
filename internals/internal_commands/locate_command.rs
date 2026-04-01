@@ -1,14 +1,15 @@
-use std::{collections::HashMap, process::exit};
+use std::collections::HashMap;
 
 use crate::{
     executables::{
-        intenal_executable::InternalExecutable,
+        internal_executable::InternalExecutable,
         internal_executable_definition::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
         },
     },
     internal_commands::help::Help,
     logger::logger::Logger,
+    post_processing::post_processor::PostProcessor,
     validations::command_validations::CommandValidations,
 };
 
@@ -35,7 +36,7 @@ impl LocateCommand {
         for (_, command) in all {
             if command.name == query {
                 Logger::log_file_path(&command.location);
-                exit(0);
+                PostProcessor::get().flush();
             }
         }
     }
@@ -43,7 +44,7 @@ impl LocateCommand {
     fn search_root(&self, command: &str) {
         if self.scope.configuration.commands.contains_key(command) {
             Logger::log_file_path(format!("{}/repokit.ts", &self.scope.root).as_str());
-            exit(0);
+            PostProcessor::get().flush();
         }
     }
 }

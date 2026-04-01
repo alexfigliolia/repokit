@@ -1,4 +1,5 @@
 use colored::Color;
+use schemars::JsonSchema;
 use serde::Deserialize;
 
 pub struct ThemeInputColors {
@@ -16,7 +17,7 @@ pub struct ThemeInput {
     pub colors: ThemeInputColors,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, JsonSchema)]
 pub struct RepoKitThemeColors {
     pub prefixColor: Option<String>,
     pub commandColor: Option<String>,
@@ -27,7 +28,7 @@ pub struct RepoKitThemeColors {
     pub highlightColor: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, JsonSchema)]
 pub struct RepoKitTheme {
     pub name: String,
     pub colors: RepoKitThemeColors,

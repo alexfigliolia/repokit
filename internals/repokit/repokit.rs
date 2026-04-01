@@ -1,19 +1,15 @@
-use std::{
-    collections::HashMap,
-    env::args,
-    path::Path,
-    process::{self},
-};
+use std::{collections::HashMap, env::args, path::Path};
 
 use crate::{
     executables::{
-        intenal_executable::InternalExecutable, internal_executable_definition::RepoKitScope,
+        internal_executable::InternalExecutable, internal_executable_definition::RepoKitScope,
     },
     executor::executor::Executor,
     internal_commands::help::Help,
     internal_filesystem::internal_filesystem::InternalFileSystem,
     logger::logger::Logger,
-    repokit::interfaces::{RepoKitCommand, RepoKitConfig},
+    post_processing::post_processor::PostProcessor,
+    repokit::{repokit_command::RepoKitCommand, repokit_config::RepoKitConfig},
     validations::command_validations::CommandValidations,
 };
 
@@ -22,17 +18,17 @@ pub struct RepoKit {
 }
 
 impl RepoKit {
-    pub fn new(root: String, configuration: RepoKitConfig) -> RepoKit {
+    pub fn new(root: &str, configuration: RepoKitConfig) -> RepoKit {
         Logger::set_name(&configuration.project);
         for theme in &configuration.themes {
             Logger::with_registry(|mut registry| registry.register_user_theme(theme))
         }
-        let theme = InternalFileSystem::new(&root).read_theme_preference();
-        Logger::with_registry(|mut registry| registry.set_theme(&root, &theme));
+        let theme = InternalFileSystem::new(root).read_theme_preference();
+        Logger::with_registry(|mut registry| registry.set_theme(root, &theme));
         RepoKit {
             scope: RepoKitScope {
-                root,
                 configuration,
+                root: root.to_string(),
             },
         }
     }
@@ -42,7 +38,7 @@ impl RepoKit {
         let validator = CommandValidations::from(self);
         let internals = validator.collect_and_validate_internals();
         if internals.contains_key(&command) {
-            let interface = internals.get(&command).expect("Unknown command");
+            let interface = internals.get(&command).expect("known command");
             return interface.run(args, &internals);
         }
         if self.scope.configuration.commands.contains_key(&command) {
@@ -87,7 +83,7 @@ impl RepoKit {
         if argv.len() < 2 {
             let (internals, externals) = self.collect_and_validate();
             Help::list_all(&self.scope.configuration.commands, &internals, &externals);
-            process::exit(0);
+            PostProcessor::get().flush();
         }
         let command = &argv[1];
         let args = &(&argv)[2..];

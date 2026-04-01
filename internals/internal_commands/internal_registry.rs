@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     executables::{
-        intenal_executable::InternalExecutable, internal_executable_definition::RepoKitScope,
+        internal_executable::InternalExecutable, internal_executable_definition::RepoKitScope,
     },
     internal_commands::{
         list_commands::ListCommands, list_owners::ListOwners, list_themes::ListThemes,

@@ -1,10 +1,10 @@
-use std::process::exit;
 use std::sync::LazyLock;
 use std::sync::Mutex;
 use std::sync::MutexGuard;
 
 use colored::{ColoredString, Colorize};
 
+use crate::post_processing::post_processor::PostProcessor;
 use crate::themes::theme::Theme;
 use crate::themes::theme_registry::ThemeRegistry;
 
@@ -13,7 +13,7 @@ static REGISTERED_NAME: LazyLock<Mutex<String>> =
 
 static THEMES: LazyLock<Mutex<ThemeRegistry>> = LazyLock::new(|| Mutex::new(ThemeRegistry::new()));
 
-pub struct Logger {}
+pub struct Logger;
 
 impl Logger {
     pub fn set_name(value: &str) {
@@ -30,12 +30,12 @@ impl Logger {
 
     pub fn exit_with_info(message: &str) {
         Logger::info(message);
-        exit(0);
+        PostProcessor::get().flush();
     }
 
     pub fn exit_with_error(message: &str) {
         Logger::error(message);
-        exit(0);
+        PostProcessor::get().flush();
     }
 
     pub fn list(items: &[&str], indentation: Option<i32>) {
@@ -60,11 +60,25 @@ impl Logger {
     }
 
     pub fn log_file_path(path: &str) {
-        println!(
-            "\n{}{}\n",
-            Logger::indent(None),
-            Logger::with_theme(|theme| theme.highlight(path))
-        );
+        Logger::with_surrounding_space(|| {
+            println!(
+                "{}{}",
+                Logger::indent(None),
+                Logger::with_theme(|theme| theme.highlight(path))
+            );
+        })
+    }
+
+    pub fn list_file_paths(paths: &Vec<String>) {
+        Logger::with_surrounding_space(|| {
+            for path in paths {
+                println!(
+                    "{}{}",
+                    Logger::indent(None),
+                    Logger::with_theme(|theme| theme.highlight(path))
+                );
+            }
+        })
     }
 
     pub fn indent(times: Option<i32>) -> String {
@@ -109,7 +123,7 @@ impl Logger {
         Logger::info(format!("I was unable to {operation} in your repository").as_str());
         Logger::error("Please verify the permissions on your working directory or file a bug here");
         Logger::log_issue_link();
-        exit(0);
+        PostProcessor::get().flush();
     }
 
     fn info_prefix() -> String {

@@ -7,8 +7,8 @@ export const RepoKit = new RepoKitConfig({
       name: "third-party-command",
       description: "Test description",
       commands: {
-        TEST: {
-          command: "cargo test",
+        test: {
+          command: ["echo HELLO", "exit 1"].join("\n"),
           description: "run some tests",
           args: {
             "--coverage | -c": "Whether to report coverage",

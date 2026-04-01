@@ -1,8 +1,9 @@
-use std::{path::Path, process::exit};
+use std::path::Path;
 
 use crate::{
     internal_filesystem::{file_builder::FileBuilder, internal_filesystem::InternalFileSystem},
     logger::logger::Logger,
+    post_processing::post_processor::PostProcessor,
 };
 
 pub struct Configuration;
@@ -34,7 +35,7 @@ impl Configuration {
             .as_str(),
         );
         Logger::log_file_path(file_path.as_str());
-        exit(0);
+        PostProcessor::get().flush();
     }
 
     fn welcome() {
