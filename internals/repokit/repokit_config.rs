@@ -2,7 +2,7 @@ use std::{
     collections::HashMap,
     path::Path,
     process::exit,
-    sync::{LazyLock, Mutex},
+    sync::LazyLock,
 };
 
 use jsonschema::Validator;
@@ -48,15 +48,14 @@ pub struct RepoKitConfig {
     pub themes: Vec<RepoKitTheme>,
 }
 
-static REPOKIT_CONFIG_VALIDATOR: LazyLock<Mutex<Validator>> = LazyLock::new(|| {
-    Mutex::new(Validator::new(&to_value(schemars::schema_for!(RepoKitConfig)).unwrap()).unwrap())
+static REPOKIT_CONFIG_VALIDATOR: LazyLock<Validator> = LazyLock::new(|| {
+    Validator::new(&to_value(schemars::schema_for!(RepoKitConfig)).unwrap()).unwrap()
 });
 
 impl RepoKitConstructValidator<Value, RepoKitConfig> for RepoKitConfig {
     fn from_input(root: &str, input: Value) -> RepoKitConfig {
-        let validator = REPOKIT_CONFIG_VALIDATOR.lock().unwrap();
         let repokit_config: Result<RepoKitConfig, serde_json::Error> = from_value(input.clone());
-        if !RepoKitConfig::is_valid(&validator, &input) || repokit_config.is_err() {
+        if !RepoKitConfig::is_valid(&REPOKIT_CONFIG_VALIDATOR, &input) || repokit_config.is_err() {
             RepoKitConfig::on_parsing_error(root, Value::Null);
         }
         repokit_config.expect("assertions succeeded")

@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    sync::{LazyLock, Mutex},
+    sync::LazyLock,
 };
 
 use jsonschema::Validator;
@@ -27,8 +27,8 @@ pub struct RepoKitCommand {
     pub commands: HashMap<String, CommandDefinition>,
 }
 
-static REPOKIT_COMMAND_VALIDATOR: LazyLock<Mutex<Validator>> = LazyLock::new(|| {
-    Mutex::new(Validator::new(&to_value(schemars::schema_for!(RepoKitCommand)).unwrap()).unwrap())
+static REPOKIT_COMMAND_VALIDATOR: LazyLock<Validator> = LazyLock::new(|| {
+    Validator::new(&to_value(schemars::schema_for!(RepoKitCommand)).unwrap()).unwrap()
 });
 
 impl RepoKitCommand {
@@ -62,11 +62,12 @@ impl RepoKitConstructValidator<Vec<Value>, Vec<RepoKitCommand>> for RepoKitComma
         let mut result: Vec<RepoKitCommand> = Vec::new();
         let mut failures = 0;
         let mut failed_paths: Vec<String> = Vec::new();
-        let validator = REPOKIT_COMMAND_VALIDATOR.lock().unwrap();
         for command in input {
             let repokit_command: Result<RepoKitCommand, serde_json::Error> =
                 from_value(command.clone());
-            if !RepoKitCommand::is_valid(&validator, &command) || repokit_command.is_err() {
+            if !RepoKitCommand::is_valid(&REPOKIT_COMMAND_VALIDATOR, &command)
+                || repokit_command.is_err()
+            {
                 failures += 1;
                 if let Some(path) = RepoKitCommand::on_parsing_error(root, command) {
                     failed_paths.push(path);
