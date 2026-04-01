@@ -29,23 +29,23 @@ impl ListVersion {
             }),
         }
     }
+
+    fn log_version(&self, version: &str) {
+        Logger::info(format!("{}", Logger::with_theme(|theme| theme.highlight(version))).as_str());
+    }
 }
 
 impl InternalExecutable for ListVersion {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Fetching the installed version of repokit");
-        if let Some(fallback) = InternalFileSystem::new(&self.scope.root).current_version()
-            && VERSION_REGEX.is_match(&fallback)
+        if let Some(local_version) =
+            InternalFileSystem::new(&self.scope.root).installed_repokit_version()
         {
-            return Logger::info(
-                format!("{}", Logger::with_theme(|theme| theme.highlight(&fallback))).as_str(),
-            );
+            return self.log_version(&local_version);
         }
-        let version = Executor::exec("head -n 1 ~/.repokit", |cmd| cmd);
-        if VERSION_REGEX.is_match(&version) {
-            return Logger::info(
-                format!("{}", Logger::with_theme(|theme| theme.highlight(&version))).as_str(),
-            );
+        Logger::info("Falling back to the runtime version");
+        if let Some(runtime_version) = InternalFileSystem::runtime_repokit_version() {
+            return self.log_version(&runtime_version);
         }
         Executor::with_stdio("npm list @repokit/core", |cmd| cmd);
     }

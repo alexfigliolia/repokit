@@ -218,7 +218,7 @@ impl InternalFileSystem {
             Some(home) => {
                 let dot_file_path = home.join(".repokit");
                 if !&dot_file_path.exists() {
-                    let found_version = self.current_version();
+                    let found_version = self.installed_repokit_version();
                     found_version.as_ref()?;
                     let version_string = found_version.unwrap();
                     let result = fs::write(&dot_file_path, format!("{version_string}\n"));
@@ -247,7 +247,7 @@ impl InternalFileSystem {
         }
     }
 
-    pub fn current_version(&self) -> Option<String> {
+    pub fn installed_repokit_version(&self) -> Option<String> {
         let package_path = Path::new(&self.root)
             .join(InternalFileSystem::package_directory(self))
             .normalize();
@@ -268,9 +268,27 @@ impl InternalFileSystem {
                     })
                     .collect();
                 if let Some(version) = captures.get(1) {
-                    return Some(version.to_string());
+                    if VERSION_REGEX.is_match(&version) {
+                        return Some(version.to_string());
+                    }
                 }
                 return None;
+            }
+        }
+        None
+    }
+
+    pub fn runtime_repokit_version() -> Option<String> {
+        if let Some(home) = InternalFileSystem::home() {
+            let version = Executor::exec(
+                format!(
+                    "head -n 1 {}",
+                    home.join(".repokit").normalize().to_str().unwrap()
+                ),
+                |cmd| cmd,
+            );
+            if VERSION_REGEX.is_match(&version) {
+                return Some(version);
             }
         }
         None
