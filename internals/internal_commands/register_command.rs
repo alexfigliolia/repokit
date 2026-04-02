@@ -45,7 +45,7 @@ impl RegisterCommand {
         if path_arg.is_empty() {
             RegisterCommand::exit_on_missing_path();
         }
-        let path = Path::new(&self.scope.root).join(&path_arg).normalize();
+        let path = Path::new(&self.scope.git.root).join(&path_arg).normalize();
         if !path.exists() {
             Logger::info(
                 format!(
@@ -89,7 +89,7 @@ impl InternalExecutable for RegisterCommand {
         Logger::info("Registering a new command");
         let command_path = self.validate_path(args);
         let mut source =
-            InternalFileSystem::new(&self.scope.root).resolve_template("command_template.txt");
+            InternalFileSystem::new(&self.scope.git.root).resolve_template("command_template.txt");
         let mut target = FileBuilder::create(&command_path, |_| Logger::file_create_error());
         FileBuilder::copy_to(&mut source, &mut target, |_| Logger::file_write_error());
         Logger::info("Creating command file");

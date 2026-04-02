@@ -49,12 +49,12 @@ impl UpgradeRepoKit {
 
 impl InternalExecutable for UpgradeRepoKit {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
-        let internal_fs = InternalFileSystem::new(&self.scope.root);
+        let internal_fs = InternalFileSystem::new(&self.scope.git.root);
         let fallback = "unknown";
         let runtime_version = internal_fs
             .installed_repokit_version()
             .unwrap_or(fallback.to_string());
-        UpgradeRepoKit::static_execute(&self.scope.root);
+        UpgradeRepoKit::static_execute(&self.scope.git.root);
         let installed_version = internal_fs
             .installed_repokit_version()
             .unwrap_or(fallback.to_string());

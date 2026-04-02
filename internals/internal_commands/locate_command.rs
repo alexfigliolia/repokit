@@ -43,7 +43,7 @@ impl LocateCommand {
 
     fn search_root(&self, command: &str) {
         if self.scope.configuration.commands.contains_key(command) {
-            Logger::log_file_path(format!("{}/repokit.ts", &self.scope.root).as_str());
+            Logger::log_file_path(format!("{}/repokit.ts", &self.scope.git.root).as_str());
             PostProcessor::get().flush();
         }
     }

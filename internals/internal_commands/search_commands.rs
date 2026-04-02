@@ -63,7 +63,7 @@ impl SearchCommands {
         }
         if command
             .location
-            .replace(self.scope.root.as_str(), "")
+            .replace(self.scope.git.root.as_str(), "")
             .to_lowercase()
             .contains(query)
         {

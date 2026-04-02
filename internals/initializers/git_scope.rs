@@ -1,11 +1,27 @@
-use futures::executor::block_on;
 use tokio_thread_pool::ThreadPool;
 
-use crate::{executor::executor::Executor, logger::logger::Logger};
+use crate::{
+    executor::executor::Executor, initializers::initializer::Initializer, logger::logger::Logger,
+};
 
+#[derive(Clone)]
 pub struct GitScope {
     pub root: String,
     pub commit_hash: String,
+}
+
+impl Initializer<()> for GitScope {
+    async fn resolve(&mut self, _: &str) {
+        let mut pool = ThreadPool::new(None, None, None);
+        let root_handle = pool.spawn(GitScope::find_root);
+        let commit_handle = pool.spawn(|| Executor::exec("git rev-parse HEAD", |cmd| cmd));
+        if let Ok(root) = root_handle.await {
+            self.root = root;
+        }
+        if let Ok(commit) = commit_handle.await {
+            self.commit_hash = commit;
+        }
+    }
 }
 
 impl GitScope {
@@ -14,21 +30,8 @@ impl GitScope {
             root: "".to_string(),
             commit_hash: "".to_string(),
         };
-        block_on(instance.resolve());
+        GitScope::resolve_sync(instance.resolve(""));
         instance
-    }
-
-    async fn resolve(&mut self) -> &mut GitScope {
-        let mut pool = ThreadPool::new(None, None, None);
-        let root_handle = pool.spawn(GitScope::find_root);
-        let commit_handle = pool.spawn(|| Executor::exec("git rev-parse HEAD", |cmd| cmd));
-        if let Ok(root) = root_handle.await
-            && let Ok(commit) = commit_handle.await
-        {
-            self.root = root;
-            self.commit_hash = commit;
-        }
-        self
     }
 
     fn find_root() -> String {
