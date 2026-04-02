@@ -9,7 +9,7 @@ use crate::{
     internal_filesystem::internal_filesystem::InternalFileSystem,
     logger::logger::Logger,
     post_processing::post_processor::PostProcessor,
-    repokit::{repokit_command::RepoKitCommand, repokit_config::RepoKitConfig},
+    repokit::repokit_command::RepoKitCommand,
     validations::command_validations::CommandValidations,
 };
 
@@ -18,19 +18,14 @@ pub struct RepoKit {
 }
 
 impl RepoKit {
-    pub fn new(root: &str, configuration: RepoKitConfig) -> RepoKit {
-        Logger::set_name(&configuration.project);
-        for theme in &configuration.themes {
+    pub fn new(scope: RepoKitScope) -> RepoKit {
+        Logger::set_name(&scope.configuration.project);
+        for theme in &scope.configuration.themes {
             Logger::with_registry(|mut registry| registry.register_user_theme(theme))
         }
-        let theme = InternalFileSystem::new(root).read_theme_preference();
-        Logger::with_registry(|mut registry| registry.set_theme(root, &theme));
-        RepoKit {
-            scope: RepoKitScope {
-                configuration,
-                root: root.to_string(),
-            },
-        }
+        let theme = InternalFileSystem::new(&scope.root).read_theme_preference();
+        Logger::with_registry(|mut registry| registry.set_theme(&scope.root, &theme));
+        RepoKit { scope }
     }
 
     pub fn invoke(&self) {
