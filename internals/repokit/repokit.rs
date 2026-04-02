@@ -23,8 +23,8 @@ impl RepoKit {
         for theme in &scope.configuration.themes {
             Logger::with_registry(|mut registry| registry.register_user_theme(theme))
         }
-        let theme = InternalFileSystem::new(&scope.root).read_theme_preference();
-        Logger::with_registry(|mut registry| registry.set_theme(&scope.root, &theme));
+        let theme = InternalFileSystem::new(&scope.git.root).read_theme_preference();
+        Logger::with_registry(|mut registry| registry.set_theme(&scope.git.root, &theme));
         RepoKit { scope }
     }
 
@@ -45,7 +45,7 @@ impl RepoKit {
                 .expect("Unknown command");
             return Executor::with_stdio(
                 format!("{} {}", root_script.command, &args.join(" ")),
-                |cmd| cmd.current_dir(Path::new(&self.scope.root)),
+                |cmd| cmd.current_dir(Path::new(&self.scope.git.root)),
             );
         }
         let externals = validator.collect_and_validate_externals();

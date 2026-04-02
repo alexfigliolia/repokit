@@ -39,7 +39,7 @@ impl InternalExecutable for ListVersion {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Fetching the installed version of repokit");
         if let Some(local_version) =
-            InternalFileSystem::new(&self.scope.root).installed_repokit_version()
+            InternalFileSystem::new(&self.scope.git.root).installed_repokit_version()
         {
             return self.log_version(&local_version);
         }

@@ -40,13 +40,12 @@ impl CommandValidations {
     }
 
     pub fn collect_and_validate_externals(&self) -> HashMap<String, RepoKitCommand> {
+        let root = &self.scope.git.root;
         let paths: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
-        let mut visitor = TSFileVisitorBuilder::new(&self.scope.root, &paths);
-        WalkBuilder::new(&self.scope.root)
-            .build_parallel()
-            .visit(&mut visitor);
+        let mut visitor = TSFileVisitorBuilder::new(root, &paths);
+        WalkBuilder::new(root).build_parallel().visit(&mut visitor);
         let result = paths.lock().unwrap();
-        let externals = TypescriptCommand::new(&self.scope.root).parse_commands(&result);
+        let externals = TypescriptCommand::new(root).parse_commands(&result);
         let all = [&externals[..], &self.scope.configuration.thirdParty[..]].concat();
         self.detect_collisions_between_root_commands_and_externals(&all)
     }

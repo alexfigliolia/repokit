@@ -1,25 +1,15 @@
 use std::collections::HashMap;
 
 use crate::{
-    git_scope::git_scope::GitScope,
+    initializers::{git_scope::GitScope, repokit_version_scope::RepoKitVersionScope},
     repokit::repokit_config::RepoKitConfig,
 };
 
 #[derive(Clone)]
 pub struct RepoKitScope {
-    pub root: String,
-    pub commit_hash: String,
+    pub git: GitScope,
+    pub versions: RepoKitVersionScope,
     pub configuration: RepoKitConfig,
-}
-
-impl RepoKitScope {
-    pub fn new(git_scope: GitScope, configuration: RepoKitConfig) -> RepoKitScope {
-        RepoKitScope {
-            root: git_scope.root,
-            commit_hash: git_scope.commit_hash,
-            configuration,
-        }
-    }
 }
 
 #[derive(Clone)]
