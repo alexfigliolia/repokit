@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::repokit::interfaces::RepoKitConfig;
+use crate::repokit::repokit_config::RepoKitConfig;
 
 #[derive(Clone)]
 pub struct RepoKitScope {

@@ -6,7 +6,7 @@ use colored::Colorize;
 use crate::{
     argv::argv::{Argv, ArgvOption, ArgvType},
     executables::{
-        intenal_executable::InternalExecutable,
+        internal_executable::InternalExecutable,
         internal_executable_definition::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
         },

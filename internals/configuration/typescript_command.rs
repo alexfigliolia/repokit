@@ -1,13 +1,16 @@
 use std::{path::Path, process::exit, sync::MutexGuard};
 
-use serde_json::from_str;
+use serde_json::{Value, from_str};
 
 use crate::{
     configuration::configuration::Configuration,
     executor::executor::Executor,
     internal_filesystem::internal_filesystem::InternalFileSystem,
-    logger::logger::Logger,
-    repokit::interfaces::{RepoKitCommand, RepoKitConfig},
+    post_processing::post_processor::PostProcessor,
+    repokit::{
+        repokit_command::RepoKitCommand, repokit_config::RepoKitConfig,
+        repokit_construct_validator::RepoKitConstructValidator,
+    },
 };
 
 pub struct TypescriptCommand {
@@ -17,7 +20,7 @@ pub struct TypescriptCommand {
 impl TypescriptCommand {
     pub fn new(root: &str) -> TypescriptCommand {
         TypescriptCommand {
-            root: root.to_string(),
+            root: root.to_owned(),
         }
     }
 
@@ -27,8 +30,15 @@ impl TypescriptCommand {
         if stdout.is_empty() {
             Configuration::create(&self.root);
         }
-        let config: RepoKitConfig = from_str(stdout.as_str()).unwrap();
-        config
+        let result: Result<Value, serde_json::Error> = from_str(stdout.as_str());
+        match result {
+            Ok(config) => RepoKitConfig::from_input(&self.root, config),
+            Err(_) => {
+                RepoKitConfig::on_parsing_error(&self.root, Value::Null);
+                PostProcessor::get().flush();
+                exit(0)
+            }
+        }
     }
 
     pub fn parse_commands(&self, path_list: &MutexGuard<Vec<String>>) -> Vec<RepoKitCommand> {
@@ -36,24 +46,12 @@ impl TypescriptCommand {
         let executable = InternalFileSystem::new(&self.root).resolve_command("parse_commands");
         let stdout =
             self.execute(format!("{executable} --paths {paths} --root {}", self.root).as_str());
-        let result: Result<Vec<RepoKitCommand>, serde_json::Error> = serde_json::from_str(&stdout);
+        let result: Result<Vec<Value>, serde_json::Error> = serde_json::from_str(&stdout);
         match result {
-            Ok(mut commands) => {
-                for command in commands.iter_mut() {
-                    let relative_location = &command.location;
-                    command.location = Path::join(Path::new(&self.root), relative_location)
-                        .to_str()
-                        .expect("str")
-                        .to_string()
-                }
-                commands
-            }
+            Ok(commands) => RepoKitCommand::from_input(&self.root, commands),
             Err(_) => {
-                Logger::info("There was an error parsing one of your commands");
-                Logger::info(
-                    "You can validate a command file's syntactical correctness by running",
-                );
-                Logger::log_file_path("tsc --noEmit");
+                RepoKitCommand::on_parsing_error(&self.root, Value::Null);
+                PostProcessor::get().flush();
                 exit(0);
             }
         }

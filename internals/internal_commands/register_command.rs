@@ -2,12 +2,11 @@ use normalize_path::NormalizePath;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    process,
 };
 
 use crate::{
     executables::{
-        intenal_executable::InternalExecutable,
+        internal_executable::InternalExecutable,
         internal_executable_definition::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
         },
@@ -15,6 +14,7 @@ use crate::{
     internal_commands::help::Help,
     internal_filesystem::{file_builder::FileBuilder, internal_filesystem::InternalFileSystem},
     logger::logger::Logger,
+    post_processing::post_processor::PostProcessor,
 };
 
 pub struct RegisterCommand {
@@ -72,7 +72,7 @@ impl RegisterCommand {
                 "You can append additional commands to the existing {} instance or export another one",
                 Logger::with_theme(|theme| theme.highlight("RepoKitCommand"))
             ).as_str());
-            process::exit(0);
+            PostProcessor::get().flush();
         }
         command_path.clone()
     }

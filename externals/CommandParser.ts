@@ -14,13 +14,13 @@ export class CommandParser extends TSCompiler {
       return console.log(JSON.stringify([]));
     }
     const pathList = paths.split(",").filter(Boolean);
-    const commands = pathList.map(path => this.parseCommand(join(root, path)));
+    const commands = pathList.map(path => this.parseCommand(root, path));
     console.log(JSON.stringify(commands.flat()));
   }
 
-  private static parseCommand(path: string) {
+  private static parseCommand(root: string, path: string) {
     const commands: ILocatedCommand[] = [];
-    const declaredExports = super.compile(path);
+    const declaredExports = super.compile(join(root, path));
     for (const key in declaredExports) {
       if (declaredExports[key] instanceof RepoKitCommand) {
         commands.push({ ...declaredExports[key], location: path });

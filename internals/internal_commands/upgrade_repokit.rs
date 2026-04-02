@@ -1,15 +1,17 @@
-use normalize_path::NormalizePath;
-use std::{collections::HashMap, path::Path, process::exit};
+use std::collections::HashMap;
+
+use terminal_spinners::{BOUNCING_BALL, SpinnerBuilder};
 
 use crate::{
     executables::{
-        intenal_executable::InternalExecutable,
+        internal_executable::InternalExecutable,
         internal_executable_definition::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
         },
     },
     executor::executor::Executor,
     internal_commands::help::Help,
+    internal_filesystem::internal_filesystem::InternalFileSystem,
     logger::logger::Logger,
 };
 
@@ -30,43 +32,44 @@ impl UpgradeRepoKit {
         }
     }
 
-    fn get_package_manager(&self) -> &str {
-        let manager_map = HashMap::from([
-            ("npm", ("package-lock.json", "npm i -D")),
-            ("yarn", ("yarn.lock", "yarn add -D")),
-            ("pnpm", ("pnpm-lock.yaml", "pnpm i -D")),
-            ("bun", ("bun.lockb", "bun add -d")),
-        ]);
-        for (manager, (lock_file, command_prefix)) in manager_map {
-            let path = Path::new(&self.scope.root).join(lock_file).normalize();
-            if path.exists() && path.is_file() {
-                Logger::info(
-                    format!(
-                        "Detected {} installation",
-                        Logger::with_theme(|theme| theme.highlight(manager))
-                    )
-                    .as_str(),
-                );
-                return command_prefix;
-            }
-        }
-        Logger::info("A node package manager was not detected");
-        Logger::info(
-            "To upgrade repokit install the latest version using the package manager of your choosing",
+    pub fn static_execute(root: &str) {
+        Logger::info("Upgrading installation");
+        let handle = SpinnerBuilder::new()
+            .spinner(&BOUNCING_BALL)
+            .text(" Installing")
+            .start();
+        let command_prefix = InternalFileSystem::get_install_command(root);
+        Executor::exec(
+            format!("{} @repokit/core@latest", command_prefix).as_str(),
+            |cmd| cmd.current_dir(root),
         );
-        exit(0);
+        handle.done();
     }
 }
 
 impl InternalExecutable for UpgradeRepoKit {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
-        Logger::info("Upgrading installation");
-        let command_prefix = self.get_package_manager();
-        Executor::exec(
-            format!("{} @repokit/core@latest", command_prefix).as_str(),
-            |cmd| cmd.current_dir(&self.scope.root),
-        );
-        Logger::info("Upgrade complete!");
+        let internal_fs = InternalFileSystem::new(&self.scope.root);
+        let fallback = "unknown";
+        let runtime_version = internal_fs
+            .installed_repokit_version()
+            .unwrap_or(fallback.to_string());
+        UpgradeRepoKit::static_execute(&self.scope.root);
+        let installed_version = internal_fs
+            .installed_repokit_version()
+            .unwrap_or(fallback.to_string());
+        if runtime_version != installed_version {
+            Logger::info("Upgrade Complete!");
+            Logger::info(
+                format!(
+                    "The currently installed version is {}",
+                    Logger::with_theme(|theme| theme.highlight(&installed_version))
+                )
+                .as_str(),
+            );
+        } else {
+            Logger::info("The latest version is already installed");
+        }
     }
 
     fn help(&self) {

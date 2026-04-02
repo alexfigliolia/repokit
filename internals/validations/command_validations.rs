@@ -6,15 +6,14 @@ use std::{
 use ignore::WalkBuilder;
 
 use crate::{
+    configuration::typescript_command::TypescriptCommand,
     executables::{
-        intenal_executable::InternalExecutable, internal_executable_definition::RepoKitScope,
+        internal_executable::InternalExecutable, internal_executable_definition::RepoKitScope,
     },
     file_walker::walker::TSFileVisitorBuilder,
-    internal_commands::{
-        internal_registry::InternalRegistry, typescript_command::TypescriptCommand,
-    },
+    internal_commands::internal_registry::InternalRegistry,
     logger::logger::Logger,
-    repokit::{interfaces::RepoKitCommand, repokit::RepoKit},
+    repokit::{repokit::RepoKit, repokit_command::RepoKitCommand},
 };
 
 pub struct CommandValidations {

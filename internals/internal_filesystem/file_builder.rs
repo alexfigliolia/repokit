@@ -1,3 +1,4 @@
+use crate::post_processing::post_processor::PostProcessor;
 use std::{
     fs::{File, create_dir_all},
     io::{Error, copy},
@@ -14,6 +15,7 @@ impl FileBuilder {
             Ok(file) => file,
             Err(error) => {
                 on_error(error);
+                PostProcessor::get().flush();
                 exit(0);
             }
         }
@@ -25,6 +27,7 @@ impl FileBuilder {
             Ok(file) => file,
             Err(error) => {
                 on_error(error);
+                PostProcessor::get().flush();
                 exit(0);
             }
         }
@@ -50,6 +53,7 @@ impl FileBuilder {
             Ok(result) => result,
             Err(error) => {
                 on_error(error);
+                PostProcessor::get().flush();
                 exit(0);
             }
         }
