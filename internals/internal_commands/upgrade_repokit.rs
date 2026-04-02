@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use terminal_spinners::{BOUNCING_BALL, SpinnerBuilder};
+
 use crate::{
     executables::{
         internal_executable::InternalExecutable,
@@ -32,18 +34,42 @@ impl UpgradeRepoKit {
 
     pub fn static_execute(root: &str) {
         Logger::info("Upgrading installation");
+        let handle = SpinnerBuilder::new()
+            .spinner(&BOUNCING_BALL)
+            .text(" Installing")
+            .start();
         let command_prefix = InternalFileSystem::get_install_command(root);
         Executor::exec(
             format!("{} @repokit/core@latest", command_prefix).as_str(),
             |cmd| cmd.current_dir(root),
         );
-        Logger::info("Upgrade complete!");
+        handle.done();
     }
 }
 
 impl InternalExecutable for UpgradeRepoKit {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
+        let internal_fs = InternalFileSystem::new(&self.scope.root);
+        let fallback = "unknown";
+        let runtime_version = internal_fs
+            .installed_repokit_version()
+            .unwrap_or(fallback.to_string());
         UpgradeRepoKit::static_execute(&self.scope.root);
+        let installed_version = internal_fs
+            .installed_repokit_version()
+            .unwrap_or(fallback.to_string());
+        if runtime_version != installed_version {
+            Logger::info("Upgrade Complete!");
+            Logger::info(
+                format!(
+                    "The currently installed version is {}",
+                    Logger::with_theme(|theme| theme.highlight(&installed_version))
+                )
+                .as_str(),
+            );
+        } else {
+            Logger::info("The latest version is already installed");
+        }
     }
 
     fn help(&self) {
