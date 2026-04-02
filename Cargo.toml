@@ -20,3 +20,5 @@ regex = { version = "1.12.3", features = ["std", "unicode"] }
 shellexpand = "3.1.2"
 schemars = "1.2.1"
 terminal-spinners = "0.3.2"
+tokio-thread-pool = "1.0.0"
+futures = "0.3.32"
