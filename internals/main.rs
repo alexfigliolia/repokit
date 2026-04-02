@@ -1,6 +1,7 @@
 use crate::{
     configuration::typescript_command::TypescriptCommand,
-    internal_filesystem::internal_filesystem::InternalFileSystem, repokit::repokit::RepoKit,
+    internal_filesystem::internal_filesystem::InternalFileSystem,
+    repokit::{repokit::RepoKit, runtime_compiler::RuntimeCompiler},
 };
 
 mod argv;
@@ -18,6 +19,7 @@ mod validations;
 
 fn main() {
     let root = InternalFileSystem::find_root();
+    RuntimeCompiler::hop_to_runtime_version(&root);
     let config = TypescriptCommand::new(&root).parse_configuration();
     let kit = RepoKit::new(&root, config);
     kit.invoke();

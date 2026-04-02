@@ -9,7 +9,7 @@ use crate::{
     },
     executor::executor::Executor,
     internal_commands::help::Help,
-    internal_filesystem::internal_filesystem::{InternalFileSystem, VERSION_REGEX},
+    internal_filesystem::internal_filesystem::InternalFileSystem,
     logger::logger::Logger,
 };
 

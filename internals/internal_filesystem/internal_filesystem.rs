@@ -198,7 +198,7 @@ impl InternalFileSystem {
         self.absolute(format!("{}/externals/templates", self.package_directory()).as_str())
     }
 
-    fn package_directory(&self) -> String {
+    pub fn package_directory(&self) -> String {
         format!("./node_modules/{}", self.package_name())
     }
 
@@ -267,10 +267,10 @@ impl InternalFileSystem {
                             .map(|match_text| match_text.as_str().to_string())
                     })
                     .collect();
-                if let Some(version) = captures.get(1) {
-                    if VERSION_REGEX.is_match(&version) {
-                        return Some(version.to_string());
-                    }
+                if let Some(version) = captures.get(1)
+                    && VERSION_REGEX.is_match(version)
+                {
+                    return Some(version.to_string());
                 }
                 return None;
             }

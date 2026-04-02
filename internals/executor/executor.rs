@@ -18,6 +18,19 @@ impl Executor {
         Executor::unwrap(&output.stderr)
     }
 
+    pub fn exec_with_errors<T: AsRef<OsStr>>(
+        command: T,
+        composer: impl Fn(&mut Command) -> &mut Command,
+    ) -> Option<String> {
+        let output = composer(&mut Executor::spawn(command))
+            .output()
+            .expect("command failed to execute");
+        if output.status.success() {
+            return None;
+        }
+        Some(Executor::unwrap(&output.stderr))
+    }
+
     pub fn with_stdio<T: AsRef<OsStr>>(
         command: T,
         composer: impl Fn(&mut Command) -> &mut Command,
