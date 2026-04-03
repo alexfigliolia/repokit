@@ -1,7 +1,4 @@
-use crate::{
-    executor::executor::Executor, internal_filesystem::internal_filesystem::InternalFileSystem,
-    logger::logger::Logger,
-};
+use crate::{context::node_scope::NodeScope, executor::executor::Executor, logger::logger::Logger};
 
 pub struct Recovery {
     root: String,
@@ -20,8 +17,9 @@ impl Recovery {
     }
 
     pub fn get_typecheck_command(&self, file_path: &str) -> String {
-        let executor = InternalFileSystem::get_node_executor(&self.root);
-        let typescript_version = InternalFileSystem::get_typescript_version(executor);
+        let node = NodeScope::new(&self.root);
+        let executor = node.get_node_executor();
+        let typescript_version = NodeScope::get_typescript_version(executor);
         let ignore_config = if typescript_version >= 6 {
             " --ignoreConfig".to_string()
         } else {

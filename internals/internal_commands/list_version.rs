@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
+    context::repokit_version_scope::VERSION_REGEX,
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
@@ -9,7 +10,6 @@ use crate::{
     },
     executor::executor::Executor,
     internal_commands::help::Help,
-    internal_filesystem::internal_filesystem::VERSION_REGEX,
     logger::logger::Logger,
 };
 

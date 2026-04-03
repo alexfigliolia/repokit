@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
 use crate::{
-    initializers::{
-        cache_scope::CacheScope, git_scope::GitScope, repokit_version_scope::RepoKitVersionScope,
+    context::{
+        cache_scope::CacheScope, file_system::FileSystem, git_scope::GitScope,
+        node_scope::NodeScope, repokit_version_scope::RepoKitVersionScope,
+        typescript_bridge::TypeScriptBridge,
     },
     repokit::repokit_config::RepoKitConfig,
 };
@@ -10,7 +12,10 @@ use crate::{
 #[derive(Clone)]
 pub struct RepoKitScope {
     pub git: GitScope,
+    pub node: NodeScope,
+    pub files: FileSystem,
     pub cache: CacheScope,
+    pub bridge: TypeScriptBridge,
     pub versions: RepoKitVersionScope,
     pub configuration: RepoKitConfig,
 }

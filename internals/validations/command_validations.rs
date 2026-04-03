@@ -6,7 +6,6 @@ use std::{
 use ignore::WalkBuilder;
 
 use crate::{
-    configuration::typescript_command::TypescriptCommand,
     executables::{
         internal_executable::InternalExecutable, internal_executable_definition::RepoKitScope,
     },
@@ -56,7 +55,7 @@ impl CommandValidations {
             );
         }
         let result = paths.lock().unwrap();
-        let externals = TypescriptCommand::new(root).parse_commands(&result);
+        let externals = self.scope.bridge.parse_commands(&result);
         let all = [&externals[..], &self.scope.configuration.thirdParty[..]].concat();
         self.detect_collisions_between_root_commands_and_externals(&all)
     }

@@ -69,9 +69,7 @@ impl InternalCaches {
     }
 
     fn create_settings_cache(&mut self, installed_version: &str) {
-        let mut created = false;
         if let Some(path) = InternalCaches::create_cache_file_if_not_exists(".repokit", &mut |_| {
-            created = true;
             installed_version.to_string()
         }) {
             self.settings_path = Some(path);

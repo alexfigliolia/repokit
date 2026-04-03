@@ -12,7 +12,7 @@ use crate::{
         },
     },
     internal_commands::help::Help,
-    internal_filesystem::{file_builder::FileBuilder, internal_filesystem::InternalFileSystem},
+    internal_filesystem::file_builder::FileBuilder,
     logger::logger::Logger,
     post_processing::post_processor::PostProcessor,
 };
@@ -88,8 +88,7 @@ impl InternalExecutable for RegisterCommand {
     fn run(&self, args: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Registering a new command");
         let command_path = self.validate_path(args);
-        let mut source =
-            InternalFileSystem::new(&self.scope.git.root).resolve_template("command_template.txt");
+        let mut source = self.scope.files.resolve_template("command_template.txt");
         let mut target = FileBuilder::create(&command_path, |_| Logger::file_create_error());
         FileBuilder::copy_to(&mut source, &mut target, |_| Logger::file_write_error());
         Logger::info("Creating command file");

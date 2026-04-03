@@ -1,6 +1,9 @@
 pub mod cache_scope;
+pub mod file_system;
 pub mod git_scope;
 pub mod initializer;
 pub mod internal_caches;
+pub mod node_scope;
 pub mod repokit_version_resolver;
 pub mod repokit_version_scope;
+pub mod typescript_bridge;

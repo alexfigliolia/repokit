@@ -4,11 +4,11 @@ use std::{collections::HashSet, fs::write, io};
 use regex::Regex;
 
 use crate::{
-    executor::executor::Executor,
-    initializers::{
+    context::{
         initializer::Initializer,
         internal_caches::{Cache, InternalCaches},
     },
+    executor::executor::Executor,
     logger::logger::Logger,
 };
 
@@ -99,7 +99,10 @@ impl CacheScope {
                 if let Some(crawl_commit) = lines.first()
                     && crawl_commit == head_commit
                 {
-                    let mut changed_files = CacheScope::get_changed_files();
+                    let (git_ignore_changed, mut changed_files) = CacheScope::get_changed_files();
+                    if git_ignore_changed {
+                        return None;
+                    }
                     for line in &lines {
                         if changed_files.contains(line) {
                             changed_files.remove(line);
@@ -121,12 +124,17 @@ impl CacheScope {
         None
     }
 
-    fn get_changed_files() -> HashSet<String> {
+    fn get_changed_files() -> (bool, HashSet<String>) {
+        let mut contains_git_ignore = false;
         let file_path_matcher = Regex::new(r#"^.*\s(.*\.ts)$"#).unwrap();
         let stdout = Executor::exec("git status --porcelain", |cmd| cmd);
         let files: HashSet<String> = stdout
             .split("\n")
             .filter_map(|file| {
+                if !contains_git_ignore && file.ends_with(".gitignore") {
+                    contains_git_ignore = true;
+                    return None;
+                }
                 let matches: Vec<&str> = file_path_matcher
                     .captures_iter(file)
                     .filter_map(|entry| {
@@ -142,6 +150,6 @@ impl CacheScope {
                 None
             })
             .collect();
-        files
+        (contains_git_ignore, files)
     }
 }

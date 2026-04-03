@@ -1,7 +1,7 @@
-use tokio_thread_pool::ThreadPool;
+use futures::join;
 
 use crate::{
-    executor::executor::Executor, initializers::initializer::Initializer, logger::logger::Logger,
+    context::initializer::Initializer, executor::executor::Executor, logger::logger::Logger,
 };
 
 #[derive(Clone)]
@@ -10,17 +10,9 @@ pub struct GitScope {
     pub commit_hash: String,
 }
 
-impl Initializer<()> for GitScope {
-    async fn resolve(&mut self, _: &str) {
-        let mut pool = ThreadPool::new(None, None, None);
-        let root_handle = pool.spawn(GitScope::find_root);
-        let commit_handle = pool.spawn(|| Executor::exec("git rev-parse HEAD", |cmd| cmd));
-        if let Ok(root) = root_handle.await {
-            self.root = root;
-        }
-        if let Ok(commit) = commit_handle.await {
-            self.commit_hash = commit;
-        }
+impl Initializer<(String, String)> for GitScope {
+    async fn resolve(&mut self, _: &str) -> (String, String) {
+        join!(GitScope::find_root(), GitScope::get_head_commit())
     }
 }
 
@@ -30,11 +22,13 @@ impl GitScope {
             root: "".to_string(),
             commit_hash: "".to_string(),
         };
-        GitScope::resolve_sync(instance.resolve(""));
+        let (root, commit) = GitScope::resolve_sync(instance.resolve(""));
+        instance.root = root;
+        instance.commit_hash = commit;
         instance
     }
 
-    fn find_root() -> String {
+    async fn find_root() -> String {
         let root = Executor::exec("echo $(git rev-parse --show-toplevel 2>/dev/null)", |cmd| {
             cmd
         });
@@ -49,5 +43,9 @@ impl GitScope {
             );
         }
         root
+    }
+
+    async fn get_head_commit() -> String {
+        Executor::exec("git rev-parse HEAD", |cmd| cmd)
     }
 }
