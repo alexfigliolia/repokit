@@ -17,7 +17,7 @@ use crate::{
 };
 
 pub struct CommandValidations {
-    scope: RepoKitScope,
+    pub scope: RepoKitScope,
 }
 
 impl CommandValidations {
@@ -42,8 +42,19 @@ impl CommandValidations {
     pub fn collect_and_validate_externals(&self) -> HashMap<String, RepoKitCommand> {
         let root = &self.scope.git.root;
         let paths: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
-        let mut visitor = TSFileVisitorBuilder::new(root, &paths);
-        WalkBuilder::new(root).build_parallel().visit(&mut visitor);
+        if let Some(files) = &self.scope.cache.files_to_crawl {
+            let mut paths_to_search = paths.lock().unwrap();
+            for file in files {
+                paths_to_search.push(file.to_owned())
+            }
+        } else {
+            let mut visitor = TSFileVisitorBuilder::new(root, &paths);
+            WalkBuilder::new(root).build_parallel().visit(&mut visitor);
+            self.scope.cache.store_crawl_cache(
+                &self.scope.git.commit_hash,
+                paths.lock().unwrap().join("\n"),
+            );
+        }
         let result = paths.lock().unwrap();
         let externals = TypescriptCommand::new(root).parse_commands(&result);
         let all = [&externals[..], &self.scope.configuration.thirdParty[..]].concat();

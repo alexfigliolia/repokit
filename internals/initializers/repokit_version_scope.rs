@@ -10,14 +10,19 @@ use tokio_thread_pool::ThreadPool;
 
 use crate::{
     executor::executor::Executor,
-    initializers::{initializer::Initializer, repokit_version_resolver::RepoKitVersionResolver},
+    initializers::{
+        initializer::Initializer, internal_caches::InternalCaches,
+        repokit_version_resolver::RepoKitVersionResolver,
+    },
     internal_filesystem::internal_filesystem::{InternalFileSystem, VERSION_REGEX},
 };
 
+static UNKNOWN: &str = "unknown";
+
 #[derive(Clone)]
 pub struct RepoKitVersionScope {
-    pub runtime_version: Option<String>,
-    pub installed_version: Option<String>,
+    pub runtime_version: String,
+    pub installed_version: String,
 }
 
 impl Initializer<()> for RepoKitVersionScope {
@@ -27,32 +32,40 @@ impl Initializer<()> for RepoKitVersionScope {
         let runtime_handle = pool.spawn(RepoKitVersionScope::runtime_version);
         let install_handle =
             pool.spawn(move || RepoKitVersionScope::installed_repokit_version(&root_clone));
-        self.runtime_version = runtime_handle.await.unwrap();
-        self.installed_version = install_handle.await.unwrap();
+        self.runtime_version = runtime_handle.await.unwrap().unwrap_or(UNKNOWN.to_string());
+        self.installed_version = install_handle.await.unwrap().unwrap_or(UNKNOWN.to_string());
     }
 }
 
 impl RepoKitVersionScope {
     pub fn new(root: &str) -> RepoKitVersionScope {
         let mut instance = RepoKitVersionScope {
-            runtime_version: Some("".to_string()),
-            installed_version: Some("".to_string()),
+            runtime_version: UNKNOWN.to_string(),
+            installed_version: UNKNOWN.to_string(),
         };
         RepoKitVersionScope::resolve_sync(instance.resolve(root));
         instance.hop_to_runtime_version(root);
         instance
     }
 
+    pub fn refresh_installed_version(&self, root: &str) -> Option<String> {
+        let installed_version = RepoKitVersionScope::installed_repokit_version(root);
+        if let Some(version) = &installed_version
+            && *version != self.installed_version
+        {
+            return Some(version.to_string());
+        }
+        None
+    }
+
     fn hop_to_runtime_version(&self, root: &str) {
-        if let Some(runtime_version) = &self.runtime_version
-            && let Some(installed_version) = &self.installed_version
-                && runtime_version != installed_version {
-                    RepoKitVersionResolver::hop_to_runtime_version(root, installed_version);
-                }
+        if self.runtime_version != self.installed_version {
+            RepoKitVersionResolver::hop_to_runtime_version(root, &self.installed_version);
+        }
     }
 
     fn runtime_version() -> Option<String> {
-        if let Some(home) = InternalFileSystem::home() {
+        if let Some(home) = InternalCaches::home() {
             let version = Executor::exec(
                 format!(
                     "head -n 1 {}",
@@ -67,7 +80,7 @@ impl RepoKitVersionScope {
         None
     }
 
-    fn installed_repokit_version(root: &str) -> Option<String> {
+    pub fn installed_repokit_version(root: &str) -> Option<String> {
         let internal_fs = InternalFileSystem::new(root);
         let package_path = Path::new(&root)
             .join(internal_fs.package_directory())

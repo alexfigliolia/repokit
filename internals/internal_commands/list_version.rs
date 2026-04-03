@@ -9,7 +9,7 @@ use crate::{
     },
     executor::executor::Executor,
     internal_commands::help::Help,
-    internal_filesystem::internal_filesystem::InternalFileSystem,
+    internal_filesystem::internal_filesystem::VERSION_REGEX,
     logger::logger::Logger,
 };
 
@@ -38,14 +38,14 @@ impl ListVersion {
 impl InternalExecutable for ListVersion {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Fetching the installed version of repokit");
-        if let Some(local_version) =
-            InternalFileSystem::new(&self.scope.git.root).installed_repokit_version()
-        {
-            return self.log_version(&local_version);
+        let installed_version = &self.scope.versions.installed_version;
+        if VERSION_REGEX.is_match(installed_version) {
+            return self.log_version(installed_version);
         }
         Logger::info("Falling back to the runtime version");
-        if let Some(runtime_version) = InternalFileSystem::runtime_repokit_version() {
-            return self.log_version(&runtime_version);
+        let runtime_version = &self.scope.versions.runtime_version;
+        if VERSION_REGEX.is_match(runtime_version) {
+            return self.log_version(runtime_version);
         }
         Executor::with_stdio("npm list @repokit/core", |cmd| cmd);
     }

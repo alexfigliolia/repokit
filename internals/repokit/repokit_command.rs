@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    sync::LazyLock,
-};
+use std::{collections::HashMap, sync::LazyLock};
 
 use jsonschema::Validator;
 use schemars::JsonSchema;

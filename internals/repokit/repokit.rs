@@ -6,7 +6,6 @@ use crate::{
     },
     executor::executor::Executor,
     internal_commands::help::Help,
-    internal_filesystem::internal_filesystem::InternalFileSystem,
     logger::logger::Logger,
     post_processing::post_processor::PostProcessor,
     repokit::repokit_command::RepoKitCommand,
@@ -19,12 +18,7 @@ pub struct RepoKit {
 
 impl RepoKit {
     pub fn new(scope: RepoKitScope) -> RepoKit {
-        Logger::set_name(&scope.configuration.project);
-        for theme in &scope.configuration.themes {
-            Logger::with_registry(|mut registry| registry.register_user_theme(theme))
-        }
-        let theme = InternalFileSystem::new(&scope.git.root).read_theme_preference();
-        Logger::with_registry(|mut registry| registry.set_theme(&scope.git.root, &theme));
+        Logger::initialize(&scope);
         RepoKit { scope }
     }
 

@@ -44,31 +44,25 @@ impl UpgradeRepoKit {
             |cmd| cmd.current_dir(root),
         );
         handle.done();
+        Logger::info("Upgrade Complete!");
     }
 }
 
 impl InternalExecutable for UpgradeRepoKit {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
-        let internal_fs = InternalFileSystem::new(&self.scope.git.root);
-        let fallback = "unknown";
-        let runtime_version = internal_fs
-            .installed_repokit_version()
-            .unwrap_or(fallback.to_string());
         UpgradeRepoKit::static_execute(&self.scope.git.root);
-        let installed_version = internal_fs
-            .installed_repokit_version()
-            .unwrap_or(fallback.to_string());
-        if runtime_version != installed_version {
-            Logger::info("Upgrade Complete!");
+        if let Some(new_version) = self
+            .scope
+            .versions
+            .refresh_installed_version(&self.scope.git.root)
+        {
             Logger::info(
                 format!(
                     "The currently installed version is {}",
-                    Logger::with_theme(|theme| theme.highlight(&installed_version))
+                    Logger::with_theme(|theme| theme.highlight(&new_version))
                 )
                 .as_str(),
             );
-        } else {
-            Logger::info("The latest version is already installed");
         }
     }
 

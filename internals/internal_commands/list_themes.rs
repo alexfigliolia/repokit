@@ -93,9 +93,9 @@ impl InternalExecutable for ListThemes {
             );
             return self.list_themes();
         }
-        Logger::with_registry(|mut registry| {
-            registry.set_theme(&self.scope.git.root, &desired_theme)
-        });
+        if Logger::with_registry(|mut registry| registry.set_theme(&desired_theme))  {
+            self.scope.cache.store_theme_preference(&desired_theme);
+        }
         Logger::info(
             format!(
                 "Your theme has been set to {}",
