@@ -72,19 +72,28 @@ impl SearchCommands {
         if command.description.to_lowercase().contains(query) {
             return true;
         }
-        for (arg, sub_command) in &command.commands {
-            if arg.to_lowercase().contains(query) || self.search_command(query, sub_command) {
+        for (command_name, definition) in &command.commands {
+            if command_name.to_lowercase().contains(query) || self.search_command(query, definition)
+            {
                 return true;
             }
         }
         false
     }
 
-    fn search_command(&self, query: &str, command: &CommandDefinition) -> bool {
-        if command.command.to_lowercase().contains(query)
-            || command.description.to_lowercase().contains(query)
+    fn search_command(&self, query: &str, definition: &CommandDefinition) -> bool {
+        if definition.command.to_lowercase().contains(query)
+            || definition.description.to_lowercase().contains(query)
         {
             return true;
+        }
+        if let Some(args) = &definition.args {
+            for (flag, description) in args {
+                if flag.to_lowercase().contains(query) || description.to_lowercase().contains(query)
+                {
+                    return true;
+                }
+            }
         }
         false
     }
