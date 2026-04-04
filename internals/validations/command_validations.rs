@@ -6,6 +6,7 @@ use std::{
 use ignore::WalkBuilder;
 
 use crate::{
+    context::typescript_bridge::TypeScriptBridge,
     executables::{
         internal_executable::InternalExecutable, internal_executable_definition::RepoKitScope,
     },
@@ -38,7 +39,7 @@ impl CommandValidations {
         internals
     }
 
-    pub fn collect_and_validate_externals(&self) -> HashMap<String, RepoKitCommand> {
+    pub fn collect_and_validate_externals(&mut self) -> HashMap<String, RepoKitCommand> {
         let root = &self.scope.git.root;
         let paths: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
         if let Some(files) = &self.scope.cache.files_to_crawl {
@@ -49,13 +50,15 @@ impl CommandValidations {
         } else {
             let mut visitor = TSFileVisitorBuilder::new(root, &paths);
             WalkBuilder::new(root).build_parallel().visit(&mut visitor);
-            self.scope.cache.store_crawl_cache(
-                &self.scope.git.commit_hash,
-                paths.lock().unwrap().join("\n"),
-            );
+            if let Some(head_commit) = &self.scope.git.head_commit_hash {
+                self.scope
+                    .cache
+                    .store_crawl_cache(head_commit, paths.lock().unwrap().join("\n"));
+            }
         }
         let result = paths.lock().unwrap();
-        let externals = self.scope.bridge.parse_commands(&result);
+        let externals =
+            TypeScriptBridge::parse_commands(&self.scope.files, &mut self.scope.node, &result);
         let all = [&externals[..], &self.scope.configuration.thirdParty[..]].concat();
         self.detect_collisions_between_root_commands_and_externals(&all)
     }

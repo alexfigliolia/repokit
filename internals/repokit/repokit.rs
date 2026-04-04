@@ -24,7 +24,7 @@ impl RepoKit {
 
     pub fn invoke(&self) {
         let (command, args) = self.parse();
-        let validator = CommandValidations::from(self);
+        let mut validator = CommandValidations::from(self);
         let internals = validator.collect_and_validate_internals();
         if internals.contains_key(&command) {
             let interface = internals.get(&command).expect("known command");
@@ -85,7 +85,7 @@ impl RepoKit {
         HashMap<String, Box<dyn InternalExecutable>>,
         HashMap<String, RepoKitCommand>,
     ) {
-        let validator = CommandValidations::from(self);
+        let mut validator = CommandValidations::from(self);
         let internals = validator.collect_and_validate_internals();
         let externals = validator.collect_and_validate_externals();
         CommandValidations::detect_collisions_between_internals_and_externals(

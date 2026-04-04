@@ -6,7 +6,7 @@ use serde::Deserialize;
 use serde_json::{Value, from_value, to_value};
 
 use crate::{
-    configuration::recovery::Recovery,
+    context::node_scope::NodeScope,
     logger::logger::Logger,
     post_processing::post_processor::PostProcessor,
     repokit::{
@@ -28,34 +28,10 @@ static REPOKIT_COMMAND_VALIDATOR: LazyLock<Validator> = LazyLock::new(|| {
     Validator::new(&to_value(schemars::schema_for!(RepoKitCommand)).unwrap()).unwrap()
 });
 
-impl RepoKitCommand {
-    fn register_encountered_errors(root: &str, failed_paths: Vec<String>) {
-        let root_clone = root.to_string();
-        PostProcessor::get().register_task(move || {
-            println!();
-            if !failed_paths.is_empty() {
-                let appendage = if failed_paths.len() != 1 { "s" } else { "" };
-                Logger::error(
-                    format!(
-                        "I encountered an error in the following command{}",
-                        appendage
-                    )
-                    .as_str(),
-                );
-                Logger::list_file_paths(&failed_paths);
-            } else {
-                Logger::info("There was an error parsing one or more of your commands");
-            }
-            Logger::info("You can validate a command file's syntactical correctness by running");
-            Logger::log_file_path(
-                &Recovery::new(&root_clone).get_typecheck_command("<optional-path-to-file>"),
-            );
-        });
-    }
-}
+impl RepoKitConstructValidator for RepoKitCommand {}
 
-impl RepoKitConstructValidator<Vec<Value>, Vec<RepoKitCommand>> for RepoKitCommand {
-    fn from_input(root: &str, input: Vec<Value>) -> Vec<RepoKitCommand> {
+impl RepoKitCommand {
+    pub fn from_input(root: &str, node: &mut NodeScope, input: Vec<Value>) -> Vec<RepoKitCommand> {
         let mut result: Vec<RepoKitCommand> = Vec::new();
         let mut failures = 0;
         let mut failed_paths: Vec<String> = Vec::new();
@@ -76,12 +52,12 @@ impl RepoKitConstructValidator<Vec<Value>, Vec<RepoKitCommand>> for RepoKitComma
             }
         }
         if failures != 0 {
-            RepoKitCommand::register_encountered_errors(root, failed_paths);
+            RepoKitCommand::register_encountered_errors(node, failed_paths);
         }
         result
     }
 
-    fn on_parsing_error(root: &str, command: Value) -> Option<String> {
+    pub fn on_parsing_error(root: &str, command: Value) -> Option<String> {
         let location = command.get("location");
         println!();
         if location.is_some_and(|v| v.is_string()) {
@@ -89,5 +65,27 @@ impl RepoKitConstructValidator<Vec<Value>, Vec<RepoKitCommand>> for RepoKitComma
             return Some(path);
         }
         None
+    }
+
+    fn register_encountered_errors(node: &mut NodeScope, failed_paths: Vec<String>) {
+        let type_check_command = node.get_typecheck_command("<optional-path-to-file>");
+        PostProcessor::get().register_task(move || {
+            println!();
+            if !failed_paths.is_empty() {
+                let appendage = if failed_paths.len() != 1 { "s" } else { "" };
+                Logger::error(
+                    format!(
+                        "I encountered an error in the following command{}",
+                        appendage
+                    )
+                    .as_str(),
+                );
+                Logger::list_file_paths(&failed_paths);
+            } else {
+                Logger::info("There was an error parsing one or more of your commands");
+            }
+            Logger::info("You can validate a command file's syntactical correctness by running");
+            Logger::log_file_path(&type_check_command);
+        });
     }
 }

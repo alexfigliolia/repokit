@@ -2,7 +2,10 @@ use std::{env::args, process::exit};
 
 use terminal_spinners::{BOUNCING_BALL, SpinnerBuilder};
 
-use crate::{context::file_system::FileSystem, executor::executor::Executor};
+use crate::{
+    context::file_system::FileSystem, executor::executor::Executor,
+    post_processing::post_processor::PostProcessor,
+};
 
 pub struct RepoKitVersionResolver;
 
@@ -32,6 +35,7 @@ impl RepoKitVersionResolver {
 
     fn re_run_command() {
         let args: Vec<String> = args().collect();
+        PostProcessor::get().flush();
         Executor::with_stdio(args.join(" "), |cmd| cmd);
         exit(0);
     }

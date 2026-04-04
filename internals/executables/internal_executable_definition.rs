@@ -4,7 +4,6 @@ use crate::{
     context::{
         cache_scope::CacheScope, file_system::FileSystem, git_scope::GitScope,
         node_scope::NodeScope, repokit_version_scope::RepoKitVersionScope,
-        typescript_bridge::TypeScriptBridge,
     },
     repokit::repokit_config::RepoKitConfig,
 };
@@ -15,7 +14,6 @@ pub struct RepoKitScope {
     pub node: NodeScope,
     pub files: FileSystem,
     pub cache: CacheScope,
-    pub bridge: TypeScriptBridge,
     pub versions: RepoKitVersionScope,
     pub configuration: RepoKitConfig,
 }

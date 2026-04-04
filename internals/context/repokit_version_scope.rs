@@ -1,57 +1,70 @@
 use std::{
-    fs::File,
+    fs::{File, write},
     io::{BufRead, BufReader},
     sync::LazyLock,
 };
 
 use futures::join;
-use normalize_path::NormalizePath;
 use regex::Regex;
 
 use crate::{
     context::{
-        file_system::FileSystem, initializer::Initializer, internal_caches::InternalCaches,
-        repokit_version_resolver::RepoKitVersionResolver,
+        cache_scope::CacheScope, file_system::FileSystem, initializer::Initializer,
+        internal_caches::Cache, repokit_version_resolver::RepoKitVersionResolver,
     },
-    executor::executor::Executor,
     logger::logger::Logger,
+    post_processing::post_processor::PostProcessor,
 };
 
-static UNKNOWN: &str = "unknown";
+static UNKNOWN: &str = "UNKNOWN";
 
 pub static VERSION_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"\d*\.\d*.\d*"#).unwrap());
 
 #[derive(Clone)]
 pub struct RepoKitVersionScope {
-    pub files: FileSystem,
     pub runtime_version: String,
     pub installed_version: String,
 }
 
-impl Initializer<(Option<String>, Option<String>)> for RepoKitVersionScope {
-    async fn resolve(&mut self, _: &str) -> (Option<String>, Option<String>) {
-        join!(self.runtime_version(), self.installed_repokit_version())
+impl Initializer<String, (&FileSystem, &CacheScope)> for RepoKitVersionScope {
+    async fn resolve(&mut self, resolvers: (&FileSystem, &CacheScope)) -> String {
+        let (files, cache) = resolvers;
+        let (runtime_result, install_result) = join!(
+            self.runtime_version(cache),
+            self.installed_repokit_version(files)
+        );
+        if let Some(installed_version) = install_result {
+            self.installed_version = installed_version;
+        }
+        if let Some(runtime_version) = runtime_result {
+            self.runtime_version = runtime_version;
+        } else {
+            self.runtime_version = self.installed_version.clone();
+        }
+        self.installed_version.clone()
     }
 }
 
 impl RepoKitVersionScope {
-    pub fn new(files: &FileSystem) -> RepoKitVersionScope {
+    pub fn new(resolvers: (&FileSystem, &CacheScope)) -> RepoKitVersionScope {
         let mut instance = RepoKitVersionScope {
-            files: files.clone(),
             runtime_version: UNKNOWN.to_string(),
             installed_version: UNKNOWN.to_string(),
         };
-        let (runtime_version, installed_version) =
-            RepoKitVersionScope::resolve_sync(instance.resolve(&files.root));
-        instance.runtime_version = instance.unwap(runtime_version);
-        instance.installed_version = instance.unwap(installed_version);
-        instance.hop_to_installed_version();
+        let (files, cache) = resolvers;
+        let installed_version = RepoKitVersionScope::resolve_sync(instance.resolve(resolvers));
+        instance.hop_to_installed_version(files);
+        let cache_clone = cache.clone();
+        PostProcessor::get().register_task(move || {
+            RepoKitVersionScope::record_version_use(&installed_version, &cache_clone)
+        });
         instance
     }
 
-    pub fn refresh_installed_version(&self) -> Option<String> {
-        let installed_version = RepoKitVersionScope::resolve_sync(self.installed_repokit_version());
+    pub fn refresh_installed_version(&self, files: &FileSystem) -> Option<String> {
+        let installed_version =
+            RepoKitVersionScope::resolve_sync(self.installed_repokit_version(files));
         if let Some(version) = &installed_version
             && *version != self.installed_version
         {
@@ -60,11 +73,31 @@ impl RepoKitVersionScope {
         None
     }
 
-    fn unwap(&self, version: Option<String>) -> String {
-        version.unwrap_or(UNKNOWN.to_string())
+    fn record_version_use(version: &String, cache: &CacheScope) {
+        let installed_version = version.clone();
+        if installed_version != UNKNOWN {
+            cache
+                .internal
+                .read_cache_file(Cache::Version, &mut |lines, path| {
+                    let mut lines: Vec<String> = lines
+                        .filter_map(|entry| {
+                            if let Ok(line) = entry {
+                                Some(line);
+                            }
+                            None
+                        })
+                        .collect();
+                    if !lines.is_empty() {
+                        lines[0] = installed_version.to_string();
+                    } else {
+                        lines.push(installed_version.to_string())
+                    }
+                    let _ = write(path, lines.join("\n"));
+                });
+        }
     }
 
-    fn hop_to_installed_version(&self) {
+    fn hop_to_installed_version(&self, files: &FileSystem) {
         if self.runtime_version != self.installed_version && self.installed_version != UNKNOWN {
             Logger::info(
                 format!(
@@ -73,28 +106,28 @@ impl RepoKitVersionScope {
                 )
                 .as_str(),
             );
-            RepoKitVersionResolver::hop_to_installed_version(&self.files);
+            RepoKitVersionResolver::hop_to_installed_version(files);
         }
     }
 
-    async fn runtime_version(&self) -> Option<String> {
-        if let Some(home) = InternalCaches::home() {
-            let version = Executor::exec(
-                format!(
-                    "head -n 1 {}",
-                    home.join(".repokit").normalize().to_str().unwrap()
-                ),
-                |cmd| cmd,
-            );
-            if VERSION_REGEX.is_match(&version) {
-                return Some(version);
-            }
-        }
-        None
+    async fn runtime_version(&self, cache: &CacheScope) -> Option<String> {
+        let runtime_version =
+            cache
+                .internal
+                .read_cache_file(Cache::Version, &mut |mut lines, _| {
+                    if let Some(version) = lines.nth(0)
+                        && let Ok(last_version) = version
+                        && VERSION_REGEX.is_match(&last_version)
+                    {
+                        return Some(last_version);
+                    }
+                    None
+                });
+        runtime_version.unwrap()
     }
 
-    async fn installed_repokit_version(&self) -> Option<String> {
-        let package_path = FileSystem::join_with(&self.files.package_directory, "package.json");
+    async fn installed_repokit_version(&self, files: &FileSystem) -> Option<String> {
+        let package_path = FileSystem::join_with(&files.package_directory, "package.json");
         if !package_path.exists() || !package_path.is_file() {
             return None;
         }

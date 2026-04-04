@@ -5,6 +5,7 @@ use regex::Regex;
 
 use crate::{
     context::{
+        git_scope::GitScope,
         initializer::Initializer,
         internal_caches::{Cache, InternalCaches},
     },
@@ -19,7 +20,7 @@ pub struct CacheScope {
     pub files_to_crawl: Option<Vec<String>>,
 }
 
-impl Initializer<(String, Option<Vec<String>>)> for CacheScope {
+impl Initializer<(String, Option<Vec<String>>), &str> for CacheScope {
     async fn resolve(&mut self, head_commit: &str) -> (String, Option<Vec<String>>) {
         join!(
             self.read_theme_preference(),
@@ -29,13 +30,16 @@ impl Initializer<(String, Option<Vec<String>>)> for CacheScope {
 }
 
 impl CacheScope {
-    pub fn new(version: &str, head_commit: &str) -> CacheScope {
+    pub fn new(git_scope: &GitScope) -> CacheScope {
         let mut instance = CacheScope {
             files_to_crawl: None,
             theme_preference: "".to_string(),
-            internal: InternalCaches::new(version),
+            internal: InternalCaches::new(git_scope),
         };
-        let (theme, file_cache) = CacheScope::resolve_sync(instance.resolve(head_commit));
+        let head_commit = git_scope.head_commit_hash.clone();
+        let (theme, file_cache) = CacheScope::resolve_sync(
+            instance.resolve(head_commit.unwrap_or("".to_string()).as_str()),
+        );
         instance.theme_preference = theme;
         instance.files_to_crawl = file_cache;
         instance
@@ -43,11 +47,11 @@ impl CacheScope {
 
     pub fn store_theme_preference(&self, theme: &str) {
         self.internal
-            .read_cache_file(Cache::SETTINGS, &mut |lines, path| {
+            .read_cache_file(Cache::Settings, &mut |lines, path| {
                 let mut content: Vec<String> = lines.map(|line| line.unwrap()).collect();
                 let theme_text = theme.to_string();
-                if content.len() >= 2 {
-                    content[1] = theme_text;
+                if !content.is_empty() {
+                    content[0] = theme_text;
                 } else {
                     content.push(theme_text);
                 }
@@ -61,7 +65,7 @@ impl CacheScope {
         paths: String,
     ) -> Option<Result<(), io::Error>> {
         self.internal
-            .read_cache_file(Cache::FILESYSTEM, &mut move |_1, file_path| {
+            .read_cache_file(Cache::FileSystem, &mut move |_, file_path| {
                 write(file_path, [head_commit, &paths].join("\n"))
             })
     }
@@ -70,8 +74,8 @@ impl CacheScope {
         let default = Logger::with_registry(|registry| registry.default_theme.clone());
         let theme = self
             .internal
-            .read_cache_file(Cache::SETTINGS, &mut |mut lines, _| {
-                if let Some(theme_preference) = lines.nth(1)
+            .read_cache_file(Cache::Settings, &mut |mut lines, _| {
+                if let Some(theme_preference) = lines.nth(0)
                     && let Ok(preference) = theme_preference
                 {
                     return preference;
@@ -84,7 +88,7 @@ impl CacheScope {
     async fn read_file_system_cache(&self, head_commit: &str) -> Option<Vec<String>> {
         let files_to_crawl = self
             .internal
-            .read_cache_file(Cache::FILESYSTEM, &mut move |lines, _| {
+            .read_cache_file(Cache::FileSystem, &mut move |lines, _| {
                 let mut lines: Vec<String> = lines
                     .filter_map(|entry| {
                         if let Ok(line) = entry {

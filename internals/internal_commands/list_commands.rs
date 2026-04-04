@@ -40,7 +40,7 @@ impl ListCommands {
     }
 
     fn collect_registered_commands(&self) -> HashMap<String, RepoKitCommand> {
-        let validators = CommandValidations::new(&self.scope);
+        let mut validators = CommandValidations::new(&self.scope);
         validators.collect_and_validate_externals()
     }
 

@@ -31,7 +31,7 @@ impl LocateCommand {
     }
 
     fn search_externals(&self, query: &str) {
-        let finder = CommandValidations::new(&self.scope);
+        let mut finder = CommandValidations::new(&self.scope);
         let all = finder.collect_and_validate_externals();
         for (_, command) in all {
             if command.name == query {

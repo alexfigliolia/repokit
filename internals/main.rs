@@ -9,7 +9,6 @@ use crate::{
 };
 
 mod argv;
-mod configuration;
 mod context;
 mod executables;
 mod executor;
@@ -25,17 +24,15 @@ mod validations;
 fn main() {
     let git = GitScope::new();
     let files = FileSystem::new(&git.root);
-    let versions = RepoKitVersionScope::new(&files);
-    let cache = CacheScope::new(&versions.installed_version, &git.commit_hash);
-    let node = NodeScope::new(&git.root);
-    let bridge = TypeScriptBridge::new(&files);
-    let configuration = bridge.parse_configuration();
+    let cache = CacheScope::new(&git);
+    let versions = RepoKitVersionScope::new((&files, &cache));
+    let mut node = NodeScope::new(&git.root);
+    let configuration = TypeScriptBridge::parse_configuration(&files, &mut node);
     let kit = RepoKit::new(RepoKitScope {
         git,
         node,
         files,
         cache,
-        bridge,
         versions,
         configuration,
     });

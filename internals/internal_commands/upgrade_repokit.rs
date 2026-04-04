@@ -37,9 +37,8 @@ impl UpgradeRepoKit {
             .spinner(&BOUNCING_BALL)
             .text(" Installing")
             .start();
-        let command_prefix = self.scope.node.get_install_command();
         Executor::exec(
-            format!("{} @repokit/core@latest", command_prefix).as_str(),
+            format!("{} @repokit/core@latest", self.scope.node.install_command).as_str(),
             |cmd| cmd.current_dir(&self.scope.git.root),
         );
         handle.done();
@@ -50,7 +49,11 @@ impl UpgradeRepoKit {
 impl InternalExecutable for UpgradeRepoKit {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         self.static_execute();
-        if let Some(new_version) = self.scope.versions.refresh_installed_version() {
+        if let Some(new_version) = self
+            .scope
+            .versions
+            .refresh_installed_version(&self.scope.files)
+        {
             Logger::info(
                 format!(
                     "The currently installed version is {}",

@@ -54,7 +54,6 @@ impl FileBuilder {
             Err(error) => {
                 on_error(error);
                 PostProcessor::get().flush();
-                exit(0);
             }
         }
     }

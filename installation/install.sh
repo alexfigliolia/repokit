@@ -29,22 +29,23 @@ echo "Installing Repokit CLI"
 
 cd
 
-if [ -f .repokit ]; then
-    read -r first_line < ".repokit"
+CACHE_DIR=".repokit"
+DOT_FILE=".repokit_version"
+
+mkdir "$CACHE_DIR"
+
+cd "$CACHE_DIR"
+
+if [ -f $DOT_FILE ]; then
+    read -r first_line < ".repokit_version"
     if [ "$first_line" = "$CURRENT_VERSION" ]; then
         exit 0;    
     fi
 fi
 
-DOT_FILE=".repokit"
-TEMP_FILE=".repokit_tmp";
-
 touch "$DOT_FILE"
 
-printf "$CURRENT_VERSION\n" > "$TEMP_FILE"
-tail +2 "$DOT_FILE" >> "$TEMP_FILE"
-mv "$TEMP_FILE" "$DOT_FILE"
-
+printf "$CURRENT_VERSION\n" > "$DOT_FILE"
 
 cd $CWD
 
