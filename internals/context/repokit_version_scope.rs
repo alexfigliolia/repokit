@@ -75,20 +75,8 @@ impl RepoKitVersionScope {
         cache
             .internal
             .read_cache_file(Cache::Version, &mut |lines, path| {
-                let mut lines: Vec<String> = lines
-                    .filter_map(|entry| {
-                        if let Ok(line) = entry {
-                            Some(line);
-                        }
-                        None
-                    })
-                    .collect();
-                if !lines.is_empty() {
-                    lines[0] = self.installed_version.to_string();
-                } else {
-                    lines.push(self.installed_version.to_string())
-                }
-                let _ = write(path, lines.join("\n"));
+                let content = cache.insert_as_first_line(lines, self.installed_version.to_string());
+                let _ = write(path, content.join("\n"));
             });
     }
 

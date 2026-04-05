@@ -1,6 +1,10 @@
-use futures::join;
-use std::{collections::HashSet, fs::write, io};
+use std::{
+    collections::HashSet,
+    fs::{File, write},
+    io::{self, BufReader, Lines},
+};
 
+use futures::join;
 use regex::Regex;
 
 use crate::{
@@ -52,13 +56,8 @@ impl CacheScope {
     pub fn store_theme_preference(&self, theme: &str) {
         self.internal
             .read_cache_file(Cache::Settings, &mut |lines, path| {
-                let mut content: Vec<String> = lines.map(|line| line.unwrap()).collect();
-                let theme_text = theme.to_string();
-                if !content.is_empty() {
-                    content[0] = theme_text;
-                } else {
-                    content.push(theme_text);
-                }
+                let content = self.insert_as_first_line(lines, theme.to_string());
+                // TODO - error handle
                 write(path, content.join("\n"))
             });
     }
@@ -72,6 +71,32 @@ impl CacheScope {
             .read_cache_file(Cache::FileSystem, &mut move |_, file_path| {
                 write(file_path, [head_commit, &paths].join("\n"))
             })
+    }
+
+    pub fn insert_as_first_line(
+        &self,
+        lines: Lines<BufReader<File>>,
+        value: String,
+    ) -> Vec<String> {
+        let mut lines: Vec<String> = self.line_buffer_to_vec(lines);
+        if !lines.is_empty() {
+            lines[0] = value;
+        } else {
+            lines.push(value);
+        }
+        lines
+    }
+
+    pub fn line_buffer_to_vec(&self, lines: Lines<BufReader<File>>) -> Vec<String> {
+        let vec: Vec<String> = lines
+            .filter_map(|entry| {
+                if let Ok(line) = entry {
+                    Some(line);
+                }
+                None
+            })
+            .collect();
+        vec
     }
 
     async fn read_theme_preference(&self) -> String {
@@ -92,15 +117,8 @@ impl CacheScope {
     async fn read_file_system_cache(&self, head_commit: &str) -> Option<Vec<String>> {
         let files_to_crawl = self
             .internal
-            .read_cache_file(Cache::FileSystem, &mut move |lines, _| {
-                let mut lines: Vec<String> = lines
-                    .filter_map(|entry| {
-                        if let Ok(line) = entry {
-                            return Some(line);
-                        }
-                        None
-                    })
-                    .collect();
+            .read_cache_file(Cache::FileSystem, &mut move |line_buffer, _| {
+                let mut lines = self.line_buffer_to_vec(line_buffer);
                 if lines.len() < 2 {
                     return None;
                 }
@@ -109,6 +127,7 @@ impl CacheScope {
                 {
                     let (git_ignore_changed, mut changed_files) = CacheScope::get_changed_files();
                     if git_ignore_changed {
+                        self.drop_file_system_cache();
                         return None;
                     }
                     for line in &lines {
@@ -159,5 +178,19 @@ impl CacheScope {
             })
             .collect();
         (contains_git_ignore, files)
+    }
+
+    fn drop_file_system_cache(&self) {
+        self.internal
+            .read_cache_file(Cache::FileSystem, &mut |mut lines, path| {
+                if let Some(first_line) = lines.nth(0)
+                    && let Ok(head_commit) = first_line
+                {
+                    // TODO - error handle
+                    write(path, format!("{head_commit}\n"))
+                } else {
+                    write(path, "")
+                }
+            });
     }
 }
