@@ -2,6 +2,7 @@ use std::{
     collections::HashSet,
     fs::{File, write},
     io::{self, BufReader, Lines},
+    path::PathBuf,
 };
 
 use futures::join;
@@ -9,12 +10,14 @@ use regex::Regex;
 
 use crate::{
     context::{
+        file_system::FileSystem,
         git_scope::GitScope,
         initializer::Initializer,
         internal_caches::{Cache, InternalCaches},
     },
     executor::executor::Executor,
     logger::logger::Logger,
+    post_processing::post_processor::PostProcessor,
 };
 
 #[derive(Clone)]
@@ -24,12 +27,14 @@ pub struct CacheScope {
     pub files_to_crawl: Option<Vec<String>>,
 }
 
-impl Initializer<(String, Option<Vec<String>>), &str> for CacheScope {
-    async fn resolve(&mut self, head_commit: &str) -> (String, Option<Vec<String>>) {
-        join!(
+impl Initializer<(), &str> for CacheScope {
+    async fn resolve(&mut self, head_commit: &str) {
+        let (theme, file_cache) = join!(
             self.read_theme_preference(),
             self.read_file_system_cache(head_commit)
-        )
+        );
+        self.theme_preference = theme;
+        self.files_to_crawl = file_cache;
     }
 }
 
@@ -41,11 +46,7 @@ impl CacheScope {
             internal: InternalCaches::new(git_scope),
         };
         let head_commit = git_scope.head_commit_hash.clone();
-        let (theme, file_cache) = CacheScope::resolve_sync(
-            instance.resolve(head_commit.unwrap_or("".to_string()).as_str()),
-        );
-        instance.theme_preference = theme;
-        instance.files_to_crawl = file_cache;
+        CacheScope::resolve_sync(instance.resolve(head_commit.unwrap_or("".to_string()).as_str()));
         instance
     }
 
@@ -56,9 +57,12 @@ impl CacheScope {
     pub fn store_theme_preference(&self, theme: &str) {
         self.internal
             .read_cache_file(Cache::Settings, &mut |lines, path| {
-                let content = self.insert_as_first_line(lines, theme.to_string());
-                // TODO - error handle
-                write(path, content.join("\n"))
+                let content = self
+                    .insert_as_first_line(lines, theme.to_string())
+                    .join("\n");
+                if write(path, &content).is_err() {
+                    self.on_theme_storage_error(path, content);
+                }
             });
     }
 
@@ -192,5 +196,30 @@ impl CacheScope {
                     write(path, "")
                 }
             });
+    }
+
+    fn on_theme_storage_error(&self, path: &PathBuf, content: String) {
+        let path_clone = path.clone();
+        PostProcessor::get().register_task(move || {
+            Logger::info("I failed to write your theme preference to the file system");
+            Logger::info(
+                format!(
+                    "This usually indicates a bug within {}",
+                    Logger::with_theme(|theme| theme.highlight("Repokit"))
+                )
+                .as_str(),
+            );
+            Logger::info("Please file an issue here");
+            Logger::log_issue_link();
+            Logger::info("To repair this manually you can run");
+            Logger::log_file_path(
+                format!(
+                    "printf \"{}\" > {}",
+                    &content,
+                    FileSystem::path_buf_to_str(&path_clone),
+                )
+                .as_str(),
+            );
+        });
     }
 }

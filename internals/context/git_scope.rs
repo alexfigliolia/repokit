@@ -1,4 +1,4 @@
-use std::process::exit;
+use std::{path::Path, process::exit};
 
 use futures::join;
 
@@ -41,17 +41,12 @@ impl GitScope {
     async fn find_root() -> String {
         if let Some(root) = Executor::exec_with_stdout("git rev-parse --show-toplevel", |cmd| cmd)
             && !root.is_empty()
+            && Path::new(&root).exists()
         {
             return root;
         }
-        Logger::exit_with_info(
-            format!(
-                "To start using {}, please initialize your git repository by running {}",
-                Logger::with_theme(|theme| theme.highlight("Repokit")),
-                Logger::with_theme(|theme| theme.highlight("git init"))
-            )
-            .as_str(),
-        );
+        Logger::info("Please initialize your repository by running");
+        Logger::log_file_path("git init");
         PostProcessor::get().flush();
         exit(0);
     }

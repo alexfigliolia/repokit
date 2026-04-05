@@ -1,4 +1,4 @@
-use crate::repokit::repokit::RepoKit;
+use crate::{post_processing::post_processor::PostProcessor, repokit::repokit::RepoKit};
 
 mod argv;
 mod context;
@@ -15,4 +15,5 @@ mod validations;
 
 fn main() {
     RepoKit::new().invoke();
+    PostProcessor::get().flush();
 }
