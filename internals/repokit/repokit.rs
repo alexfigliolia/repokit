@@ -22,9 +22,8 @@ impl RepoKit {
         let (command, args) = self.parse();
         let mut validator = CommandValidations::new();
         let internals = validator.collect_and_validate_internals();
-        if internals.contains_key(&command) {
-            let interface = internals.get(&command).expect("known command");
-            return interface.run(args, &internals);
+        if let Some(internal_command) = internals.get(&command) {
+            return internal_command.run(args, &internals);
         }
         RepoKitRuntime::with_runtime(|runtime| {
             if let Some(root_script) = runtime.configuration.commands.get(&command) {
