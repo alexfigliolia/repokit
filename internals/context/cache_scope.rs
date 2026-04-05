@@ -45,6 +45,10 @@ impl CacheScope {
         instance
     }
 
+    pub fn crawl_cache_enabled(&self) -> bool {
+        self.files_to_crawl.is_some()
+    }
+
     pub fn store_theme_preference(&self, theme: &str) {
         self.internal
             .read_cache_file(Cache::Settings, &mut |lines, path| {

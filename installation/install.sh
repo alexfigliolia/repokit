@@ -1,10 +1,10 @@
-CURRENT_VERSION="3.0.3"
+CURRENT_VERSION="3.1.0"
 CWD=$(pwd)
 
 REPLACEMENT="/node_modules"
 FALLBACK_ROOT="${CWD%${REPLACEMENT}*}"
 
-GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+GIT_ROOT=$(git rev-parse --show-toplevel)
 REPO_ROOT=${GIT_ROOT:-$FALLBACK_ROOT}
 
 if [[ "$CWD" != *"$REPLACEMENT"* ]]; then
@@ -29,23 +29,48 @@ echo "Installing Repokit CLI"
 
 cd
 
-CACHE_DIR=".repokit"
-DOT_FILE=".repokit_version"
+OLD_SETTINGS_FILE=".repokit"
+CACHED_THEME=""
 
-mkdir "$CACHE_DIR"
+if [ -f $OLD_SETTINGS_FILE ]; then
+    {
+        read -r
+        read -r CACHED_THEME
+    } < "$OLD_SETTINGS_FILE"
+    rm "$OLD_SETTINGS_FILE"
+fi
+
+CACHE_DIR=".repokit"
+VERSION_FILE=".repokit_version"
+SETTINGS_FILE=".repokit_settings"
+
+mkdir -p "$CACHE_DIR"
 
 cd "$CACHE_DIR"
 
-if [ -f $DOT_FILE ]; then
-    read -r first_line < ".repokit_version"
-    if [ "$first_line" = "$CURRENT_VERSION" ]; then
+if [ -f $VERSION_FILE ]; then
+    read -r FIRST_LINE < "$VERSION_FILE"
+    if [ "$FIRST_LINE" == "$CURRENT_VERSION" ]; then
         exit 0;    
     fi
+else
+    touch "$VERSION_FILE"
+fi 
+
+printf "$CURRENT_VERSION\n" > "$VERSION_FILE"
+
+cd $REPO_ROOT
+
+ROOT_COMMIT=$(git rev-list --parents HEAD | tail -1) || ROOT_COMMIT=""
+
+if [ -n "$ROOT_COMMIT" ] && [ -n "$CACHED_THEME" ]; then
+    cd
+    cd "$CACHE_DIR"
+    mkdir -p "$ROOT_COMMIT"
+    cd "$ROOT_COMMIT"
+    touch "$SETTINGS_FILE"
+    printf "$CACHED_THEME\n" > "$SETTINGS_FILE"
 fi
-
-touch "$DOT_FILE"
-
-printf "$CURRENT_VERSION\n" > "$DOT_FILE"
 
 cd $CWD
 

@@ -1,47 +1,45 @@
 use std::{collections::HashMap, env::args, path::Path};
 
 use crate::{
-    executables::{
-        internal_executable::InternalExecutable, internal_executable_definition::RepoKitScope,
-    },
+    executables::internal_executable::InternalExecutable,
     executor::executor::Executor,
     internal_commands::help::Help,
     logger::logger::Logger,
     post_processing::post_processor::PostProcessor,
-    repokit::repokit_command::RepoKitCommand,
+    repokit::{repokit_command::RepoKitCommand, repokit_runtime::RepoKitRuntime},
     validations::command_validations::CommandValidations,
 };
 
-pub struct RepoKit {
-    pub scope: RepoKitScope,
-}
+pub struct RepoKit {}
 
 impl RepoKit {
-    pub fn new(scope: RepoKitScope) -> RepoKit {
-        Logger::initialize(&scope);
-        RepoKit { scope }
+    pub fn new() -> RepoKit {
+        Logger::initialize();
+        RepoKit {}
     }
 
     pub fn invoke(&self) {
         let (command, args) = self.parse();
-        let mut validator = CommandValidations::from(self);
+        let mut validator = CommandValidations::new();
         let internals = validator.collect_and_validate_internals();
         if internals.contains_key(&command) {
             let interface = internals.get(&command).expect("known command");
             return interface.run(args, &internals);
         }
-        if self.scope.configuration.commands.contains_key(&command) {
-            let root_script = self
-                .scope
-                .configuration
-                .commands
-                .get(&command)
-                .expect("Unknown command");
-            return Executor::with_stdio(
-                format!("{} {}", root_script.command, &args.join(" ")),
-                |cmd| cmd.current_dir(Path::new(&self.scope.git.root)),
-            );
-        }
+        RepoKitRuntime::with_runtime(|runtime| {
+            if runtime.configuration.commands.contains_key(&command) {
+                let root_script = runtime
+                    .configuration
+                    .commands
+                    .get(&command)
+                    .expect("Unknown command");
+                Executor::with_stdio(
+                    format!("{} {}", root_script.command, &args.join(" ")),
+                    |cmd| cmd.current_dir(&runtime.files.git_root_path),
+                );
+                PostProcessor::get().flush();
+            }
+        });
         let externals = validator.collect_and_validate_externals();
         CommandValidations::detect_collisions_between_internals_and_externals(
             &internals, &externals,
@@ -71,7 +69,8 @@ impl RepoKit {
         let argv: Vec<String> = args().collect();
         if argv.len() < 2 {
             let (internals, externals) = self.collect_and_validate();
-            Help::list_all(&self.scope.configuration.commands, &internals, &externals);
+
+            Help::list_all(&internals, &externals);
             PostProcessor::get().flush();
         }
         let command = &argv[1];
@@ -85,7 +84,7 @@ impl RepoKit {
         HashMap<String, Box<dyn InternalExecutable>>,
         HashMap<String, RepoKitCommand>,
     ) {
-        let mut validator = CommandValidations::from(self);
+        let mut validator = CommandValidations::new();
         let internals = validator.collect_and_validate_internals();
         let externals = validator.collect_and_validate_externals();
         CommandValidations::detect_collisions_between_internals_and_externals(
@@ -100,7 +99,7 @@ impl RepoKit {
         internals: &HashMap<String, Box<dyn InternalExecutable>>,
         externals: &HashMap<String, RepoKitCommand>,
     ) {
-        Help::list_all(&self.scope.configuration.commands, internals, externals);
+        Help::list_all(internals, externals);
         Logger::info(
             format!(
                 "I'm not aware of a command named {}",

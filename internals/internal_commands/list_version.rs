@@ -5,23 +5,22 @@ use crate::{
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
-            InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
+            InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
     executor::executor::Executor,
     internal_commands::help::Help,
     logger::logger::Logger,
+    repokit::repokit_runtime::RepoKitRuntime,
 };
 
 pub struct ListVersion {
-    pub scope: RepoKitScope,
     pub definition: InternalExecutableDefinition,
 }
 
 impl ListVersion {
-    pub fn new(scope: &RepoKitScope) -> ListVersion {
+    pub fn new() -> ListVersion {
         ListVersion {
-            scope: scope.clone(),
             definition: InternalExecutableDefinition::define(InternalExecutableDefinitionInput {
                 name: "version",
                 description: "Lists the version of repokit running in this repository",
@@ -38,14 +37,19 @@ impl ListVersion {
 impl InternalExecutable for ListVersion {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Fetching the installed version of repokit");
-        let installed_version = &self.scope.versions.installed_version;
-        if VERSION_REGEX.is_match(installed_version) {
-            return self.log_version(installed_version);
-        }
-        Logger::info("Falling back to the runtime version");
-        let runtime_version = &self.scope.versions.runtime_version;
-        if VERSION_REGEX.is_match(runtime_version) {
-            return self.log_version(runtime_version);
+        if RepoKitRuntime::with_runtime(|runtime| {
+            if VERSION_REGEX.is_match(&runtime.versions.installed_version) {
+                self.log_version(&runtime.versions.installed_version);
+                return true;
+            }
+            if VERSION_REGEX.is_match(&runtime.versions.runtime_version) {
+                Logger::info("Falling back to the runtime version");
+                self.log_version(&runtime.versions.runtime_version);
+                return true;
+            }
+            false
+        }) {
+            return;
         }
         Executor::with_stdio("npm list @repokit/core", |cmd| cmd);
     }

@@ -4,26 +4,24 @@ use crate::{
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
-            InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
+            InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
     internal_commands::help::Help,
     logger::logger::Logger,
-    repokit::repokit_command::RepoKitCommand,
+    repokit::{repokit_command::RepoKitCommand, repokit_runtime::RepoKitRuntime},
     validations::command_validations::CommandValidations,
 };
 
 pub struct ListCommands {
-    pub scope: RepoKitScope,
     pub definition: InternalExecutableDefinition,
 }
 
 static SCOPES: [&str; 4] = ["internal", "registered", "root", "<owner>"];
 
 impl ListCommands {
-    pub fn new(scope: &RepoKitScope) -> ListCommands {
+    pub fn new() -> ListCommands {
         ListCommands {
-            scope: scope.clone(),
             definition: InternalExecutableDefinition::define(InternalExecutableDefinitionInput {
                 name: "list",
                 description: "List commands based on their scope of definition",
@@ -40,7 +38,7 @@ impl ListCommands {
     }
 
     fn collect_registered_commands(&self) -> HashMap<String, RepoKitCommand> {
-        let mut validators = CommandValidations::new(&self.scope);
+        let mut validators = CommandValidations::new();
         validators.collect_and_validate_externals()
     }
 
@@ -66,7 +64,9 @@ impl InternalExecutable for ListCommands {
             return Help::log_internal_commands(internals);
         }
         if scope == SCOPES[2] {
-            return Help::log_root_commands(&self.scope.configuration.commands);
+            return RepoKitRuntime::with_runtime(|runtime| {
+                Help::log_root_commands(&runtime.configuration.commands)
+            });
         }
         let registered_commands = self.collect_registered_commands();
         if scope == SCOPES[1] {

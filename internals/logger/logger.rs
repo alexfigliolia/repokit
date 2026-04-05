@@ -4,8 +4,8 @@ use std::sync::MutexGuard;
 
 use colored::{ColoredString, Colorize};
 
-use crate::executables::internal_executable_definition::RepoKitScope;
 use crate::post_processing::post_processor::PostProcessor;
+use crate::repokit::repokit_runtime::RepoKitRuntime;
 use crate::themes::theme::Theme;
 use crate::themes::theme_registry::ThemeRegistry;
 
@@ -17,12 +17,16 @@ static THEMES: LazyLock<Mutex<ThemeRegistry>> = LazyLock::new(|| Mutex::new(Them
 pub struct Logger;
 
 impl Logger {
-    pub fn initialize(scope: &RepoKitScope) {
-        Logger::set_name(&scope.configuration.project);
-        for theme in &scope.configuration.themes {
-            Logger::with_registry(|mut registry| registry.register_user_theme(theme))
-        }
-        Logger::with_registry(|mut registry| registry.set_theme(&scope.cache.theme_preference));
+    pub fn initialize() {
+        RepoKitRuntime::with_runtime(|runtime| {
+            Logger::set_name(&runtime.configuration.project);
+            for theme in &runtime.configuration.themes {
+                Logger::with_registry(|mut registry| registry.register_user_theme(theme))
+            }
+            Logger::with_registry(|mut registry| {
+                registry.set_theme(&runtime.cache.theme_preference)
+            });
+        });
     }
 
     pub fn info(message: &str) {

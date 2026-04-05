@@ -13,7 +13,6 @@ use crate::{
         internal_caches::Cache, repokit_version_resolver::RepoKitVersionResolver,
     },
     logger::logger::Logger,
-    post_processing::post_processor::PostProcessor,
 };
 
 static UNKNOWN: &str = "UNKNOWN";
@@ -27,8 +26,8 @@ pub struct RepoKitVersionScope {
     pub installed_version: String,
 }
 
-impl Initializer<String, (&FileSystem, &CacheScope)> for RepoKitVersionScope {
-    async fn resolve(&mut self, resolvers: (&FileSystem, &CacheScope)) -> String {
+impl Initializer<(), (&FileSystem, &CacheScope)> for RepoKitVersionScope {
+    async fn resolve(&mut self, resolvers: (&FileSystem, &CacheScope)) {
         let (files, cache) = resolvers;
         let (runtime_result, install_result) = join!(
             self.runtime_version(cache),
@@ -42,7 +41,6 @@ impl Initializer<String, (&FileSystem, &CacheScope)> for RepoKitVersionScope {
         } else {
             self.runtime_version = self.installed_version.clone();
         }
-        self.installed_version.clone()
     }
 }
 
@@ -53,12 +51,12 @@ impl RepoKitVersionScope {
             installed_version: UNKNOWN.to_string(),
         };
         let (files, cache) = resolvers;
-        let installed_version = RepoKitVersionScope::resolve_sync(instance.resolve(resolvers));
-        instance.hop_to_installed_version(files);
-        let cache_clone = cache.clone();
-        PostProcessor::get().register_task(move || {
-            RepoKitVersionScope::record_version_use(&installed_version, &cache_clone)
-        });
+        RepoKitVersionScope::resolve_sync(instance.resolve(resolvers));
+        if instance.installed_version != instance.runtime_version
+            && VERSION_REGEX.is_match(&instance.installed_version)
+        {
+            instance.hop_to_installed_version(files, cache);
+        }
         instance
     }
 
@@ -73,40 +71,37 @@ impl RepoKitVersionScope {
         None
     }
 
-    fn record_version_use(version: &String, cache: &CacheScope) {
-        let installed_version = version.clone();
-        if installed_version != UNKNOWN {
-            cache
-                .internal
-                .read_cache_file(Cache::Version, &mut |lines, path| {
-                    let mut lines: Vec<String> = lines
-                        .filter_map(|entry| {
-                            if let Ok(line) = entry {
-                                Some(line);
-                            }
-                            None
-                        })
-                        .collect();
-                    if !lines.is_empty() {
-                        lines[0] = installed_version.to_string();
-                    } else {
-                        lines.push(installed_version.to_string())
-                    }
-                    let _ = write(path, lines.join("\n"));
-                });
-        }
+    fn record_version_use(&self, cache: &CacheScope) {
+        cache
+            .internal
+            .read_cache_file(Cache::Version, &mut |lines, path| {
+                let mut lines: Vec<String> = lines
+                    .filter_map(|entry| {
+                        if let Ok(line) = entry {
+                            Some(line);
+                        }
+                        None
+                    })
+                    .collect();
+                if !lines.is_empty() {
+                    lines[0] = self.installed_version.to_string();
+                } else {
+                    lines.push(self.installed_version.to_string())
+                }
+                let _ = write(path, lines.join("\n"));
+            });
     }
 
-    fn hop_to_installed_version(&self, files: &FileSystem) {
-        if self.runtime_version != self.installed_version && self.installed_version != UNKNOWN {
-            Logger::info(
-                format!(
-                    "Switching to version {}",
-                    Logger::with_theme(|theme| theme.highlight(&self.installed_version))
-                )
-                .as_str(),
-            );
-            RepoKitVersionResolver::hop_to_installed_version(files);
+    fn hop_to_installed_version(&self, files: &FileSystem, cache: &CacheScope) {
+        Logger::info(
+            format!(
+                "Switching to version {}",
+                Logger::with_theme(|theme| theme.highlight(&self.installed_version))
+            )
+            .as_str(),
+        );
+        if RepoKitVersionResolver::hop_to_installed_version(files) {
+            self.record_version_use(cache);
         }
     }
 

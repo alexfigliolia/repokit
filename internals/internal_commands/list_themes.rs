@@ -8,22 +8,21 @@ use crate::{
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
-            InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
+            InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
     internal_commands::help::Help,
     logger::logger::Logger,
+    repokit::repokit_runtime::RepoKitRuntime,
 };
 
 pub struct ListThemes {
-    pub scope: RepoKitScope,
     pub definition: InternalExecutableDefinition,
 }
 
 impl ListThemes {
-    pub fn new(scope: &RepoKitScope) -> ListThemes {
+    pub fn new() -> ListThemes {
         ListThemes {
-            scope: scope.clone(),
             definition: InternalExecutableDefinition::define(InternalExecutableDefinitionInput {
                 name: "themes",
                 description: "Lists your repositories available themes",
@@ -93,8 +92,10 @@ impl InternalExecutable for ListThemes {
             );
             return self.list_themes();
         }
-        if Logger::with_registry(|mut registry| registry.set_theme(&desired_theme))  {
-            self.scope.cache.store_theme_preference(&desired_theme);
+        if Logger::with_registry(|mut registry| registry.set_theme(&desired_theme)) {
+            RepoKitRuntime::with_runtime(|runtime| {
+                runtime.cache.store_theme_preference(&desired_theme);
+            });
         }
         Logger::info(
             format!(

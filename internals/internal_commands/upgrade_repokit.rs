@@ -6,23 +6,22 @@ use crate::{
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
-            InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
+            InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
     executor::executor::Executor,
     internal_commands::help::Help,
     logger::logger::Logger,
+    repokit::repokit_runtime::RepoKitRuntime,
 };
 
 pub struct UpgradeRepoKit {
-    pub scope: RepoKitScope,
     pub definition: InternalExecutableDefinition,
 }
 
 impl UpgradeRepoKit {
-    pub fn new(scope: &RepoKitScope) -> UpgradeRepoKit {
+    pub fn new() -> UpgradeRepoKit {
         UpgradeRepoKit {
-            scope: scope.clone(),
             definition: InternalExecutableDefinition::define(InternalExecutableDefinitionInput {
                 name: "upgrade",
                 description: "Upgrades your installation of repokit to the latest stable version",
@@ -37,10 +36,12 @@ impl UpgradeRepoKit {
             .spinner(&BOUNCING_BALL)
             .text(" Installing")
             .start();
-        Executor::exec(
-            format!("{} @repokit/core@latest", self.scope.node.install_command).as_str(),
-            |cmd| cmd.current_dir(&self.scope.git.root),
-        );
+        RepoKitRuntime::with_runtime(|runtime| {
+            Executor::exec(
+                format!("{} @repokit/core@latest", runtime.node.install_command).as_str(),
+                |cmd| cmd.current_dir(&runtime.git.root),
+            )
+        });
         handle.done();
         Logger::info("Upgrade Complete!");
     }
@@ -49,11 +50,9 @@ impl UpgradeRepoKit {
 impl InternalExecutable for UpgradeRepoKit {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         self.static_execute();
-        if let Some(new_version) = self
-            .scope
-            .versions
-            .refresh_installed_version(&self.scope.files)
-        {
+        if let Some(new_version) = RepoKitRuntime::with_runtime(|runtime| {
+            runtime.versions.refresh_installed_version(&runtime.files)
+        }) {
             Logger::info(
                 format!(
                     "The currently installed version is {}",

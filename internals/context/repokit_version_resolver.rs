@@ -1,23 +1,22 @@
-use std::{env::args, process::exit};
+use std::env::args;
 
 use terminal_spinners::{BOUNCING_BALL, SpinnerBuilder};
 
-use crate::{
-    context::file_system::FileSystem, executor::executor::Executor,
-    post_processing::post_processor::PostProcessor,
-};
+use crate::{context::file_system::FileSystem, executor::executor::Executor};
 
 pub struct RepoKitVersionResolver;
 
 impl RepoKitVersionResolver {
-    pub fn hop_to_installed_version(files: &FileSystem) {
+    pub fn hop_to_installed_version(files: &FileSystem) -> bool {
         if files.install_script_path.is_absolute() && files.install_script_path.exists() {
             if let Some(errors) = RepoKitVersionResolver::run_post_install(files) {
                 println!("{errors}");
             } else {
                 RepoKitVersionResolver::re_run_command();
+                return true;
             }
         }
+        false
     }
 
     fn run_post_install(files: &FileSystem) -> Option<String> {
@@ -35,8 +34,6 @@ impl RepoKitVersionResolver {
 
     fn re_run_command() {
         let args: Vec<String> = args().collect();
-        PostProcessor::get().flush();
         Executor::with_stdio(args.join(" "), |cmd| cmd);
-        exit(0);
     }
 }
