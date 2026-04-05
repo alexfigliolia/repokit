@@ -166,7 +166,7 @@ impl InternalExecutable for SearchCommands {
             Logger::exit_with_error("Please specify a search string to query with");
         }
         let query = args.join(" ").to_lowercase();
-        let externals = CommandValidations::new().collect_and_validate_externals();
+        let externals = CommandValidations::collect_and_validate_externals();
         let mut root_results: HashMap<String, CommandDefinition> = HashMap::new();
         let mut internal_results: HashMap<String, &Box<dyn InternalExecutable>> = HashMap::new();
         let mut external_results: HashMap<String, RepoKitCommand> = HashMap::new();

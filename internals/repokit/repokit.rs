@@ -20,8 +20,7 @@ impl RepoKit {
 
     pub fn invoke(&self) {
         let (command, args) = self.parse();
-        let mut validator = CommandValidations::new();
-        let internals = validator.collect_and_validate_internals();
+        let internals = CommandValidations::collect_and_validate_internals();
         if let Some(internal_command) = internals.get(&command) {
             return internal_command.run(args, &internals);
         }
@@ -34,7 +33,7 @@ impl RepoKit {
                 PostProcessor::get().flush();
             }
         });
-        let externals = validator.collect_and_validate_externals();
+        let externals = CommandValidations::collect_and_validate_externals();
         CommandValidations::detect_collisions_between_internals_and_externals(
             &internals, &externals,
         );
@@ -48,7 +47,7 @@ impl RepoKit {
                 if let Some(working_dir) = Path::new(&interface.location).parent() {
                     return Executor::with_stdio(executable, |cmd| cmd.current_dir(working_dir));
                 }
-                return self.working_directory_not_found(&interface, &executable);
+                return self.working_directory_not_found(interface, &executable);
             }
             return self.subcommand_not_found(interface, sub_command);
         }
@@ -74,9 +73,8 @@ impl RepoKit {
         HashMap<String, Box<dyn InternalExecutable>>,
         HashMap<String, RepoKitCommand>,
     ) {
-        let mut validator = CommandValidations::new();
-        let internals = validator.collect_and_validate_internals();
-        let externals = validator.collect_and_validate_externals();
+        let internals = CommandValidations::collect_and_validate_internals();
+        let externals = CommandValidations::collect_and_validate_externals();
         CommandValidations::detect_collisions_between_internals_and_externals(
             &internals, &externals,
         );
@@ -142,7 +140,7 @@ impl RepoKit {
         Logger::info("Please file an issue at");
         Logger::log_issue_link();
         Logger::info("To run this command from your terminal, you can run:");
-        Logger::log_file_path(&executable);
+        Logger::log_file_path(executable);
         Logger::info("From the parent directory of");
         Logger::log_file_path(&interface.location);
         PostProcessor::get().flush();

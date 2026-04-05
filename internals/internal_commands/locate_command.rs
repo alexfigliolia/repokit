@@ -30,8 +30,7 @@ impl LocateCommand {
     }
 
     fn search_externals(&self, query: &str) {
-        let mut finder = CommandValidations::new();
-        let all = finder.collect_and_validate_externals();
+        let all = CommandValidations::collect_and_validate_externals();
         for (_, command) in all {
             if command.name == query {
                 Logger::log_file_path(&command.location);

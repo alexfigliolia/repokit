@@ -11,7 +11,6 @@ use crate::{
     },
     internal_commands::help::Help,
     logger::logger::Logger,
-    repokit::repokit_command::RepoKitCommand,
     validations::command_validations::CommandValidations,
 };
 
@@ -29,16 +28,11 @@ impl ListOwners {
             }),
         }
     }
-
-    fn collect_registered_commands(&self) -> HashMap<String, RepoKitCommand> {
-        let mut validators = CommandValidations::new();
-        validators.collect_and_validate_externals()
-    }
 }
 
 impl InternalExecutable for ListOwners {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
-        let registered_commands = self.collect_registered_commands();
+        let registered_commands = CommandValidations::collect_and_validate_externals();
         Logger::info("Listing all command owners");
         let mut owners: HashSet<String> = HashSet::new();
         for (_, command) in registered_commands {
