@@ -27,12 +27,7 @@ impl RepoKit {
             return interface.run(args, &internals);
         }
         RepoKitRuntime::with_runtime(|runtime| {
-            if runtime.configuration.commands.contains_key(&command) {
-                let root_script = runtime
-                    .configuration
-                    .commands
-                    .get(&command)
-                    .expect("Unknown command");
+            if let Some(root_script) = runtime.configuration.commands.get(&command) {
                 Executor::with_stdio(
                     format!("{} {}", root_script.command, &args.join(" ")),
                     |cmd| cmd.current_dir(&runtime.files.git_root_path),
@@ -44,21 +39,17 @@ impl RepoKit {
         CommandValidations::detect_collisions_between_internals_and_externals(
             &internals, &externals,
         );
-        if externals.contains_key(&command) {
-            let interface = externals.get(&command).expect("Unknown command");
+        if let Some(interface) = externals.get(&command) {
             if args.is_empty() {
                 return self.log_external_command(interface);
             }
             let sub_command = &args[0];
-            if interface.commands.contains_key(sub_command) {
-                let script = interface.commands.get(sub_command).expect("Unknown script");
-                let working_dir = Path::new(&interface.location)
-                    .parent()
-                    .expect("Working directory not found");
-                return Executor::with_stdio(
-                    format!("{} {}", &script.command, &args[1..].join(" ")),
-                    |cmd| cmd.current_dir(working_dir),
-                );
+            if let Some(script) = interface.commands.get(sub_command) {
+                let executable = format!("{} {}", &script.command, &args[1..].join(" "));
+                if let Some(working_dir) = Path::new(&interface.location).parent() {
+                    return Executor::with_stdio(executable, |cmd| cmd.current_dir(working_dir));
+                }
+                return self.working_directory_not_found(&interface, &executable);
             }
             return self.subcommand_not_found(interface, sub_command);
         }
@@ -138,5 +129,23 @@ impl RepoKit {
         );
         Help::log_external_subcommands(&command.commands, 3);
         println!();
+    }
+
+    fn working_directory_not_found(&self, interface: &RepoKitCommand, executable: &str) {
+        Logger::info("I was unable to determine the working directory for this command");
+        Logger::info(
+            format!(
+                "This typically indicates a bug within {}",
+                Logger::with_theme(|theme| theme.highlight("Repokit"))
+            )
+            .as_str(),
+        );
+        Logger::info("Please file an issue at");
+        Logger::log_issue_link();
+        Logger::info("To run this command from your terminal, you can run:");
+        Logger::log_file_path(&executable);
+        Logger::info("From the parent directory of");
+        Logger::log_file_path(&interface.location);
+        PostProcessor::get().flush();
     }
 }
