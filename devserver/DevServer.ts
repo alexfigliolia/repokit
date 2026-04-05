@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { ChildProcess } from "@figliolia/child-process";
 
-export class Compiler {
+export class DevServer {
   private static TS_PROCESS?: Child_Process;
   private static readonly TSC_COMMAND = "yarn tsdown";
   // @ts-ignore
