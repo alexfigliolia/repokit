@@ -10,7 +10,7 @@ use crate::{
     logger::logger::Logger,
     repokit::{
         command_definition::CommandDefinition, repokit_command::RepoKitCommand,
-        repokit_config::RootCommand,
+        repokit_config::RootCommand, repokit_runtime::RepoKitRuntime,
     },
 };
 
@@ -18,12 +18,13 @@ pub struct Help;
 
 impl Help {
     pub fn list_all(
-        root_commands: &HashMap<String, CommandDefinition>,
         internals: &HashMap<String, Box<dyn InternalExecutable>>,
         externals: &HashMap<String, RepoKitCommand>,
     ) {
         Help::log_internal_commands(internals);
-        Help::log_root_commands(root_commands);
+        RepoKitRuntime::with_runtime(|runtime| {
+            Help::log_root_commands(&runtime.configuration.commands);
+        });
         Help::log_external_commands(externals);
     }
 

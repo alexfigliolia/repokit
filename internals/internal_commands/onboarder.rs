@@ -4,7 +4,7 @@ use crate::{
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
-            InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
+            InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
     internal_commands::help::Help,
@@ -12,14 +12,12 @@ use crate::{
 };
 
 pub struct Onboarder {
-    pub scope: RepoKitScope,
     pub definition: InternalExecutableDefinition,
 }
 
 impl Onboarder {
-    pub fn new(scope: &RepoKitScope) -> Onboarder {
+    pub fn new() -> Onboarder {
         Onboarder {
-            scope: scope.clone(),
             definition: InternalExecutableDefinition::define(InternalExecutableDefinitionInput {
                 name: "onboard",
                 description: "Onboarding instructions for first time users",
@@ -30,7 +28,7 @@ impl Onboarder {
 }
 
 impl InternalExecutable for Onboarder {
-    fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
+    fn run(&self, _args: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info(
             format!(
                 "Welcome to {}",
@@ -46,19 +44,15 @@ impl InternalExecutable for Onboarder {
         );
         Logger::log_file_path("repokit register ./path/to/your-feature");
         Logger::info(
-            "This command creates a tooling definition for your feature in a file collocated to your code",
+            "This command creates a tooling definition for your feature designed to live along side the feature's implementation",
         );
         Logger::info(
             format!(
-                "The {} CLI will automatically detect these files and add them to its toolchain",
+                "The {} CLI will automatically detect these files and add them to its toolchain - making them available to your entire team",
                 Logger::with_theme(|theme| theme.highlight("Repokit"))
             )
             .as_str(),
         );
-        Logger::info(
-            format!("As your codebase grows, your {} CLI will continue to track all of the published workflows created by your team", Logger::with_theme(|theme|theme.highlight("Repokit"))).as_str()
-        );
-        Logger::space_around("It's your living source of knowledge and documentation");
     }
 
     fn help(&self) {

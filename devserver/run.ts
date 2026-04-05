@@ -1,5 +1,5 @@
-import { Compiler } from "./Compiler";
+import { DevServer } from "./DevServer";
 
 void (async () => {
-  await Compiler.run();
+  await DevServer.run();
 })();

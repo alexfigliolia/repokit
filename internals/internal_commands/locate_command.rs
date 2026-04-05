@@ -4,24 +4,23 @@ use crate::{
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
-            InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
+            InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
     internal_commands::help::Help,
     logger::logger::Logger,
     post_processing::post_processor::PostProcessor,
+    repokit::repokit_runtime::RepoKitRuntime,
     validations::command_validations::CommandValidations,
 };
 
 pub struct LocateCommand {
-    pub scope: RepoKitScope,
     pub definition: InternalExecutableDefinition,
 }
 
 impl LocateCommand {
-    pub fn new(scope: &RepoKitScope) -> LocateCommand {
+    pub fn new() -> LocateCommand {
         LocateCommand {
-            scope: scope.clone(),
             definition: InternalExecutableDefinition::define(InternalExecutableDefinitionInput {
                 name: "locate",
                 description: "Locates command definitions",
@@ -31,7 +30,7 @@ impl LocateCommand {
     }
 
     fn search_externals(&self, query: &str) {
-        let finder = CommandValidations::new(&self.scope);
+        let mut finder = CommandValidations::new();
         let all = finder.collect_and_validate_externals();
         for (_, command) in all {
             if command.name == query {
@@ -42,10 +41,12 @@ impl LocateCommand {
     }
 
     fn search_root(&self, command: &str) {
-        if self.scope.configuration.commands.contains_key(command) {
-            Logger::log_file_path(format!("{}/repokit.ts", &self.scope.git.root).as_str());
-            PostProcessor::get().flush();
-        }
+        RepoKitRuntime::with_runtime(|runtime| {
+            if runtime.configuration.commands.contains_key(command) {
+                Logger::log_file_path(format!("{}/repokit.ts", &runtime.git.root).as_str());
+                PostProcessor::get().flush();
+            }
+        });
     }
 }
 

@@ -1,31 +1,27 @@
 use normalize_path::NormalizePath;
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashMap, path::PathBuf};
 
 use crate::{
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
-            InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
+            InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
     internal_commands::help::Help,
-    internal_filesystem::{file_builder::FileBuilder, internal_filesystem::InternalFileSystem},
+    internal_filesystem::file_builder::FileBuilder,
     logger::logger::Logger,
     post_processing::post_processor::PostProcessor,
+    repokit::repokit_runtime::RepoKitRuntime,
 };
 
 pub struct RegisterCommand {
-    pub scope: RepoKitScope,
     pub definition: InternalExecutableDefinition,
 }
 
 impl RegisterCommand {
-    pub fn new(scope: &RepoKitScope) -> RegisterCommand {
+    pub fn new() -> RegisterCommand {
         RegisterCommand {
-            scope: scope.clone(),
             definition: InternalExecutableDefinition::define(InternalExecutableDefinitionInput {
                 name: "register",
                 description: "Creates new Repokit commands",
@@ -45,7 +41,9 @@ impl RegisterCommand {
         if path_arg.is_empty() {
             RegisterCommand::exit_on_missing_path();
         }
-        let path = Path::new(&self.scope.git.root).join(&path_arg).normalize();
+        let path = RepoKitRuntime::with_runtime(|runtime| {
+            runtime.files.git_root_path.join(&path_arg).normalize()
+        });
         if !path.exists() {
             Logger::info(
                 format!(
@@ -88,8 +86,9 @@ impl InternalExecutable for RegisterCommand {
     fn run(&self, args: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Registering a new command");
         let command_path = self.validate_path(args);
-        let mut source =
-            InternalFileSystem::new(&self.scope.git.root).resolve_template("command_template.txt");
+        let mut source = RepoKitRuntime::with_runtime(|runtime| {
+            runtime.files.resolve_template("command_template.txt")
+        });
         let mut target = FileBuilder::create(&command_path, |_| Logger::file_create_error());
         FileBuilder::copy_to(&mut source, &mut target, |_| Logger::file_write_error());
         Logger::info("Creating command file");

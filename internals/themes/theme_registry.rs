@@ -1,14 +1,11 @@
 use std::collections::HashMap;
 
-use crate::{
-    internal_filesystem::internal_filesystem::InternalFileSystem,
-    themes::{
+use crate::themes::{
         built_in_themes::{money::MONEY, seeing_red::SEEING_RED, the_blues::THE_BLUES},
         theme::Theme,
         theme_colors::ThemeColors,
         theme_inputs::{RepoKitTheme, ThemeInputColors},
-    },
-};
+    };
 
 pub struct ThemeRegistry {
     pub theme: String,
@@ -26,11 +23,12 @@ impl ThemeRegistry {
         }
     }
 
-    pub fn set_theme(&mut self, root: &str, theme: &str) {
+    pub fn set_theme(&mut self, theme: &str) -> bool {
         if self.themes.contains_key(theme) && self.theme != theme {
             self.theme = theme.to_string();
-            InternalFileSystem::new(root).store_theme_preference(theme);
+            return true;
         }
+        false
     }
 
     pub fn current_theme(&self) -> &Theme {

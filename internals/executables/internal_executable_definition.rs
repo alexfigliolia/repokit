@@ -1,17 +1,5 @@
 use std::collections::HashMap;
 
-use crate::{
-    initializers::{git_scope::GitScope, repokit_version_scope::RepoKitVersionScope},
-    repokit::repokit_config::RepoKitConfig,
-};
-
-#[derive(Clone)]
-pub struct RepoKitScope {
-    pub git: GitScope,
-    pub versions: RepoKitVersionScope,
-    pub configuration: RepoKitConfig,
-}
-
 #[derive(Clone)]
 pub struct InternalExecutableDefinition {
     pub name: String,

@@ -6,7 +6,7 @@ use crate::{
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
-            InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
+            InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
     internal_commands::help::Help,
@@ -16,14 +16,12 @@ use crate::{
 };
 
 pub struct ListOwners {
-    pub scope: RepoKitScope,
     pub definition: InternalExecutableDefinition,
 }
 
 impl ListOwners {
-    pub fn new(scope: &RepoKitScope) -> ListOwners {
+    pub fn new() -> ListOwners {
         ListOwners {
-            scope: scope.clone(),
             definition: InternalExecutableDefinition::define(InternalExecutableDefinitionInput {
                 name: "owners",
                 description: "Lists all registered command owners",
@@ -33,7 +31,7 @@ impl ListOwners {
     }
 
     fn collect_registered_commands(&self) -> HashMap<String, RepoKitCommand> {
-        let validators = CommandValidations::new(&self.scope);
+        let mut validators = CommandValidations::new();
         validators.collect_and_validate_externals()
     }
 }
