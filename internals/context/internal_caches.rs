@@ -99,8 +99,7 @@ impl InternalCaches {
         if let Some(path) = path_buf
             && let Ok(file) = File::open(path)
         {
-            let lines = BufReader::new(file).lines();
-            return Some(func(lines, path));
+            return Some(func(BufReader::new(file).lines(), path));
         }
         None
     }
@@ -115,9 +114,9 @@ impl InternalCaches {
     }
 
     async fn create_filesystem_cache(&self) -> Option<PathBuf> {
-        if let Some(path) = self.create_cache_file_if_not_exists(".repokit_cache", &mut |_| {
-            "unknown_last_commit".to_string()
-        }) {
+        if let Some(path) =
+            self.create_cache_file_if_not_exists(".repokit_cache", &mut |_| "".to_string())
+        {
             return Some(path);
         }
         None

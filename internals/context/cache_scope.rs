@@ -1,7 +1,7 @@
 use std::{
     collections::HashSet,
     fs::{File, write},
-    io::{self, BufReader, Lines},
+    io::{BufReader, Error, Lines},
     path::PathBuf,
 };
 
@@ -66,15 +66,12 @@ impl CacheScope {
             });
     }
 
-    pub fn store_crawl_cache(
-        &self,
-        head_commit: &str,
-        paths: String,
-    ) -> Option<Result<(), io::Error>> {
-        self.internal
-            .read_cache_file(Cache::FileSystem, &mut move |_, file_path| {
-                write(file_path, [head_commit, &paths].join("\n"))
-            })
+    pub fn store_crawl_cache(&self, head_commit: &str, paths: String) {
+        (&self.internal).read_cache_file(Cache::FileSystem, &mut move |_, file_path| {
+            if let Err(_) = write(file_path, [head_commit, &paths].join("\n")) {
+                CacheScope::on_crawl_cache_storage_error(file_path);
+            }
+        });
     }
 
     pub fn insert_as_first_line(
@@ -92,15 +89,13 @@ impl CacheScope {
     }
 
     pub fn line_buffer_to_vec(&self, lines: Lines<BufReader<File>>) -> Vec<String> {
-        let vec: Vec<String> = lines
-            .filter_map(|entry| {
-                if let Ok(line) = entry {
-                    Some(line);
-                }
-                None
-            })
-            .collect();
-        vec
+        lines.filter_map(Result::ok).collect()
+    }
+
+    pub fn unwrap_line(line_result: Option<Result<String, Error>>, fallback: &str) -> String {
+        line_result
+            .and_then(|r| r.ok())
+            .unwrap_or(fallback.to_string())
     }
 
     async fn read_theme_preference(&self) -> String {
@@ -108,51 +103,38 @@ impl CacheScope {
         let theme = self
             .internal
             .read_cache_file(Cache::Settings, &mut |mut lines, _| {
-                if let Some(theme_preference) = lines.nth(0)
-                    && let Ok(preference) = theme_preference
-                {
-                    return preference;
-                }
-                default.to_string()
+                CacheScope::unwrap_line(lines.nth(0), &default)
             });
         theme.unwrap_or(default)
     }
 
     async fn read_file_system_cache(&self, head_commit: &str) -> Option<Vec<String>> {
-        let files_to_crawl = self
-            .internal
-            .read_cache_file(Cache::FileSystem, &mut move |line_buffer, _| {
-                let mut lines = self.line_buffer_to_vec(line_buffer);
-                if lines.len() < 2 {
+        self.internal
+            .read_cache_file(Cache::FileSystem, &mut move |mut line_buffer, path| {
+                let commit_hash = CacheScope::unwrap_line(line_buffer.nth(0), "non_existent_hash");
+                if commit_hash != head_commit {
                     return None;
                 }
-                if let Some(crawl_commit) = lines.first()
-                    && crawl_commit == head_commit
-                {
-                    let (git_ignore_changed, mut changed_files) = CacheScope::get_changed_files();
-                    if git_ignore_changed {
-                        self.drop_file_system_cache();
-                        return None;
-                    }
-                    for line in &lines {
-                        if changed_files.contains(line) {
-                            changed_files.remove(line);
-                        }
-                    }
-                    for line in changed_files {
-                        lines.push(line);
-                    }
-                    return Some(lines);
+                let mut lines = self.line_buffer_to_vec(line_buffer);
+                if lines.is_empty() {
+                    return None;
                 }
-                None
+                let (git_ignore_changed, mut changed_files) = CacheScope::get_changed_files();
+                if git_ignore_changed {
+                    CacheScope::clear_cache_file(path.to_owned(), false);
+                    return None;
+                }
+                for line in &lines {
+                    if changed_files.contains(line) {
+                        changed_files.remove(line);
+                    }
+                }
+                for line in changed_files {
+                    lines.push(line);
+                }
+                return Some(lines);
             })
-            .unwrap();
-        if let Some(files) = files_to_crawl
-            && files.len() > 1
-        {
-            return Some((files)[1..].to_vec());
-        }
-        None
+            .unwrap_or(None)
     }
 
     fn get_changed_files() -> (bool, HashSet<String>) {
@@ -184,20 +166,6 @@ impl CacheScope {
         (contains_git_ignore, files)
     }
 
-    fn drop_file_system_cache(&self) {
-        self.internal
-            .read_cache_file(Cache::FileSystem, &mut |mut lines, path| {
-                if let Some(first_line) = lines.nth(0)
-                    && let Ok(head_commit) = first_line
-                {
-                    // TODO - error handle
-                    write(path, format!("{head_commit}\n"))
-                } else {
-                    write(path, "")
-                }
-            });
-    }
-
     fn on_theme_storage_error(&self, path: &PathBuf, content: String) {
         let path_clone = path.clone();
         PostProcessor::get().register_task(move || {
@@ -220,6 +188,43 @@ impl CacheScope {
                 )
                 .as_str(),
             );
+        });
+    }
+
+    fn on_crawl_cache_storage_error(path: &PathBuf) {
+        let path_clone = path.clone();
+        PostProcessor::get().register_task(move || {
+            Logger::info(
+                "I attempted to cache the results of a file crawl, but couldn't write to disk",
+            );
+            Logger::info("This is normally a permission-related issue on the operating system");
+            Logger::info(
+                format!(
+                    "If you believe this to be a bug within Repokit {}",
+                    Logger::with_theme(|theme| theme.highlight("Repokit"))
+                )
+                .as_str(),
+            );
+            Logger::info("Please file an issue here");
+            Logger::log_issue_link();
+            Logger::info(
+                "To avoid issues with stale caches I'm going to delete what's currently on disk",
+            );
+            CacheScope::clear_cache_file(path_clone.clone(), true);
+        });
+    }
+
+    fn clear_cache_file(path: PathBuf, notify: bool) {
+        PostProcessor::get().register_task(move || {
+            if let Err(_) = write(&path, "") {
+                Logger::error("I was unable to remove a cache on disk");
+                Logger::error("To correct this, please run");
+                return Logger::log_file_path(
+                    format!("rm {}", FileSystem::path_buf_to_str(&path)).as_str(),
+                );
+            } else if notify {
+                Logger::info("Cache deleted!");
+            }
         });
     }
 }

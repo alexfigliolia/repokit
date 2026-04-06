@@ -98,11 +98,9 @@ impl RepoKitVersionScope {
             cache
                 .internal
                 .read_cache_file(Cache::Version, &mut |mut lines, _| {
-                    if let Some(version) = lines.nth(0)
-                        && let Ok(last_version) = version
-                        && VERSION_REGEX.is_match(&last_version)
-                    {
-                        return Some(last_version);
+                    let last_known_version = CacheScope::unwrap_line(lines.nth(0), "");
+                    if VERSION_REGEX.is_match(&last_known_version) {
+                        return Some(last_known_version);
                     }
                     None
                 });
