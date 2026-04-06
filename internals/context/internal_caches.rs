@@ -138,13 +138,10 @@ impl InternalCaches {
     ) -> Option<PathBuf> {
         if let Some(cache_directory) = &self.cache_directory {
             let dot_file_path = cache_directory.join(file_name).normalize();
-            if !&dot_file_path.exists() {
-                let contents = on_create(&dot_file_path);
-                let result = write(&dot_file_path, format!("{}\n", contents));
-                if result.is_err() {
+            if !&dot_file_path.exists()
+                && write(&dot_file_path, format!("{}\n", on_create(&dot_file_path))).is_err() {
                     return None;
                 }
-            }
             return Some(dot_file_path);
         }
         None

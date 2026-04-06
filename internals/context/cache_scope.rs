@@ -67,8 +67,8 @@ impl CacheScope {
     }
 
     pub fn store_crawl_cache(&self, head_commit: &str, paths: String) {
-        (&self.internal).read_cache_file(Cache::FileSystem, &mut move |_, file_path| {
-            if let Err(_) = write(file_path, [head_commit, &paths].join("\n")) {
+        self.internal.read_cache_file(Cache::FileSystem, &mut move |_, file_path| {
+            if write(file_path, [head_commit, &paths].join("\n")).is_err() {
                 CacheScope::on_crawl_cache_storage_error(file_path);
             }
         });
@@ -96,6 +96,19 @@ impl CacheScope {
         line_result
             .and_then(|r| r.ok())
             .unwrap_or(fallback.to_string())
+    }
+
+    pub fn log_cache_write_error() {
+        Logger::info("This is typically a permission-related issue on the operating system");
+        Logger::info(
+            format!(
+                "If you believe this to be a bug within {}",
+                Logger::with_theme(|theme| theme.highlight("Repokit"))
+            )
+            .as_str(),
+        );
+        Logger::info("Please file an issue here");
+        Logger::log_issue_link();
     }
 
     async fn read_theme_preference(&self) -> String {
@@ -132,7 +145,7 @@ impl CacheScope {
                 for line in changed_files {
                     lines.push(line);
                 }
-                return Some(lines);
+                Some(lines)
             })
             .unwrap_or(None)
     }
@@ -197,16 +210,7 @@ impl CacheScope {
             Logger::info(
                 "I attempted to cache the results of a file crawl, but couldn't write to disk",
             );
-            Logger::info("This is normally a permission-related issue on the operating system");
-            Logger::info(
-                format!(
-                    "If you believe this to be a bug within Repokit {}",
-                    Logger::with_theme(|theme| theme.highlight("Repokit"))
-                )
-                .as_str(),
-            );
-            Logger::info("Please file an issue here");
-            Logger::log_issue_link();
+            CacheScope::log_cache_write_error();
             Logger::info(
                 "To avoid issues with stale caches I'm going to delete what's currently on disk",
             );
@@ -216,12 +220,12 @@ impl CacheScope {
 
     fn clear_cache_file(path: PathBuf, notify: bool) {
         PostProcessor::get().register_task(move || {
-            if let Err(_) = write(&path, "") {
+            if write(&path, "").is_err() {
                 Logger::error("I was unable to remove a cache on disk");
                 Logger::error("To correct this, please run");
-                return Logger::log_file_path(
+                Logger::log_file_path(
                     format!("rm {}", FileSystem::path_buf_to_str(&path)).as_str(),
-                );
+                )
             } else if notify {
                 Logger::info("Cache deleted!");
             }

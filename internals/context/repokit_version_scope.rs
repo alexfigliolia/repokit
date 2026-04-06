@@ -1,6 +1,7 @@
 use std::{
     fs::{File, write},
     io::{BufRead, BufReader},
+    path::PathBuf,
     sync::LazyLock,
 };
 
@@ -13,6 +14,7 @@ use crate::{
         internal_caches::Cache, repokit_version_resolver::RepoKitVersionResolver,
     },
     logger::logger::Logger,
+    post_processing::post_processor::PostProcessor,
 };
 
 static UNKNOWN: &str = "UNKNOWN";
@@ -75,8 +77,12 @@ impl RepoKitVersionScope {
         cache
             .internal
             .read_cache_file(Cache::Version, &mut |lines, path| {
-                let content = cache.insert_as_first_line(lines, self.installed_version.to_string());
-                let _ = write(path, content.join("\n"));
+                let content = cache
+                    .insert_as_first_line(lines, self.installed_version.to_string())
+                    .join("\n");
+                if write(path, &content).is_err() {
+                    self.on_record_version_use_error(content, path.to_owned());
+                }
             });
     }
 
@@ -136,5 +142,23 @@ impl RepoKitVersionScope {
             }
         }
         None
+    }
+
+    fn on_record_version_use_error(&self, version: String, cache_directory: PathBuf) {
+        PostProcessor::get().register_task(move || {
+            Logger::info(
+                "I attempted to write to cache file on disk, but the operation was unsuccessful",
+            );
+            CacheScope::log_cache_write_error();
+            Logger::info("To avoid any issue with stale caches you can run");
+            Logger::log_file_path(
+                format!(
+                    "printf \"{}\" > {}",
+                    &version,
+                    FileSystem::path_buf_to_str(&cache_directory),
+                )
+                .as_str(),
+            );
+        });
     }
 }
