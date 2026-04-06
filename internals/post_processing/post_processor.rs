@@ -1,7 +1,4 @@
-use std::{
-    process::exit,
-    sync::{LazyLock, Mutex, MutexGuard},
-};
+use std::sync::{LazyLock, Mutex, MutexGuard};
 
 pub struct PostProcessor {
     tasks: Vec<Box<dyn Fn() + Send + 'static>>,
@@ -29,7 +26,6 @@ impl PostProcessor {
         }
         self.tasks.clear();
         self.tasks.shrink_to_fit();
-        exit(0);
     }
 }
 

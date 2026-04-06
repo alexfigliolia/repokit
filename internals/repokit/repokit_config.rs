@@ -1,9 +1,9 @@
-use std::{collections::HashMap, path::Path, process::exit, sync::LazyLock};
-
+use core::panic;
 use jsonschema::Validator;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use serde_json::{Value, from_value, to_value};
+use std::{collections::HashMap, path::Path, sync::LazyLock};
 
 use crate::{
     context::{file_system::FileSystem, node_scope::NodeScope},
@@ -66,8 +66,7 @@ impl RepoKitConfig {
         println!();
         Logger::info("There was an error parsing your configuration");
         NodeScope::prompt_to_fix_errors(path);
-        PostProcessor::get().flush();
-        exit(0);
+        panic!();
     }
 
     pub fn create(files: &FileSystem) {

@@ -3,7 +3,6 @@ use std::{
     fs::{File, create_dir_all},
     io::{Error, copy},
     path::Path,
-    process::exit,
 };
 
 pub struct FileBuilder;
@@ -15,8 +14,7 @@ impl FileBuilder {
             Ok(file) => file,
             Err(error) => {
                 on_error(error);
-                PostProcessor::get().flush();
-                exit(0);
+                panic!();
             }
         }
     }
@@ -27,8 +25,7 @@ impl FileBuilder {
             Ok(file) => file,
             Err(error) => {
                 on_error(error);
-                PostProcessor::get().flush();
-                exit(0);
+                panic!();
             }
         }
     }

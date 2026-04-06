@@ -1,4 +1,4 @@
-use std::{path::Path, process::exit};
+use std::path::Path;
 
 use futures::join;
 
@@ -45,10 +45,11 @@ impl GitScope {
         {
             return root;
         }
-        Logger::info("Please initialize your repository by running");
-        Logger::log_file_path("git init");
-        PostProcessor::get().flush();
-        exit(0);
+        PostProcessor::get().register_task(|| {
+            Logger::info("Please initialize your repository by running");
+            Logger::log_file_path("git init");
+        });
+        panic!();
     }
 
     async fn get_head_commit() -> Option<String> {
