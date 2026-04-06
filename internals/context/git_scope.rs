@@ -4,7 +4,6 @@ use futures::join;
 
 use crate::{
     context::initializer::Initializer, executor::executor::Executor, logger::logger::Logger,
-    post_processing::post_processor::PostProcessor,
 };
 
 #[derive(Clone)]

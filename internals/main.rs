@@ -1,6 +1,9 @@
 use std::panic;
 
-use crate::{post_processing::post_processor::PostProcessor, repokit::repokit::RepoKit};
+use crate::{
+    post_processing::post_processor::PostProcessor,
+    repokit::repokit::RepoKit,
+};
 
 mod argv;
 mod context;
@@ -16,6 +19,7 @@ mod themes;
 mod validations;
 
 fn main() {
-    let _result = panic::catch_unwind(|| RepoKit::new().invoke());
+    panic::set_hook(Box::new(|_| PostProcessor::get().flush()));
+    RepoKit::new().invoke();
     PostProcessor::get().flush();
 }

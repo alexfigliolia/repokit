@@ -5,7 +5,6 @@ use std::sync::MutexGuard;
 
 use colored::{ColoredString, Colorize};
 
-use crate::post_processing::post_processor::PostProcessor;
 use crate::repokit::repokit_runtime::RepoKitRuntime;
 use crate::themes::theme::Theme;
 use crate::themes::theme_registry::ThemeRegistry;
