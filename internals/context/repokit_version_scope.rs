@@ -1,3 +1,4 @@
+use core::panic;
 use std::{
     fs::{File, write},
     io::{BufRead, BufReader},
@@ -94,9 +95,14 @@ impl RepoKitVersionScope {
             )
             .as_str(),
         );
-        if RepoKitVersionResolver::hop_to_installed_version(files) {
+        if RepoKitVersionResolver::hop_to_installed_version(files).is_ok() {
             self.record_version_use(cache);
+        } else {
+            Logger::info("I was unable swap to your currently installed version");
+            Logger::info("Please file a bug at");
+            Logger::log_issue_link();
         }
+        panic!();
     }
 
     async fn runtime_version(&self, cache: &CacheScope) -> Option<String> {

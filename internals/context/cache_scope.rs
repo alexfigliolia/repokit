@@ -67,11 +67,12 @@ impl CacheScope {
     }
 
     pub fn store_crawl_cache(&self, head_commit: &str, paths: String) {
-        self.internal.read_cache_file(Cache::FileSystem, &mut move |_, file_path| {
-            if write(file_path, [head_commit, &paths].join("\n")).is_err() {
-                CacheScope::on_crawl_cache_storage_error(file_path);
-            }
-        });
+        self.internal
+            .read_cache_file(Cache::FileSystem, &mut move |_, file_path| {
+                if write(file_path, [head_commit, &paths].join("\n")).is_err() {
+                    CacheScope::on_crawl_cache_storage_error(file_path);
+                }
+            });
     }
 
     pub fn insert_as_first_line(
@@ -223,9 +224,7 @@ impl CacheScope {
             if write(&path, "").is_err() {
                 Logger::error("I was unable to remove a cache on disk");
                 Logger::error("To correct this, please run");
-                Logger::log_file_path(
-                    format!("rm {}", FileSystem::path_buf_to_str(&path)).as_str(),
-                )
+                Logger::log_file_path(format!("rm {}", FileSystem::path_buf_to_str(&path)).as_str())
             } else if notify {
                 Logger::info("Cache deleted!");
             }

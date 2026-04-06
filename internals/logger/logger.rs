@@ -1,3 +1,4 @@
+use core::panic;
 use std::sync::LazyLock;
 use std::sync::Mutex;
 use std::sync::MutexGuard;
@@ -39,12 +40,12 @@ impl Logger {
 
     pub fn exit_with_info(message: &str) {
         Logger::info(message);
-        PostProcessor::get().flush();
+        panic!();
     }
 
     pub fn exit_with_error(message: &str) {
         Logger::error(message);
-        PostProcessor::get().flush();
+        panic!();
     }
 
     pub fn list(items: &[&str], indentation: Option<i32>) {
@@ -130,7 +131,7 @@ impl Logger {
         Logger::info(format!("I was unable to {operation} in your repository").as_str());
         Logger::error("Please verify the permissions on your working directory or file a bug here");
         Logger::log_issue_link();
-        PostProcessor::get().flush();
+        panic!();
     }
 
     fn info_prefix() -> String {

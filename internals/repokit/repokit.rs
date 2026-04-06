@@ -30,7 +30,7 @@ impl RepoKit {
                     format!("{} {}", root_script.command, &args.join(" ")),
                     |cmd| cmd.current_dir(&runtime.files.git_root_path),
                 );
-                PostProcessor::get().flush();
+                panic!();
             }
         });
         let externals = CommandValidations::collect_and_validate_externals();
@@ -60,7 +60,7 @@ impl RepoKit {
             let (internals, externals) = self.collect_and_validate();
 
             Help::list_all(&internals, &externals);
-            PostProcessor::get().flush();
+            panic!();
         }
         let command = &argv[1];
         let args = &(&argv)[2..];
@@ -143,6 +143,6 @@ impl RepoKit {
         Logger::log_file_path(executable);
         Logger::info("From the parent directory of");
         Logger::log_file_path(&interface.location);
-        PostProcessor::get().flush();
+        panic!();
     }
 }

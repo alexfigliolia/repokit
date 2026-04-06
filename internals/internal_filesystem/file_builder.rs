@@ -50,7 +50,7 @@ impl FileBuilder {
             Ok(result) => result,
             Err(error) => {
                 on_error(error);
-                PostProcessor::get().flush();
+                panic!();
             }
         }
     }

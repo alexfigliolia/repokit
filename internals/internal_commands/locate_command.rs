@@ -9,7 +9,6 @@ use crate::{
     },
     internal_commands::help::Help,
     logger::logger::Logger,
-    post_processing::post_processor::PostProcessor,
     repokit::repokit_runtime::RepoKitRuntime,
     validations::command_validations::CommandValidations,
 };
@@ -34,7 +33,7 @@ impl LocateCommand {
         for (_, command) in all {
             if command.name == query {
                 Logger::log_file_path(&command.location);
-                PostProcessor::get().flush();
+                panic!();
             }
         }
     }
@@ -43,7 +42,7 @@ impl LocateCommand {
         RepoKitRuntime::with_runtime(|runtime| {
             if runtime.configuration.commands.contains_key(command) {
                 Logger::log_file_path(format!("{}/repokit.ts", &runtime.git.root).as_str());
-                PostProcessor::get().flush();
+                panic!();
             }
         });
     }

@@ -66,11 +66,10 @@ impl RegisterCommand {
                 )
                 .as_str(),
             );
-            Logger::info(format!(
+            Logger::exit_with_info(format!(
                 "You can append additional commands to the existing {} instance or export another one",
                 Logger::with_theme(|theme| theme.highlight("RepoKitCommand"))
             ).as_str());
-            PostProcessor::get().flush();
         }
         command_path.clone()
     }

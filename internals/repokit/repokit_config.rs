@@ -95,6 +95,6 @@ impl RepoKitConfig {
             .as_str(),
         );
         Logger::log_file_path(file_path.as_str());
-        PostProcessor::get().flush();
+        panic!();
     }
 }

@@ -1,4 +1,7 @@
-use std::env::args;
+use std::{
+    env::args,
+    io::{Error, ErrorKind},
+};
 
 use terminal_spinners::{BOUNCING_BALL, SpinnerBuilder};
 
@@ -7,16 +10,24 @@ use crate::{context::file_system::FileSystem, executor::executor::Executor};
 pub struct RepoKitVersionResolver;
 
 impl RepoKitVersionResolver {
-    pub fn hop_to_installed_version(files: &FileSystem) -> bool {
+    pub fn hop_to_installed_version(files: &FileSystem) -> Result<(), Error> {
         if files.install_script_path.is_absolute() && files.install_script_path.exists() {
             if let Some(errors) = RepoKitVersionResolver::run_post_install(files) {
                 println!("{errors}");
+                return Err(Error::new(
+                    ErrorKind::NotFound,
+                    "post install script failed to execute",
+                ));
             } else {
                 RepoKitVersionResolver::re_run_command();
-                return true;
+                return Ok(());
             }
         }
-        false
+        Err(Error::new(
+            ErrorKind::NotFound,
+            "post install script not found",
+        ))
+        // TODO attempt recovery via re-install from npm
     }
 
     fn run_post_install(files: &FileSystem) -> Option<String> {

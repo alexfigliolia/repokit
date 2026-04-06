@@ -45,10 +45,8 @@ impl GitScope {
         {
             return root;
         }
-        PostProcessor::get().register_task(|| {
-            Logger::info("Please initialize your repository by running");
-            Logger::log_file_path("git init");
-        });
+        Logger::info("Please initialize your repository by running");
+        Logger::log_file_path("git init");
         panic!();
     }
 
