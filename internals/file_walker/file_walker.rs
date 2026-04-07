@@ -22,7 +22,8 @@ impl FileWalker {
     }
 
     fn resolve(&self) {
-        if RepoKitRuntime::with_runtime(|runtime| runtime.cache.crawl_cache_enabled()) {
+        if RepoKitRuntime::with_runtime(|runtime| runtime.caches.crawl_cache.crawl_cache_enabled())
+        {
             self.from_cache();
         } else {
             self.crawl_file_system();
@@ -36,9 +37,11 @@ impl FileWalker {
                 .build_parallel()
                 .visit(&mut visitor);
             if let Some(head_commit) = &runtime.git.head_commit_hash {
+                let files = self.command_paths.lock().unwrap();
                 runtime
-                    .cache
-                    .store_crawl_cache(head_commit, self.command_paths.lock().unwrap().join("\n"));
+                    .caches
+                    .crawl_cache
+                    .cache_crawl_results([head_commit.to_owned(), files.join("\n")].join("\n"));
             }
         });
     }
@@ -46,7 +49,7 @@ impl FileWalker {
     fn from_cache(&self) {
         let mut paths_to_search = self.command_paths.lock().unwrap();
         RepoKitRuntime::with_runtime(|runtime| {
-            if let Some(files_to_crawl) = &runtime.cache.files_to_crawl {
+            if let Some(files_to_crawl) = &runtime.caches.crawl_cache.files_to_crawl {
                 for file in files_to_crawl {
                     paths_to_search.push(file.to_owned())
                 }

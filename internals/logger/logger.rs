@@ -24,7 +24,7 @@ impl Logger {
                 Logger::with_registry(|mut registry| registry.register_user_theme(theme))
             }
             Logger::with_registry(|mut registry| {
-                registry.set_theme(&runtime.cache.theme_preference)
+                registry.set_theme(&runtime.caches.settings_cache.theme_preference)
             });
         });
     }

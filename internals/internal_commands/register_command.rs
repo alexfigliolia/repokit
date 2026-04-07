@@ -8,7 +8,6 @@ use crate::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
-    internal_commands::help::Help,
     internal_filesystem::file_builder::FileBuilder,
     logger::logger::Logger,
     repokit::repokit_runtime::RepoKitRuntime,

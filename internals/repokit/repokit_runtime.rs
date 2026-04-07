@@ -1,10 +1,11 @@
 use std::sync::{LazyLock, Mutex, MutexGuard};
 
+use futures::executor::block_on;
+
 use crate::{
     context::{
         cache_scope::CacheScope, file_system::FileSystem, git_scope::GitScope,
-        node_scope::NodeScope, repokit_version_scope::RepoKitVersionScope,
-        typescript_bridge::TypeScriptBridge,
+        node_scope::NodeScope, typescript_bridge::TypeScriptBridge,
     },
     repokit::repokit_config::RepoKitConfig,
 };
@@ -13,8 +14,7 @@ pub struct RepoKitRuntime {
     pub git: GitScope,
     pub node: NodeScope,
     pub files: FileSystem,
-    pub cache: CacheScope,
-    pub versions: RepoKitVersionScope,
+    pub caches: CacheScope,
     pub configuration: RepoKitConfig,
 }
 
@@ -25,16 +25,14 @@ impl RepoKitRuntime {
     pub fn new() -> RepoKitRuntime {
         let git = GitScope::new();
         let files = FileSystem::new(&git.root);
-        let cache = CacheScope::new(&git);
-        let versions = RepoKitVersionScope::new((&files, &cache));
+        let caches = CacheScope::new(&git, &files);
         let mut node = NodeScope::new(&git.root);
         let configuration = TypeScriptBridge::parse_configuration(&files, &mut node);
         RepoKitRuntime {
             git,
             node,
             files,
-            cache,
-            versions,
+            caches,
             configuration,
         }
     }

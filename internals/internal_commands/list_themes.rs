@@ -11,7 +11,6 @@ use crate::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
-    internal_commands::help::Help,
     logger::logger::Logger,
     repokit::repokit_runtime::RepoKitRuntime,
 };
@@ -94,7 +93,10 @@ impl InternalExecutable for ListThemes {
         }
         if Logger::with_registry(|mut registry| registry.set_theme(&desired_theme)) {
             RepoKitRuntime::with_runtime(|runtime| {
-                runtime.cache.store_theme_preference(&desired_theme);
+                runtime
+                    .caches
+                    .settings_cache
+                    .store_theme_preference(&desired_theme);
             });
         }
         Logger::info(

@@ -1,29 +1,14 @@
 use std::path::Path;
 
-use futures::join;
+use futures::{executor::block_on, join};
 
-use crate::{
-    context::initializer::Initializer, executor::executor::Executor, logger::logger::Logger,
-};
+use crate::{executor::executor::Executor, logger::logger::Logger};
 
 #[derive(Clone)]
 pub struct GitScope {
     pub root: String,
     pub root_commit_hash: Option<String>,
     pub head_commit_hash: Option<String>,
-}
-
-impl Initializer<(), &str> for GitScope {
-    async fn resolve(&mut self, _: &str) {
-        let (root, root_commit, head_commit) = join!(
-            GitScope::find_root(),
-            GitScope::get_root_commit(),
-            GitScope::get_head_commit()
-        );
-        self.root = root;
-        self.root_commit_hash = root_commit;
-        self.head_commit_hash = head_commit;
-    }
 }
 
 impl GitScope {
@@ -33,8 +18,19 @@ impl GitScope {
             root_commit_hash: None,
             head_commit_hash: None,
         };
-        GitScope::resolve_sync(instance.resolve(""));
+        block_on(instance.resolve());
         instance
+    }
+
+    async fn resolve(&mut self) {
+        let (root, root_commit, head_commit) = join!(
+            GitScope::find_root(),
+            GitScope::get_root_commit(),
+            GitScope::get_head_commit()
+        );
+        self.root = root;
+        self.root_commit_hash = root_commit;
+        self.head_commit_hash = head_commit;
     }
 
     async fn find_root() -> String {

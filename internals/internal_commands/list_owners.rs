@@ -9,7 +9,6 @@ use crate::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
-    internal_commands::help::Help,
     logger::logger::Logger,
     validations::command_validations::CommandValidations,
 };

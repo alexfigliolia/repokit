@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    context::repokit_version_scope::VERSION_REGEX,
+    caches::version_cache::VERSION_REGEX,
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
@@ -9,7 +9,6 @@ use crate::{
         },
     },
     executor::executor::Executor,
-    internal_commands::help::Help,
     logger::logger::Logger,
     repokit::repokit_runtime::RepoKitRuntime,
 };
@@ -38,13 +37,13 @@ impl InternalExecutable for ListVersion {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Fetching the installed version of repokit");
         if RepoKitRuntime::with_runtime(|runtime| {
-            if VERSION_REGEX.is_match(&runtime.versions.installed_version) {
-                self.log_version(&runtime.versions.installed_version);
+            if VERSION_REGEX.is_match(&runtime.caches.version_cache.installed_version) {
+                self.log_version(&runtime.caches.version_cache.installed_version);
                 return true;
             }
-            if VERSION_REGEX.is_match(&runtime.versions.runtime_version) {
+            if VERSION_REGEX.is_match(&runtime.caches.version_cache.runtime_version) {
                 Logger::info("Falling back to the runtime version");
-                self.log_version(&runtime.versions.runtime_version);
+                self.log_version(&runtime.caches.version_cache.runtime_version);
                 return true;
             }
             false

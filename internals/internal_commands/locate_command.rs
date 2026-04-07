@@ -7,7 +7,6 @@ use crate::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
-    internal_commands::help::Help,
     logger::logger::Logger,
     repokit::repokit_runtime::RepoKitRuntime,
     validations::command_validations::CommandValidations,
