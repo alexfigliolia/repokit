@@ -72,7 +72,7 @@ impl VersionCache {
     }
 
     fn record_version_use(&self) {
-        self.write((&format!("{}\n", self.installed_version)).as_str(), |_| {
+        self.write(format!("{}\n", self.installed_version).as_str(), |_| {
             self.on_record_version_use_error();
         });
     }

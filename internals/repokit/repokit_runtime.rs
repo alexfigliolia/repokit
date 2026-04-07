@@ -1,6 +1,5 @@
 use std::sync::{LazyLock, Mutex, MutexGuard};
 
-use futures::executor::block_on;
 
 use crate::{
     context::{

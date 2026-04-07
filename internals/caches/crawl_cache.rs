@@ -1,4 +1,7 @@
-use std::{collections::HashSet, path::PathBuf};
+use std::{
+    collections::HashSet,
+    path::{Path, PathBuf},
+};
 
 use regex::Regex;
 
@@ -35,7 +38,7 @@ impl CrawlCache {
             if lines.is_empty() {
                 return;
             }
-            let (git_ignore_changed, mut changed_files) = self.get_changed_files();
+            let (git_ignore_changed, mut changed_files) = self.get_changed_files(&git_scope.root);
             if git_ignore_changed {
                 CrawlCache::clear_cache_file(path.to_owned(), false);
                 return;
@@ -77,10 +80,11 @@ impl CrawlCache {
         }
     }
 
-    fn get_changed_files(&self) -> (bool, HashSet<String>) {
+    fn get_changed_files(&self, git_root: &str) -> (bool, HashSet<String>) {
         let mut contains_git_ignore = false;
         let file_path_matcher = Regex::new(r#"^.*\s(.*\.ts)$"#).unwrap();
-        let stdout = Executor::exec("git status --porcelain", |cmd| cmd);
+        let stdout = Executor::exec("git status --porcelain -uall", |cmd| cmd);
+        let git_root_path = Path::new(git_root);
         let files: HashSet<String> = stdout
             .split("\n")
             .filter_map(|file| {
@@ -97,7 +101,9 @@ impl CrawlCache {
                         None
                     })
                     .collect();
-                if let Some(file_path) = matches.first() {
+                if let Some(file_path) = matches.first()
+                    && git_root_path.join(file_path).exists()
+                {
                     return Some(file_path.to_string());
                 }
                 None

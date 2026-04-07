@@ -4,7 +4,7 @@ use crate::{
     context::typescript_bridge::TypeScriptBridge,
     executables::internal_executable::InternalExecutable,
     file_walker::file_walker::FileWalker,
-    internal_commands::internal_registry::InternalRegistry,
+    internal_commands::internal_registry::InternalCommandRegistry,
     logger::logger::Logger,
     repokit::{repokit_command::RepoKitCommand, repokit_runtime::RepoKitRuntime},
 };
@@ -13,7 +13,7 @@ pub struct CommandValidations;
 
 impl CommandValidations {
     pub fn collect_and_validate_internals() -> HashMap<String, Box<dyn InternalExecutable>> {
-        let internals = InternalRegistry::new().get_all();
+        let internals = InternalCommandRegistry::new().get_all();
         CommandValidations::detect_collisions_between_internals_and_root_commands(&internals);
         internals
     }

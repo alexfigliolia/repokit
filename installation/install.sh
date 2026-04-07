@@ -27,6 +27,8 @@ fi
 
 echo "Installing Repokit CLI"
 
+ROOT_COMMIT=$(git rev-list --parents HEAD | tail -1) || ROOT_COMMIT=""
+
 cd
 
 OLD_SETTINGS_FILE=".repokit"
@@ -48,6 +50,10 @@ mkdir -p "$CACHE_DIR"
 
 cd "$CACHE_DIR"
 
+if [ -n "$ROOT_COMMIT" ]; then
+    mkdir -p "$ROOT_COMMIT"
+fi
+
 if [ -f $VERSION_FILE ]; then
     read -r FIRST_LINE < "$VERSION_FILE"
     if [ "$FIRST_LINE" == "$CURRENT_VERSION" ]; then
@@ -59,14 +65,7 @@ fi
 
 printf "$CURRENT_VERSION\n" > "$VERSION_FILE"
 
-cd $REPO_ROOT
-
-ROOT_COMMIT=$(git rev-list --parents HEAD | tail -1) || ROOT_COMMIT=""
-
 if [ -n "$ROOT_COMMIT" ] && [ -n "$CACHED_THEME" ]; then
-    cd
-    cd "$CACHE_DIR"
-    mkdir -p "$ROOT_COMMIT"
     cd "$ROOT_COMMIT"
     touch "$SETTINGS_FILE"
     printf "$CACHED_THEME\n" > "$SETTINGS_FILE"

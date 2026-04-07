@@ -54,7 +54,7 @@ impl TypeScriptBridge {
         match result {
             Ok(commands) => RepoKitCommand::from_input(commands),
             Err(_) => {
-                RepoKitCommand::on_parsing_error(Value::Null);
+                RepoKitCommand::full_blown_crash();
                 panic!();
             }
         }

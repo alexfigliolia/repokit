@@ -57,7 +57,6 @@ impl RepoKit {
         let argv: Vec<String> = args().collect();
         if argv.len() < 2 {
             let (internals, externals) = self.collect_and_validate();
-
             Help::list_all(&internals, &externals);
             panic!();
         }
