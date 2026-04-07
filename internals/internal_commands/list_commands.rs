@@ -91,10 +91,6 @@ impl InternalExecutable for ListCommands {
         Help::log_external_commands(&matches);
     }
 
-    fn help(&self) {
-        Help::log_internal_command(&self.definition);
-    }
-
     fn get_definition(&self) -> &InternalExecutableDefinition {
         &self.definition
     }

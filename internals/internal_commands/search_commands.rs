@@ -195,10 +195,6 @@ impl InternalExecutable for SearchCommands {
         self.log_external_results(&external_results);
     }
 
-    fn help(&self) {
-        Help::log_internal_command(&self.definition);
-    }
-
     fn get_definition(&self) -> &InternalExecutableDefinition {
         &self.definition
     }

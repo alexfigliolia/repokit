@@ -54,10 +54,6 @@ impl InternalExecutable for ListVersion {
         Executor::with_stdio("npm list @repokit/core", |cmd| cmd);
     }
 
-    fn help(&self) {
-        Help::log_internal_command(&self.definition);
-    }
-
     fn get_definition(&self) -> &InternalExecutableDefinition {
         &self.definition
     }

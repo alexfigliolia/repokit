@@ -94,10 +94,6 @@ impl InternalExecutable for RegisterCommand {
         Logger::log_file_path(command_path.to_str().expect("path"));
     }
 
-    fn help(&self) {
-        Help::log_internal_command(&self.definition);
-    }
-
     fn get_definition(&self) -> &InternalExecutableDefinition {
         &self.definition
     }

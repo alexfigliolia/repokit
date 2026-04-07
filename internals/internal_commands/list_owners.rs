@@ -56,10 +56,6 @@ impl InternalExecutable for ListOwners {
         });
     }
 
-    fn help(&self) {
-        Help::log_internal_command(&self.definition);
-    }
-
     fn get_definition(&self) -> &InternalExecutableDefinition {
         &self.definition
     }
