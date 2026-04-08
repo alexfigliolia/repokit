@@ -27,41 +27,43 @@ fi
 
 echo "Installing Repokit CLI"
 
+ROOT_COMMIT=$(git rev-list --parents HEAD | tail -1) || ROOT_COMMIT=""
+
 cd
 
-OLD_SETTINGS_FILE=".repokit"
+CACHE_FILE_OR_DIRECTORY=".repokit";
+NEW_VERSION_FILE=".repokit_version"
+NEW_SETTINGS_FILE=".repokit_settings"
+REPO_CACHE_DIRECTORY="$CACHE_FILE_OR_DIRECTORY/$ROOT_COMMIT";
+
 CACHED_THEME=""
 
-if [ -f $OLD_SETTINGS_FILE ]; then
-    {
-        read -r
-        read -r CACHED_THEME
-    } < "$OLD_SETTINGS_FILE"
-    rm "$OLD_SETTINGS_FILE"
-fi
-
-CACHE_DIR=".repokit"
-VERSION_FILE=".repokit_version"
-SETTINGS_FILE=".repokit_settings"
-
-mkdir -p "$CACHE_DIR"
-
-cd "$CACHE_DIR"
-
-if [ -f $VERSION_FILE ]; then
-    read -r FIRST_LINE < "$VERSION_FILE"
-    if [ "$FIRST_LINE" == "$CURRENT_VERSION" ]; then
+if [ -d "$CACHE_FILE_OR_DIRECTORY" ]; then
+    if [ -n "$ROOT_COMMIT" ] && [ -d "$REPO_CACHE_DIRECTORY" ]; then
+        {
+            read -r CACHED_THEME
+        } < "$REPO_CACHE_DIRECTORY/$NEW_SETTINGS_FILE"
+    fi
+    rm -rf "$CACHE_FILE_OR_DIRECTORY"
+elif [ -f "$CACHE_FILE_OR_DIRECTORY" ]; then
+    read -r PREVIOUS_VERSION < "$CACHE_FILE_OR_DIRECTORY"
+    if [ "$PREVIOUS_VERSION" == "$CURRENT_VERSION" ]; then
         exit 0;    
     fi
 else
     touch "$VERSION_FILE"
 fi 
 
-printf "$CURRENT_VERSION\n" > "$VERSION_FILE"
+touch "$CACHE_FILE_OR_DIRECTORY"
 
-cd $REPO_ROOT
-
-ROOT_COMMIT=$(git rev-list --parents HEAD | tail -1) || ROOT_COMMIT=""
+if [ -n "$CACHED_THEME" ]; then
+    printf "$CURRENT_VERSION\n$CACHED_THEME\n" > "$CACHE_FILE_OR_DIRECTORY"
+else 
+    TEMP_FILE=".repokit_tmp";
+    printf "$CURRENT_VERSION\n" > "$TEMP_FILE"
+    tail +2 "$CACHE_FILE_OR_DIRECTORY" >> "$TEMP_FILE"
+    mv "$TEMP_FILE" "$CACHE_FILE_OR_DIRECTORY"
+fi
 
 if [ -n "$ROOT_COMMIT" ] && [ -n "$CACHED_THEME" ]; then
     cd
