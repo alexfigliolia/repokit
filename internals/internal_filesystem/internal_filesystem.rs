@@ -93,6 +93,18 @@ impl InternalFileSystem {
         });
     }
 
+    pub fn store_current_version(&self, version: &str) {
+        self.read_dot_file(&mut |lines, path| {
+            let mut content: Vec<String> = lines.map(|line| line.unwrap()).collect();
+            if !content.is_empty() {
+                content[0] = version.to_owned();
+            } else {
+                content.push(version.to_owned());
+            }
+            fs::write(path, content.join("\n"))
+        });
+    }
+
     pub fn read_dot_file<R>(
         &self,
         func: &mut impl FnMut(Lines<BufReader<File>>, PathBuf) -> R,

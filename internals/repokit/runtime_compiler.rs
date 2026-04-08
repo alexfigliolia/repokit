@@ -26,6 +26,7 @@ impl RuntimeCompiler {
                 if let Some(errors) = RuntimeCompiler::run_post_install(&package_path) {
                     println!("{errors}");
                 } else {
+                    InternalFileSystem::new(root).store_current_version(installed_version);
                     RuntimeCompiler::re_run_command();
                 }
             }
