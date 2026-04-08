@@ -7,9 +7,7 @@ use crate::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
-    internal_commands::help::Help,
     logger::logger::Logger,
-    post_processing::post_processor::PostProcessor,
     repokit::repokit_runtime::RepoKitRuntime,
     validations::command_validations::CommandValidations,
 };
@@ -30,12 +28,11 @@ impl LocateCommand {
     }
 
     fn search_externals(&self, query: &str) {
-        let mut finder = CommandValidations::new();
-        let all = finder.collect_and_validate_externals();
+        let all = CommandValidations::collect_and_validate_externals();
         for (_, command) in all {
             if command.name == query {
                 Logger::log_file_path(&command.location);
-                PostProcessor::get().flush();
+                panic!();
             }
         }
     }
@@ -44,7 +41,7 @@ impl LocateCommand {
         RepoKitRuntime::with_runtime(|runtime| {
             if runtime.configuration.commands.contains_key(command) {
                 Logger::log_file_path(format!("{}/repokit.ts", &runtime.git.root).as_str());
-                PostProcessor::get().flush();
+                panic!();
             }
         });
     }
@@ -72,10 +69,6 @@ impl InternalExecutable for LocateCommand {
             )
             .as_str(),
         );
-    }
-
-    fn help(&self) {
-        Help::log_internal_command(&self.definition);
     }
 
     fn get_definition(&self) -> &InternalExecutableDefinition {

@@ -10,7 +10,6 @@ use crate::{
         },
     },
     executor::executor::Executor,
-    internal_commands::help::Help,
     logger::logger::Logger,
     repokit::repokit_runtime::RepoKitRuntime,
 };
@@ -51,7 +50,10 @@ impl InternalExecutable for UpgradeRepoKit {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         self.static_execute();
         if let Some(new_version) = RepoKitRuntime::with_runtime(|runtime| {
-            runtime.versions.refresh_installed_version(&runtime.files)
+            runtime
+                .caches
+                .version_cache
+                .refresh_installed_version(&runtime.files)
         }) {
             Logger::info(
                 format!(
@@ -61,10 +63,6 @@ impl InternalExecutable for UpgradeRepoKit {
                 .as_str(),
             );
         }
-    }
-
-    fn help(&self) {
-        Help::log_internal_command(&self.definition);
     }
 
     fn get_definition(&self) -> &InternalExecutableDefinition {

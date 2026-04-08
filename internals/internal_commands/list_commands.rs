@@ -37,11 +37,6 @@ impl ListCommands {
         }
     }
 
-    fn collect_registered_commands(&self) -> HashMap<String, RepoKitCommand> {
-        let mut validators = CommandValidations::new();
-        validators.collect_and_validate_externals()
-    }
-
     fn exit_on_invalid_scope(&self) {
         Logger::exit_with_info(
             format!(
@@ -68,7 +63,7 @@ impl InternalExecutable for ListCommands {
                 Help::log_root_commands(&runtime.configuration.commands)
             });
         }
-        let registered_commands = self.collect_registered_commands();
+        let registered_commands = CommandValidations::collect_and_validate_externals();
         if scope == SCOPES[1] {
             return Help::log_external_commands(&registered_commands);
         }
@@ -94,10 +89,6 @@ impl InternalExecutable for ListCommands {
             );
         }
         Help::log_external_commands(&matches);
-    }
-
-    fn help(&self) {
-        Help::log_internal_command(&self.definition);
     }
 
     fn get_definition(&self) -> &InternalExecutableDefinition {

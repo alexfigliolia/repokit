@@ -3,8 +3,7 @@ use std::{collections::HashMap, path::Path};
 use normalize_path::NormalizePath;
 
 use crate::{
-    context::repokit_version_scope::VERSION_REGEX, executor::executor::Executor,
-    logger::logger::Logger,
+    caches::version_cache::VERSION_REGEX, executor::executor::Executor, logger::logger::Logger,
 };
 
 #[derive(Clone)]

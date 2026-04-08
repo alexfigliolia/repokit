@@ -10,11 +10,11 @@ use crate::{
     },
 };
 
-pub struct InternalRegistry;
+pub struct InternalCommandRegistry;
 
-impl InternalRegistry {
-    pub fn new() -> InternalRegistry {
-        InternalRegistry {}
+impl InternalCommandRegistry {
+    pub fn new() -> InternalCommandRegistry {
+        InternalCommandRegistry {}
     }
 
     pub fn get_all(&self) -> HashMap<String, Box<dyn InternalExecutable>> {

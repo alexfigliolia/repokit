@@ -15,25 +15,26 @@ pub struct FileSystem {
     pub commands_directory: PathBuf,
     pub templates_directory: PathBuf,
     pub install_script_path: PathBuf,
-    pub install_script_location: String,
+    pub install_script_location: &'static str,
 }
+
+static INSTALL_SCRIPT_LOCATION: &str = "installation/install.sh";
+static INSTALLED_PACKAGE_PATH: &str = "node_modules/@repokit/core";
+static TYPESCRIPT_COMMANDS: &str = "dist/commands";
+static TYPESCRIPT_TEMPLATES: &str = "externals/templates";
 
 impl FileSystem {
     pub fn new(git_root: &str) -> FileSystem {
         let git_root_path = Path::new(&git_root).normalize();
-        let install_script_location = "installation/install.sh".to_string();
-        let package_directory = FileSystem::join_with(&git_root_path, "node_modules/@repokit/core");
+        let package_directory = FileSystem::join_with(&git_root_path, INSTALLED_PACKAGE_PATH);
         FileSystem {
             git_root_path,
             git_root: git_root.to_owned(),
-            install_script_path: FileSystem::join_with(
-                &package_directory,
-                &install_script_location,
-            ),
-            commands_directory: FileSystem::join_with(&package_directory, "dist/commands"),
-            templates_directory: FileSystem::join_with(&package_directory, "externals/templates"),
+            install_script_path: FileSystem::join_with(&package_directory, INSTALL_SCRIPT_LOCATION),
+            commands_directory: FileSystem::join_with(&package_directory, TYPESCRIPT_COMMANDS),
+            templates_directory: FileSystem::join_with(&package_directory, TYPESCRIPT_TEMPLATES),
             package_directory,
-            install_script_location,
+            install_script_location: INSTALL_SCRIPT_LOCATION,
         }
     }
 
@@ -42,7 +43,7 @@ impl FileSystem {
     }
 
     pub fn resolve_command(&self, command_name: &str) -> String {
-        self.path_buf_to_str(FileSystem::join_with(
+        FileSystem::path_buf_to_str(&FileSystem::join_with(
             &self.commands_directory,
             format!("{command_name}.mjs").as_str(),
         ))
@@ -59,10 +60,7 @@ impl FileSystem {
         )
     }
 
-    fn path_buf_to_str(&self, buffer: PathBuf) -> String {
-        buffer
-            .into_os_string()
-            .into_string()
-            .expect("Cannot construct path")
+    pub fn path_buf_to_str(path: &PathBuf) -> String {
+        path.to_string_lossy().to_string()
     }
 }

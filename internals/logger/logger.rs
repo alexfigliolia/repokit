@@ -1,10 +1,10 @@
+use core::panic;
 use std::sync::LazyLock;
 use std::sync::Mutex;
 use std::sync::MutexGuard;
 
 use colored::{ColoredString, Colorize};
 
-use crate::post_processing::post_processor::PostProcessor;
 use crate::repokit::repokit_runtime::RepoKitRuntime;
 use crate::themes::theme::Theme;
 use crate::themes::theme_registry::ThemeRegistry;
@@ -24,7 +24,7 @@ impl Logger {
                 Logger::with_registry(|mut registry| registry.register_user_theme(theme))
             }
             Logger::with_registry(|mut registry| {
-                registry.set_theme(&runtime.cache.theme_preference)
+                registry.set_theme(&runtime.caches.settings_cache.theme_preference)
             });
         });
     }
@@ -39,12 +39,12 @@ impl Logger {
 
     pub fn exit_with_info(message: &str) {
         Logger::info(message);
-        PostProcessor::get().flush();
+        panic!();
     }
 
     pub fn exit_with_error(message: &str) {
         Logger::error(message);
-        PostProcessor::get().flush();
+        panic!();
     }
 
     pub fn list(items: &[&str], indentation: Option<i32>) {
@@ -130,7 +130,7 @@ impl Logger {
         Logger::info(format!("I was unable to {operation} in your repository").as_str());
         Logger::error("Please verify the permissions on your working directory or file a bug here");
         Logger::log_issue_link();
-        PostProcessor::get().flush();
+        panic!();
     }
 
     fn info_prefix() -> String {

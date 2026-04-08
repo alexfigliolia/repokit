@@ -1,11 +1,10 @@
 use std::collections::HashMap;
 
-
 use crate::{
     context::typescript_bridge::TypeScriptBridge,
     executables::internal_executable::InternalExecutable,
     file_walker::file_walker::FileWalker,
-    internal_commands::internal_registry::InternalRegistry,
+    internal_commands::internal_registry::InternalCommandRegistry,
     logger::logger::Logger,
     repokit::{repokit_command::RepoKitCommand, repokit_runtime::RepoKitRuntime},
 };
@@ -13,24 +12,20 @@ use crate::{
 pub struct CommandValidations;
 
 impl CommandValidations {
-    pub fn new() -> CommandValidations {
-        CommandValidations {}
-    }
-
-    pub fn collect_and_validate_internals(&self) -> HashMap<String, Box<dyn InternalExecutable>> {
-        let internals = InternalRegistry::new().get_all();
-        self.detect_collisions_between_internals_and_root_commands(&internals);
+    pub fn collect_and_validate_internals() -> HashMap<String, Box<dyn InternalExecutable>> {
+        let internals = InternalCommandRegistry::new().get_all();
+        CommandValidations::detect_collisions_between_internals_and_root_commands(&internals);
         internals
     }
 
-    pub fn collect_and_validate_externals(&mut self) -> HashMap<String, RepoKitCommand> {
+    pub fn collect_and_validate_externals() -> HashMap<String, RepoKitCommand> {
         let walker = FileWalker::new();
         let result = walker.get();
         let externals = TypeScriptBridge::parse_commands(&result);
         let all = RepoKitRuntime::with_runtime(|runtime| {
             [&externals[..], &runtime.configuration.thirdParty[..]].concat()
         });
-        self.detect_collisions_between_root_commands_and_externals(&all)
+        CommandValidations::detect_collisions_between_root_commands_and_externals(&all)
     }
 
     pub fn detect_collisions_between_internals_and_externals(
@@ -54,7 +49,6 @@ impl CommandValidations {
     }
 
     fn detect_collisions_between_internals_and_root_commands(
-        &self,
         internals: &HashMap<String, Box<dyn InternalExecutable>>,
     ) {
         for name in internals.keys() {
@@ -75,7 +69,6 @@ impl CommandValidations {
     }
 
     fn detect_collisions_between_root_commands_and_externals(
-        &self,
         externals: &Vec<RepoKitCommand>,
     ) -> HashMap<String, RepoKitCommand> {
         RepoKitRuntime::with_runtime(|runtime| {
@@ -83,18 +76,21 @@ impl CommandValidations {
             for command in externals {
                 if map.contains_key(&command.name) {
                     let original = map.get(&command.name).expect("Unknown command");
-                    self.on_external_duplicate_collision(command, &original.location);
+                    CommandValidations::on_external_duplicate_collision(
+                        command,
+                        &original.location,
+                    );
                 }
                 map.insert(command.name.clone(), command.clone());
                 if runtime.configuration.commands.contains_key(&command.name) {
-                    self.on_external_root_collision(command);
+                    CommandValidations::on_external_root_collision(command);
                 }
             }
             map
         })
     }
 
-    fn on_external_root_collision(&self, command: &RepoKitCommand) {
+    fn on_external_root_collision(command: &RepoKitCommand) {
         Logger::info(format!(
                 "I encountered a package command named {} that conflicts with a command in your {} file",
                 Logger::with_theme(|theme|theme.highlight(&command.name)),
@@ -107,7 +103,7 @@ impl CommandValidations {
         Logger::exit_with_info("Please rename one of these");
     }
 
-    fn on_external_duplicate_collision(&self, command: &RepoKitCommand, collision_path: &str) {
+    fn on_external_duplicate_collision(command: &RepoKitCommand, collision_path: &str) {
         Logger::info(
             format!(
                 "I encountered two packages with the name {}",

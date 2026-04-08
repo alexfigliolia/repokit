@@ -8,10 +8,8 @@ use crate::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
-    internal_commands::help::Help,
     internal_filesystem::file_builder::FileBuilder,
     logger::logger::Logger,
-    post_processing::post_processor::PostProcessor,
     repokit::repokit_runtime::RepoKitRuntime,
 };
 
@@ -66,11 +64,10 @@ impl RegisterCommand {
                 )
                 .as_str(),
             );
-            Logger::info(format!(
+            Logger::exit_with_info(format!(
                 "You can append additional commands to the existing {} instance or export another one",
                 Logger::with_theme(|theme| theme.highlight("RepoKitCommand"))
             ).as_str());
-            PostProcessor::get().flush();
         }
         command_path.clone()
     }
@@ -94,10 +91,6 @@ impl InternalExecutable for RegisterCommand {
         Logger::info("Creating command file");
         Logger::info("Please fill out your command file located at:");
         Logger::log_file_path(command_path.to_str().expect("path"));
-    }
-
-    fn help(&self) {
-        Help::log_internal_command(&self.definition);
     }
 
     fn get_definition(&self) -> &InternalExecutableDefinition {

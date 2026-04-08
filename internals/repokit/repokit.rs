@@ -5,7 +5,6 @@ use crate::{
     executor::executor::Executor,
     internal_commands::help::Help,
     logger::logger::Logger,
-    post_processing::post_processor::PostProcessor,
     repokit::{repokit_command::RepoKitCommand, repokit_runtime::RepoKitRuntime},
     validations::command_validations::CommandValidations,
 };
@@ -20,45 +19,34 @@ impl RepoKit {
 
     pub fn invoke(&self) {
         let (command, args) = self.parse();
-        let mut validator = CommandValidations::new();
-        let internals = validator.collect_and_validate_internals();
-        if internals.contains_key(&command) {
-            let interface = internals.get(&command).expect("known command");
-            return interface.run(args, &internals);
+        let internals = CommandValidations::collect_and_validate_internals();
+        if let Some(internal_command) = internals.get(&command) {
+            return internal_command.run(args, &internals);
         }
         RepoKitRuntime::with_runtime(|runtime| {
-            if runtime.configuration.commands.contains_key(&command) {
-                let root_script = runtime
-                    .configuration
-                    .commands
-                    .get(&command)
-                    .expect("Unknown command");
+            if let Some(root_script) = runtime.configuration.commands.get(&command) {
                 Executor::with_stdio(
                     format!("{} {}", root_script.command, &args.join(" ")),
                     |cmd| cmd.current_dir(&runtime.files.git_root_path),
                 );
-                PostProcessor::get().flush();
+                panic!();
             }
         });
-        let externals = validator.collect_and_validate_externals();
+        let externals = CommandValidations::collect_and_validate_externals();
         CommandValidations::detect_collisions_between_internals_and_externals(
             &internals, &externals,
         );
-        if externals.contains_key(&command) {
-            let interface = externals.get(&command).expect("Unknown command");
+        if let Some(interface) = externals.get(&command) {
             if args.is_empty() {
                 return self.log_external_command(interface);
             }
             let sub_command = &args[0];
-            if interface.commands.contains_key(sub_command) {
-                let script = interface.commands.get(sub_command).expect("Unknown script");
-                let working_dir = Path::new(&interface.location)
-                    .parent()
-                    .expect("Working directory not found");
-                return Executor::with_stdio(
-                    format!("{} {}", &script.command, &args[1..].join(" ")),
-                    |cmd| cmd.current_dir(working_dir),
-                );
+            if let Some(script) = interface.commands.get(sub_command) {
+                let executable = format!("{} {}", &script.command, &args[1..].join(" "));
+                if let Some(working_dir) = Path::new(&interface.location).parent() {
+                    return Executor::with_stdio(executable, |cmd| cmd.current_dir(working_dir));
+                }
+                return self.working_directory_not_found(interface, &executable);
             }
             return self.subcommand_not_found(interface, sub_command);
         }
@@ -69,9 +57,8 @@ impl RepoKit {
         let argv: Vec<String> = args().collect();
         if argv.len() < 2 {
             let (internals, externals) = self.collect_and_validate();
-
             Help::list_all(&internals, &externals);
-            PostProcessor::get().flush();
+            panic!();
         }
         let command = &argv[1];
         let args = &(&argv)[2..];
@@ -84,9 +71,8 @@ impl RepoKit {
         HashMap<String, Box<dyn InternalExecutable>>,
         HashMap<String, RepoKitCommand>,
     ) {
-        let mut validator = CommandValidations::new();
-        let internals = validator.collect_and_validate_internals();
-        let externals = validator.collect_and_validate_externals();
+        let internals = CommandValidations::collect_and_validate_internals();
+        let externals = CommandValidations::collect_and_validate_externals();
         CommandValidations::detect_collisions_between_internals_and_externals(
             &internals, &externals,
         );
@@ -138,5 +124,23 @@ impl RepoKit {
         );
         Help::log_external_subcommands(&command.commands, 3);
         println!();
+    }
+
+    fn working_directory_not_found(&self, interface: &RepoKitCommand, executable: &str) {
+        Logger::info("I was unable to determine the working directory for this command");
+        Logger::info(
+            format!(
+                "This typically indicates a bug within {}",
+                Logger::with_theme(|theme| theme.highlight("Repokit"))
+            )
+            .as_str(),
+        );
+        Logger::info("Please file an issue at");
+        Logger::log_issue_link();
+        Logger::info("To run this command from your terminal, you can run:");
+        Logger::log_file_path(executable);
+        Logger::info("From the parent directory of");
+        Logger::log_file_path(&interface.location);
+        panic!();
     }
 }

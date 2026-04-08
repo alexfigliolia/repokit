@@ -1,4 +1,4 @@
-CURRENT_VERSION="3.1.0"
+CURRENT_VERSION="4.0.0"
 CWD=$(pwd)
 
 REPLACEMENT="/node_modules"
@@ -38,40 +38,41 @@ REPO_CACHE_DIRECTORY="$CACHE_FILE_OR_DIRECTORY/$ROOT_COMMIT";
 
 CACHED_THEME=""
 
-if [ -d "$CACHE_FILE_OR_DIRECTORY" ]; then
-    if [ -n "$ROOT_COMMIT" ] && [ -d "$REPO_CACHE_DIRECTORY" ]; then
-        {
-            read -r CACHED_THEME
-        } < "$REPO_CACHE_DIRECTORY/$NEW_SETTINGS_FILE"
-    fi
-    rm -rf "$CACHE_FILE_OR_DIRECTORY"
-elif [ -f "$CACHE_FILE_OR_DIRECTORY" ]; then
-    read -r PREVIOUS_VERSION < "$CACHE_FILE_OR_DIRECTORY"
-    if [ "$PREVIOUS_VERSION" == "$CURRENT_VERSION" ]; then
+if [ -f $OLD_SETTINGS_FILE ]; then
+    {
+        read -r
+        read -r CACHED_THEME
+    } < "$OLD_SETTINGS_FILE"
+    rm "$OLD_SETTINGS_FILE"
+fi
+
+CACHE_DIR=".repokit"
+VERSION_FILE=".repokit_version"
+SETTINGS_FILE=".repokit_settings"
+
+mkdir -p "$CACHE_DIR"
+
+cd "$CACHE_DIR"
+
+if [ -n "$ROOT_COMMIT" ] && [ ! -d "$ROOT_COMMIT" ]; then
+    mkdir -p "$ROOT_COMMIT"
+fi
+
+if [ -f $VERSION_FILE ]; then
+    read -r FIRST_LINE < "$VERSION_FILE"
+    if [ "$FIRST_LINE" == "$CURRENT_VERSION" ]; then
         exit 0;    
     fi
 else
     touch "$VERSION_FILE"
 fi 
 
-touch "$CACHE_FILE_OR_DIRECTORY"
-
-if [ -n "$CACHED_THEME" ]; then
-    printf "$CURRENT_VERSION\n$CACHED_THEME\n" > "$CACHE_FILE_OR_DIRECTORY"
-else 
-    TEMP_FILE=".repokit_tmp";
-    printf "$CURRENT_VERSION\n" > "$TEMP_FILE"
-    tail +2 "$CACHE_FILE_OR_DIRECTORY" >> "$TEMP_FILE"
-    mv "$TEMP_FILE" "$CACHE_FILE_OR_DIRECTORY"
-fi
+echo "$CURRENT_VERSION\n" > "$VERSION_FILE"
 
 if [ -n "$ROOT_COMMIT" ] && [ -n "$CACHED_THEME" ]; then
-    cd
-    cd "$CACHE_DIR"
-    mkdir -p "$ROOT_COMMIT"
     cd "$ROOT_COMMIT"
     touch "$SETTINGS_FILE"
-    printf "$CACHED_THEME\n" > "$SETTINGS_FILE"
+    echo "$CACHED_THEME\n" > "$SETTINGS_FILE"
 fi
 
 cd $CWD

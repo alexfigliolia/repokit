@@ -1,6 +1,9 @@
-use crate::repokit::repokit::RepoKit;
+use std::panic;
+
+use crate::{post_processing::post_processor::PostProcessor, repokit::repokit::RepoKit};
 
 mod argv;
+mod caches;
 mod context;
 mod executables;
 mod executor;
@@ -14,5 +17,7 @@ mod themes;
 mod validations;
 
 fn main() {
+    panic::set_hook(Box::new(|_| PostProcessor::get().flush()));
     RepoKit::new().invoke();
+    PostProcessor::get().flush();
 }

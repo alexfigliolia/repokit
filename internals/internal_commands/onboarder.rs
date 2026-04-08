@@ -7,7 +7,6 @@ use crate::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
-    internal_commands::help::Help,
     logger::logger::Logger,
 };
 
@@ -53,10 +52,6 @@ impl InternalExecutable for Onboarder {
             )
             .as_str(),
         );
-    }
-
-    fn help(&self) {
-        Help::log_internal_command(&self.definition);
     }
 
     fn get_definition(&self) -> &InternalExecutableDefinition {

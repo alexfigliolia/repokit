@@ -1,6 +1,6 @@
+use core::panic;
 use std::{
     path::{Path, PathBuf},
-    process::exit,
     sync::MutexGuard,
 };
 
@@ -9,7 +9,6 @@ use serde_json::{Value, from_str};
 use crate::{
     context::{file_system::FileSystem, node_scope::NodeScope},
     executor::executor::Executor,
-    post_processing::post_processor::PostProcessor,
     repokit::{
         repokit_command::RepoKitCommand, repokit_config::RepoKitConfig,
         repokit_runtime::RepoKitRuntime,
@@ -33,8 +32,7 @@ impl TypeScriptBridge {
             Ok(config) => RepoKitConfig::from_input(&files.git_root, node, config),
             Err(_) => {
                 RepoKitConfig::on_parsing_error(&files.git_root, node, Value::Null);
-                PostProcessor::get().flush();
-                exit(0)
+                panic!();
             }
         }
     }
@@ -56,9 +54,8 @@ impl TypeScriptBridge {
         match result {
             Ok(commands) => RepoKitCommand::from_input(commands),
             Err(_) => {
-                RepoKitCommand::on_parsing_error(Value::Null);
-                PostProcessor::get().flush();
-                exit(0);
+                RepoKitCommand::full_blown_crash();
+                panic!();
             }
         }
     }
