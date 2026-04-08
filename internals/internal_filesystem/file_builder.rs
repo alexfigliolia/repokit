@@ -9,7 +9,7 @@ use std::{
 pub struct FileBuilder;
 
 impl FileBuilder {
-    pub fn open(source: &str, on_error: impl Fn(Error)) -> File {
+    pub fn open<P: AsRef<Path>>(source: P, on_error: impl Fn(Error)) -> File {
         let source = File::open(source);
         match source {
             Ok(file) => file,
@@ -54,7 +54,6 @@ impl FileBuilder {
             Err(error) => {
                 on_error(error);
                 PostProcessor::get().flush();
-                exit(0);
             }
         }
     }

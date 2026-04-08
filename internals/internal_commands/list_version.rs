@@ -1,27 +1,26 @@
 use std::collections::HashMap;
 
 use crate::{
+    context::repokit_version_scope::VERSION_REGEX,
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
-            InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
+            InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
     executor::executor::Executor,
     internal_commands::help::Help,
-    internal_filesystem::internal_filesystem::InternalFileSystem,
     logger::logger::Logger,
+    repokit::repokit_runtime::RepoKitRuntime,
 };
 
 pub struct ListVersion {
-    pub scope: RepoKitScope,
     pub definition: InternalExecutableDefinition,
 }
 
 impl ListVersion {
-    pub fn new(scope: &RepoKitScope) -> ListVersion {
+    pub fn new() -> ListVersion {
         ListVersion {
-            scope: scope.clone(),
             definition: InternalExecutableDefinition::define(InternalExecutableDefinitionInput {
                 name: "version",
                 description: "Lists the version of repokit running in this repository",
@@ -38,14 +37,19 @@ impl ListVersion {
 impl InternalExecutable for ListVersion {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Fetching the installed version of repokit");
-        if let Some(local_version) =
-            InternalFileSystem::new(&self.scope.root).installed_repokit_version()
-        {
-            return self.log_version(&local_version);
-        }
-        Logger::info("Falling back to the runtime version");
-        if let Some(runtime_version) = InternalFileSystem::runtime_repokit_version() {
-            return self.log_version(&runtime_version);
+        if RepoKitRuntime::with_runtime(|runtime| {
+            if VERSION_REGEX.is_match(&runtime.versions.installed_version) {
+                self.log_version(&runtime.versions.installed_version);
+                return true;
+            }
+            if VERSION_REGEX.is_match(&runtime.versions.runtime_version) {
+                Logger::info("Falling back to the runtime version");
+                self.log_version(&runtime.versions.runtime_version);
+                return true;
+            }
+            false
+        }) {
+            return;
         }
         Executor::with_stdio("npm list @repokit/core", |cmd| cmd);
     }

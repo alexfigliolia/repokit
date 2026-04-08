@@ -1,53 +1,35 @@
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
+use std::collections::HashMap;
 
-use ignore::WalkBuilder;
 
 use crate::{
-    configuration::typescript_command::TypescriptCommand,
-    executables::{
-        internal_executable::InternalExecutable, internal_executable_definition::RepoKitScope,
-    },
-    file_walker::walker::TSFileVisitorBuilder,
+    context::typescript_bridge::TypeScriptBridge,
+    executables::internal_executable::InternalExecutable,
+    file_walker::file_walker::FileWalker,
     internal_commands::internal_registry::InternalRegistry,
     logger::logger::Logger,
-    repokit::{repokit::RepoKit, repokit_command::RepoKitCommand},
+    repokit::{repokit_command::RepoKitCommand, repokit_runtime::RepoKitRuntime},
 };
 
-pub struct CommandValidations {
-    scope: RepoKitScope,
-}
+pub struct CommandValidations;
 
 impl CommandValidations {
-    pub fn new(scope: &RepoKitScope) -> CommandValidations {
-        CommandValidations {
-            scope: scope.clone(),
-        }
-    }
-
-    pub fn from(kit: &RepoKit) -> CommandValidations {
-        CommandValidations {
-            scope: kit.scope.clone(),
-        }
+    pub fn new() -> CommandValidations {
+        CommandValidations {}
     }
 
     pub fn collect_and_validate_internals(&self) -> HashMap<String, Box<dyn InternalExecutable>> {
-        let internals = InternalRegistry::new(&self.scope).get_all();
+        let internals = InternalRegistry::new().get_all();
         self.detect_collisions_between_internals_and_root_commands(&internals);
         internals
     }
 
-    pub fn collect_and_validate_externals(&self) -> HashMap<String, RepoKitCommand> {
-        let paths: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
-        let mut visitor = TSFileVisitorBuilder::new(&self.scope.root, &paths);
-        WalkBuilder::new(&self.scope.root)
-            .build_parallel()
-            .visit(&mut visitor);
-        let result = paths.lock().unwrap();
-        let externals = TypescriptCommand::new(&self.scope.root).parse_commands(&result);
-        let all = [&externals[..], &self.scope.configuration.thirdParty[..]].concat();
+    pub fn collect_and_validate_externals(&mut self) -> HashMap<String, RepoKitCommand> {
+        let walker = FileWalker::new();
+        let result = walker.get();
+        let externals = TypeScriptBridge::parse_commands(&result);
+        let all = RepoKitRuntime::with_runtime(|runtime| {
+            [&externals[..], &runtime.configuration.thirdParty[..]].concat()
+        });
         self.detect_collisions_between_root_commands_and_externals(&all)
     }
 
@@ -76,7 +58,9 @@ impl CommandValidations {
         internals: &HashMap<String, Box<dyn InternalExecutable>>,
     ) {
         for name in internals.keys() {
-            if self.scope.configuration.commands.contains_key(name) {
+            if RepoKitRuntime::with_runtime(|runtime| {
+                runtime.configuration.commands.contains_key(name)
+            }) {
                 Logger::info(
                     format!(
                         "I encountered a command named {} in your {} file that conflicts with one of my internals",
@@ -94,23 +78,20 @@ impl CommandValidations {
         &self,
         externals: &Vec<RepoKitCommand>,
     ) -> HashMap<String, RepoKitCommand> {
-        let mut map: HashMap<String, RepoKitCommand> = HashMap::new();
-        for command in externals {
-            if map.contains_key(&command.name) {
-                let original = map.get(&command.name).expect("Unknown command");
-                self.on_external_duplicate_collision(command, &original.location);
+        RepoKitRuntime::with_runtime(|runtime| {
+            let mut map: HashMap<String, RepoKitCommand> = HashMap::new();
+            for command in externals {
+                if map.contains_key(&command.name) {
+                    let original = map.get(&command.name).expect("Unknown command");
+                    self.on_external_duplicate_collision(command, &original.location);
+                }
+                map.insert(command.name.clone(), command.clone());
+                if runtime.configuration.commands.contains_key(&command.name) {
+                    self.on_external_root_collision(command);
+                }
             }
-            map.insert(command.name.clone(), command.clone());
-            if self
-                .scope
-                .configuration
-                .commands
-                .contains_key(&command.name)
-            {
-                self.on_external_root_collision(command);
-            }
-        }
-        map
+            map
+        })
     }
 
     fn on_external_root_collision(&self, command: &RepoKitCommand) {

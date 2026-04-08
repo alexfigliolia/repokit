@@ -1,10 +1,10 @@
-CURRENT_VERSION="3.0.3"
+CURRENT_VERSION="3.1.0"
 CWD=$(pwd)
 
 REPLACEMENT="/node_modules"
 FALLBACK_ROOT="${CWD%${REPLACEMENT}*}"
 
-GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+GIT_ROOT=$(git rev-parse --show-toplevel)
 REPO_ROOT=${GIT_ROOT:-$FALLBACK_ROOT}
 
 if [[ "$CWD" != *"$REPLACEMENT"* ]]; then
@@ -50,7 +50,9 @@ elif [ -f "$CACHE_FILE_OR_DIRECTORY" ]; then
     if [ "$PREVIOUS_VERSION" == "$CURRENT_VERSION" ]; then
         exit 0;    
     fi
-fi
+else
+    touch "$VERSION_FILE"
+fi 
 
 touch "$CACHE_FILE_OR_DIRECTORY"
 
@@ -63,6 +65,14 @@ else
     mv "$TEMP_FILE" "$CACHE_FILE_OR_DIRECTORY"
 fi
 
+if [ -n "$ROOT_COMMIT" ] && [ -n "$CACHED_THEME" ]; then
+    cd
+    cd "$CACHE_DIR"
+    mkdir -p "$ROOT_COMMIT"
+    cd "$ROOT_COMMIT"
+    touch "$SETTINGS_FILE"
+    printf "$CACHED_THEME\n" > "$SETTINGS_FILE"
+fi
 
 cd $CWD
 

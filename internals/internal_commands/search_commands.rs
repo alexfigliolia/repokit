@@ -5,24 +5,25 @@ use crate::{
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
-            InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
+            InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
     internal_commands::help::Help,
     logger::logger::Logger,
-    repokit::{command_definition::CommandDefinition, repokit_command::RepoKitCommand},
+    repokit::{
+        command_definition::CommandDefinition, repokit_command::RepoKitCommand,
+        repokit_runtime::RepoKitRuntime,
+    },
     validations::command_validations::CommandValidations,
 };
 
 pub struct SearchCommands {
-    pub scope: RepoKitScope,
     pub definition: InternalExecutableDefinition,
 }
 
 impl SearchCommands {
-    pub fn new(scope: &RepoKitScope) -> SearchCommands {
+    pub fn new() -> SearchCommands {
         SearchCommands {
-            scope: scope.clone(),
             definition: InternalExecutableDefinition::define(InternalExecutableDefinitionInput {
                 name: "search",
                 description: "Retrieve commands that match any search query",
@@ -61,9 +62,10 @@ impl SearchCommands {
         if command.owner.to_lowercase().contains(query) {
             return true;
         }
+        let git_root = RepoKitRuntime::with_runtime(|runtime| runtime.git.root.clone());
         if command
             .location
-            .replace(self.scope.root.as_str(), "")
+            .replace(&git_root, "")
             .to_lowercase()
             .contains(query)
         {
@@ -72,19 +74,28 @@ impl SearchCommands {
         if command.description.to_lowercase().contains(query) {
             return true;
         }
-        for (arg, sub_command) in &command.commands {
-            if arg.to_lowercase().contains(query) || self.search_command(query, sub_command) {
+        for (command_name, definition) in &command.commands {
+            if command_name.to_lowercase().contains(query) || self.search_command(query, definition)
+            {
                 return true;
             }
         }
         false
     }
 
-    fn search_command(&self, query: &str, command: &CommandDefinition) -> bool {
-        if command.command.to_lowercase().contains(query)
-            || command.description.to_lowercase().contains(query)
+    fn search_command(&self, query: &str, definition: &CommandDefinition) -> bool {
+        if definition.command.to_lowercase().contains(query)
+            || definition.description.to_lowercase().contains(query)
         {
             return true;
+        }
+        if let Some(args) = &definition.args {
+            for (flag, description) in args {
+                if flag.to_lowercase().contains(query) || description.to_lowercase().contains(query)
+                {
+                    return true;
+                }
+            }
         }
         false
     }
@@ -155,15 +166,17 @@ impl InternalExecutable for SearchCommands {
             Logger::exit_with_error("Please specify a search string to query with");
         }
         let query = args.join(" ").to_lowercase();
-        let externals = CommandValidations::new(&self.scope).collect_and_validate_externals();
+        let externals = CommandValidations::new().collect_and_validate_externals();
         let mut root_results: HashMap<String, CommandDefinition> = HashMap::new();
         let mut internal_results: HashMap<String, &Box<dyn InternalExecutable>> = HashMap::new();
         let mut external_results: HashMap<String, RepoKitCommand> = HashMap::new();
-        for (command, script) in &self.scope.configuration.commands {
-            if self.search_command(&query, script) {
-                root_results.insert(command.clone(), script.clone());
+        RepoKitRuntime::with_runtime(|runtime| {
+            for (command, script) in &runtime.configuration.commands {
+                if self.search_command(&query, script) {
+                    root_results.insert(command.clone(), script.clone());
+                }
             }
-        }
+        });
         for (name, command) in internals {
             if self.search_internal(&query, command) {
                 internal_results.insert(name.clone(), command);

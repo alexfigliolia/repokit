@@ -6,24 +6,22 @@ use crate::{
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
-            InternalExecutableDefinition, InternalExecutableDefinitionInput, RepoKitScope,
+            InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
     executor::executor::Executor,
     internal_commands::help::Help,
-    internal_filesystem::internal_filesystem::InternalFileSystem,
     logger::logger::Logger,
+    repokit::repokit_runtime::RepoKitRuntime,
 };
 
 pub struct UpgradeRepoKit {
-    pub scope: RepoKitScope,
     pub definition: InternalExecutableDefinition,
 }
 
 impl UpgradeRepoKit {
-    pub fn new(scope: &RepoKitScope) -> UpgradeRepoKit {
+    pub fn new() -> UpgradeRepoKit {
         UpgradeRepoKit {
-            scope: scope.clone(),
             definition: InternalExecutableDefinition::define(InternalExecutableDefinitionInput {
                 name: "upgrade",
                 description: "Upgrades your installation of repokit to the latest stable version",
@@ -32,43 +30,36 @@ impl UpgradeRepoKit {
         }
     }
 
-    pub fn static_execute(root: &str) {
+    pub fn static_execute(&self) {
         Logger::info("Upgrading installation");
         let handle = SpinnerBuilder::new()
             .spinner(&BOUNCING_BALL)
             .text(" Installing")
             .start();
-        let command_prefix = InternalFileSystem::get_install_command(root);
-        Executor::exec(
-            format!("{} @repokit/core@latest", command_prefix).as_str(),
-            |cmd| cmd.current_dir(root),
-        );
+        RepoKitRuntime::with_runtime(|runtime| {
+            Executor::exec(
+                format!("{} @repokit/core@latest", runtime.node.install_command).as_str(),
+                |cmd| cmd.current_dir(&runtime.git.root),
+            )
+        });
         handle.done();
+        Logger::info("Upgrade Complete!");
     }
 }
 
 impl InternalExecutable for UpgradeRepoKit {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
-        let internal_fs = InternalFileSystem::new(&self.scope.root);
-        let fallback = "unknown";
-        let runtime_version = internal_fs
-            .installed_repokit_version()
-            .unwrap_or(fallback.to_string());
-        UpgradeRepoKit::static_execute(&self.scope.root);
-        let installed_version = internal_fs
-            .installed_repokit_version()
-            .unwrap_or(fallback.to_string());
-        if runtime_version != installed_version {
-            Logger::info("Upgrade Complete!");
+        self.static_execute();
+        if let Some(new_version) = RepoKitRuntime::with_runtime(|runtime| {
+            runtime.versions.refresh_installed_version(&runtime.files)
+        }) {
             Logger::info(
                 format!(
                     "The currently installed version is {}",
-                    Logger::with_theme(|theme| theme.highlight(&installed_version))
+                    Logger::with_theme(|theme| theme.highlight(&new_version))
                 )
                 .as_str(),
             );
-        } else {
-            Logger::info("The latest version is already installed");
         }
     }
 

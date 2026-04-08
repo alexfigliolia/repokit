@@ -1,13 +1,5 @@
 use std::collections::HashMap;
 
-use crate::repokit::repokit_config::RepoKitConfig;
-
-#[derive(Clone)]
-pub struct RepoKitScope {
-    pub root: String,
-    pub configuration: RepoKitConfig,
-}
-
 #[derive(Clone)]
 pub struct InternalExecutableDefinition {
     pub name: String,
