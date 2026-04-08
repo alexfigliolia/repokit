@@ -31,7 +31,11 @@ ROOT_COMMIT=$(git rev-list --parents HEAD | tail -1) || ROOT_COMMIT=""
 
 cd
 
-OLD_SETTINGS_FILE=".repokit"
+CACHE_FILE_OR_DIRECTORY=".repokit";
+NEW_VERSION_FILE=".repokit_version"
+NEW_SETTINGS_FILE=".repokit_settings"
+REPO_CACHE_DIRECTORY="$CACHE_FILE_OR_DIRECTORY/$ROOT_COMMIT";
+
 CACHED_THEME=""
 
 if [ -f $OLD_SETTINGS_FILE ]; then
