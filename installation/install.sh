@@ -50,7 +50,7 @@ mkdir -p "$CACHE_DIR"
 
 cd "$CACHE_DIR"
 
-if [ -n "$ROOT_COMMIT" ]; then
+if [ -n "$ROOT_COMMIT" ] && [ ! -d "$ROOT_COMMIT" ]; then
     mkdir -p "$ROOT_COMMIT"
 fi
 
@@ -63,12 +63,12 @@ else
     touch "$VERSION_FILE"
 fi 
 
-printf "$CURRENT_VERSION\n" > "$VERSION_FILE"
+echo "$CURRENT_VERSION\n" > "$VERSION_FILE"
 
 if [ -n "$ROOT_COMMIT" ] && [ -n "$CACHED_THEME" ]; then
     cd "$ROOT_COMMIT"
     touch "$SETTINGS_FILE"
-    printf "$CACHED_THEME\n" > "$SETTINGS_FILE"
+    echo "$CACHED_THEME\n" > "$SETTINGS_FILE"
 fi
 
 cd $CWD

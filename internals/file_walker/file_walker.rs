@@ -51,7 +51,7 @@ impl FileWalker {
         RepoKitRuntime::with_runtime(|runtime| {
             if let Some(files_to_crawl) = &runtime.caches.crawl_cache.files_to_crawl {
                 for file in files_to_crawl {
-                    paths_to_search.push(file.to_owned())
+                    paths_to_search.push(file.to_owned());
                 }
             }
         })
