@@ -161,7 +161,7 @@ impl VersionCache {
 
 impl FileCache for VersionCache {
     fn cache_file(&self) -> &str {
-        "../.repokit_version"
+        "../.version"
     }
 
     fn cache_directory(&self) -> &Option<PathBuf> {

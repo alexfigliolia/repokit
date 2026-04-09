@@ -21,7 +21,7 @@ pub struct CacheScope {
     pub crawl_cache: CrawlCache,
 }
 
-static CACHE_DIRECTORY: &str = ".repokit";
+static CACHE_DIRECTORY: &str = ".repokit_cache";
 
 impl CacheScope {
     pub fn new(git_scope: &GitScope, file_system: &FileSystem) -> CacheScope {
@@ -66,10 +66,9 @@ impl CacheScope {
             && let Some(commit_hash) = root_commit
         {
             let cache_dir = home.join(CACHE_DIRECTORY).join(commit_hash);
-            if !cache_dir.exists()
-                && create_dir_all(&cache_dir).is_err() {
-                    return None;
-                }
+            if !cache_dir.exists() && create_dir_all(&cache_dir).is_err() {
+                return None;
+            }
             return Some(cache_dir);
         }
         None
