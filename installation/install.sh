@@ -1,4 +1,4 @@
-CURRENT_VERSION="3.0.5"
+CURRENT_VERSION="3.0.6"
 CWD=$(pwd)
 
 REPLACEMENT="/node_modules"
@@ -31,36 +31,37 @@ ROOT_COMMIT=$(git rev-list --parents HEAD | tail -1) || ROOT_COMMIT=""
 
 cd
 
-CACHE_FILE_OR_DIRECTORY=".repokit";
-NEW_VERSION_FILE=".repokit_version"
-NEW_SETTINGS_FILE=".repokit_settings"
-REPO_CACHE_DIRECTORY="$CACHE_FILE_OR_DIRECTORY/$ROOT_COMMIT";
+CACHE_FILE=".repokit";
+CACHE_DIRECTORY=".repokit_cache";
+NEW_SETTINGS_FILE=".settings"
+REPO_CACHE_DIRECTORY="$CACHE_DIRECTORY/$ROOT_COMMIT"
+LAST_THEME_USED=""
+BACK_PORTING=0
 
-CACHED_THEME=""
+if [ -n "$ROOT_COMMIT" ] && [ -f "$REPO_CACHE_DIRECTORY/$NEW_SETTINGS_FILE" ]; then
+    BACK_PORTING=1
+    cd "$REPO_CACHE_DIRECTORY"
+    read -r LAST_THEME_USED < "$NEW_SETTINGS_FILE"
+    rm "$NEW_SETTINGS_FILE"
+    cd
+fi
 
-if [ -d "$CACHE_FILE_OR_DIRECTORY" ]; then
-    if [ -n "$ROOT_COMMIT" ] && [ -d "$REPO_CACHE_DIRECTORY" ]; then
-        {
-            read -r CACHED_THEME
-        } < "$REPO_CACHE_DIRECTORY/$NEW_SETTINGS_FILE"
-    fi
-    rm -rf "$CACHE_FILE_OR_DIRECTORY"
-elif [ -f "$CACHE_FILE_OR_DIRECTORY" ]; then
-    read -r PREVIOUS_VERSION < "$CACHE_FILE_OR_DIRECTORY"
-    if [ "$PREVIOUS_VERSION" == "$CURRENT_VERSION" ]; then
-        exit 0;    
+if [ ! -f "$CACHE_FILE" ]; then
+    touch "$CACHE_FILE"
+elif [ "$BACK_PORTING" == 0 ]; then
+    read -r LAST_VERSION_USED < "$CACHE_FILE"
+    if [ "$LAST_VERSION_USED" == "$CURRENT_VERSION" ]; then
+        exit 0
     fi
 fi
 
-touch "$CACHE_FILE_OR_DIRECTORY"
-
-if [ -n "$CACHED_THEME" ]; then
-    printf "$CURRENT_VERSION\n$CACHED_THEME\n" > "$CACHE_FILE_OR_DIRECTORY"
-else 
+if [ -n "$LAST_THEME_USED" ]; then 
+    echo "$CURRENT_VERSION\n$LAST_THEME_USED\n" > "$CACHE_FILE"
+else
     TEMP_FILE=".repokit_tmp";
     printf "$CURRENT_VERSION\n" > "$TEMP_FILE"
-    tail +2 "$CACHE_FILE_OR_DIRECTORY" >> "$TEMP_FILE"
-    mv "$TEMP_FILE" "$CACHE_FILE_OR_DIRECTORY"
+    tail +2 "$CACHE_FILE" >> "$TEMP_FILE"
+    mv "$TEMP_FILE" "$CACHE_FILE"
 fi
 
 
