@@ -1,33 +1,28 @@
-use std::{
-    env::args,
-    io::{Error, ErrorKind},
-};
+use std::env::args;
 
 use terminal_spinners::{BOUNCING_BALL, SpinnerBuilder};
 
-use crate::{context::file_system::FileSystem, executor::executor::Executor};
+use crate::{
+    context::file_system::FileSystem, executor::executor::Executor, logger::logger::Logger,
+};
 
 pub struct RepoKitVersionResolver;
 
 impl RepoKitVersionResolver {
-    pub fn hop_to_installed_version(files: &FileSystem) -> Result<(), Error> {
+    pub fn hop_to_installed_version(files: &FileSystem) {
         if files.install_script_path.is_absolute() && files.install_script_path.exists() {
             if let Some(errors) = RepoKitVersionResolver::run_post_install(files) {
                 println!("{errors}");
-                return Err(Error::new(
-                    ErrorKind::NotFound,
-                    "post install script failed to execute",
-                ));
+                Logger::error("My installer failed");
+                RepoKitVersionResolver::on_error();
             } else {
                 RepoKitVersionResolver::re_run_command();
-                return Ok(());
             }
+        } else {
+            Logger::error("I couldn't find my installer");
+            RepoKitVersionResolver::on_error();
         }
-        Err(Error::new(
-            ErrorKind::NotFound,
-            "post install script not found",
-        ))
-        // TODO attempt recovery via re-install from npm
+        panic!();
     }
 
     fn run_post_install(files: &FileSystem) -> Option<String> {
@@ -46,5 +41,10 @@ impl RepoKitVersionResolver {
     fn re_run_command() {
         let args: Vec<String> = args().collect();
         Executor::with_stdio(args.join(" "), |cmd| cmd);
+    }
+
+    fn on_error() {
+        Logger::info("Please file a bug here");
+        Logger::log_issue_link();
     }
 }

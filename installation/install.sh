@@ -70,10 +70,11 @@ if [ -f $VERSION_FILE ]; then
     if [ "$CACHED_VERSION" == "$CURRENT_VERSION" ]; then
         exit 0;    
     fi
-else
+else 
     touch "$VERSION_FILE"
-    echo "$CURRENT_VERSION\n" > "$VERSION_FILE"
 fi 
+
+echo "$CURRENT_VERSION\n" > "$VERSION_FILE"
 
 cd $CWD
 

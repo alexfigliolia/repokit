@@ -12,7 +12,6 @@ use crate::{
     caches::{file_cache::FileCache, repokit_version_resolver::RepoKitVersionResolver},
     context::file_system::FileSystem,
     logger::logger::Logger,
-    post_processing::post_processor::PostProcessor,
 };
 
 #[derive(Clone)]
@@ -56,25 +55,12 @@ impl VersionCache {
         }
         if let Some(runtime_version) = runtime_result {
             self.runtime_version = runtime_version;
-        } else {
-            self.runtime_version = self.installed_version.clone();
-            self.record_version_use();
-            let this = self.clone();
-            PostProcessor::get().register_task(move || {
-                this.record_version_use();
-            });
         }
         if self.installed_version != self.runtime_version
             && VERSION_REGEX.is_match(&self.installed_version)
         {
             self.hop_to_installed_version(files);
         }
-    }
-
-    fn record_version_use(&self) {
-        self.write(format!("{}\n", self.installed_version).as_str(), |_| {
-            self.on_record_version_use_error();
-        });
     }
 
     fn hop_to_installed_version(&self, files: &FileSystem) {
@@ -85,35 +71,7 @@ impl VersionCache {
             )
             .as_str(),
         );
-        if RepoKitVersionResolver::hop_to_installed_version(files).is_ok() {
-            self.record_version_use();
-        } else {
-            Logger::info("I was unable swap to your currently installed version");
-            Logger::info("Please file a bug at");
-            Logger::log_issue_link();
-        }
-        panic!();
-    }
-
-    fn on_record_version_use_error(&self) {
-        if let Some(cache_directory) = self.storage_path() {
-            let version = self.installed_version.to_owned();
-            PostProcessor::get().register_task(move || {
-            Logger::info(
-                "I attempted to write to cache file on disk, but the operation was unsuccessful",
-            );
-            VersionCache::log_cache_write_error();
-            Logger::info("To avoid any issue with stale caches you can run");
-            Logger::log_file_path(
-                format!(
-                    "printf \"{}\n\" > {}",
-                    version,
-                    cache_directory.to_string_lossy(),
-                )
-                .as_str(),
-            );
-        });
-        }
+        RepoKitVersionResolver::hop_to_installed_version(files);
     }
 
     async fn runtime_version(&self) -> Option<String> {
