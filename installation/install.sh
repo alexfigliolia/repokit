@@ -31,49 +31,49 @@ ROOT_COMMIT=$(git rev-list --parents HEAD | tail -1) || ROOT_COMMIT=""
 
 cd
 
-CACHE_FILE_OR_DIRECTORY=".repokit";
-NEW_VERSION_FILE=".repokit_version"
-NEW_SETTINGS_FILE=".repokit_settings"
-REPO_CACHE_DIRECTORY="$CACHE_FILE_OR_DIRECTORY/$ROOT_COMMIT";
+OLD_CACHE_FILE=".repokit";
+CACHE_DIRECTORY=".repokit_cache";
+VERSION_FILE=".version"
+SETTINGS_FILE=".settings"
+REPO_CACHE_DIRECTORY="$CACHE_DIRECTORY/$ROOT_COMMIT"
 
 CACHED_THEME=""
 
-if [ -f $OLD_SETTINGS_FILE ]; then
+if [ -f "$OLD_CACHE_FILE" ] && [ -n "$ROOT_COMMIT" ] && [ ! -f "$REPO_CACHE_DIRECTORY/$SETTINGS_FILE" ]; then
     {
         read -r
         read -r CACHED_THEME
-    } < "$OLD_SETTINGS_FILE"
-    rm "$OLD_SETTINGS_FILE"
-fi
+    } < "$OLD_CACHE_FILE"
+    echo "CACHED THEME $CACHED_THEME"
+fi 
 
-CACHE_DIR=".repokit"
-VERSION_FILE=".repokit_version"
-SETTINGS_FILE=".repokit_settings"
+if [ ! -d "$CACHE_DIRECTORY" ]; then 
+    mkdir "$CACHE_DIRECTORY"    
+fi 
 
-mkdir -p "$CACHE_DIR"
+cd "$CACHE_DIRECTORY"
 
-cd "$CACHE_DIR"
-
-if [ -n "$ROOT_COMMIT" ] && [ ! -d "$ROOT_COMMIT" ]; then
-    mkdir -p "$ROOT_COMMIT"
+if [ -n "$ROOT_COMMIT" ]; then
+    if [ ! -d "$ROOT_COMMIT" ]; then
+        mkdir "$ROOT_COMMIT"
+    fi
+    cd $ROOT_COMMIT;
+    if [ -n "$CACHED_THEME" ] && [ ! -f "$SETTINGS_FILE" ]; then
+        touch "$SETTINGS_FILE"
+        echo "$CACHED_THEME\n" > "$SETTINGS_FILE"
+    fi
+    cd "../"
 fi
 
 if [ -f $VERSION_FILE ]; then
-    read -r FIRST_LINE < "$VERSION_FILE"
-    if [ "$FIRST_LINE" == "$CURRENT_VERSION" ]; then
+    read -r CACHED_VERSION < "$VERSION_FILE"
+    if [ "$CACHED_VERSION" == "$CURRENT_VERSION" ]; then
         exit 0;    
     fi
 else
     touch "$VERSION_FILE"
+    echo "$CURRENT_VERSION\n" > "$VERSION_FILE"
 fi 
-
-echo "$CURRENT_VERSION\n" > "$VERSION_FILE"
-
-if [ -n "$ROOT_COMMIT" ] && [ -n "$CACHED_THEME" ]; then
-    cd "$ROOT_COMMIT"
-    touch "$SETTINGS_FILE"
-    echo "$CACHED_THEME\n" > "$SETTINGS_FILE"
-fi
 
 cd $CWD
 

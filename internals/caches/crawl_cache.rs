@@ -115,7 +115,7 @@ impl CrawlCache {
 
 impl FileCache for CrawlCache {
     fn cache_file(&self) -> &str {
-        ".repokit_cache"
+        ".crawl_cache"
     }
 
     fn cache_directory(&self) -> &Option<PathBuf> {

@@ -64,7 +64,7 @@ impl SettingsCache {
 
 impl FileCache for SettingsCache {
     fn cache_file(&self) -> &str {
-        ".repokit_settings"
+        ".settings"
     }
 
     fn cache_directory(&self) -> &Option<PathBuf> {
