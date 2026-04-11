@@ -9,7 +9,10 @@ use futures::{executor::block_on, join};
 use regex::Regex;
 
 use crate::{
-    caches::{file_cache::FileCache, repokit_version_resolver::RepoKitVersionResolver},
+    caches::{
+        file_cache::FileCache, old_cache::OldCache,
+        repokit_version_resolver::RepoKitVersionResolver,
+    },
     context::file_system::FileSystem,
     logger::logger::Logger,
 };
@@ -18,10 +21,9 @@ use crate::{
 pub struct VersionCache {
     pub runtime_version: String,
     pub installed_version: String,
+    pub old_cache_path_version: String,
     pub cache_directory: Option<PathBuf>,
 }
-
-static UNKNOWN: &str = "UNKNOWN";
 
 pub static VERSION_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"\d*\.\d*.\d*"#).unwrap());
@@ -29,8 +31,9 @@ pub static VERSION_REGEX: LazyLock<Regex> =
 impl VersionCache {
     pub fn new(cache_directory: &Option<PathBuf>) -> Self {
         VersionCache {
-            runtime_version: UNKNOWN.to_string(),
-            installed_version: UNKNOWN.to_string(),
+            runtime_version: "".to_string(),
+            installed_version: "".to_string(),
+            old_cache_path_version: "".to_string(),
             cache_directory: cache_directory.clone(),
         }
     }
@@ -46,9 +49,10 @@ impl VersionCache {
     }
 
     pub async fn initialize(&mut self, files: &FileSystem) {
-        let (runtime_result, install_result) = join!(
+        let (runtime_result, install_result, old_cache_path_version) = join!(
             self.runtime_version(),
-            self.installed_repokit_version(files)
+            self.installed_repokit_version(files),
+            self.get_old_cache_path_version(),
         );
         if let Some(installed_version) = install_result {
             self.installed_version = installed_version;
@@ -56,8 +60,13 @@ impl VersionCache {
         if let Some(runtime_version) = runtime_result {
             self.runtime_version = runtime_version;
         }
-        if self.installed_version != self.runtime_version
-            && VERSION_REGEX.is_match(&self.installed_version)
+        if let Some(old_cache_version) = old_cache_path_version {
+            self.old_cache_path_version = old_cache_version;
+        }
+        if (self.installed_version != self.runtime_version)
+            || (self.installed_version != self.old_cache_path_version
+                && !self.old_cache_path_version.is_empty())
+                && VERSION_REGEX.is_match(&self.installed_version)
         {
             self.hop_to_installed_version(files);
         }
@@ -114,6 +123,11 @@ impl VersionCache {
             }
         }
         None
+    }
+
+    async fn get_old_cache_path_version(&self) -> Option<String> {
+        let old_cache = OldCache::new();
+        old_cache.get_version()
     }
 }
 
