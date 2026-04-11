@@ -1,31 +1,32 @@
 use futures::{executor::block_on, join};
-use normalize_path::NormalizePath;
-use shellexpand::tilde;
 use std::{
+    env::home_dir,
     fs::create_dir_all,
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
 
 use crate::{
     caches::{
-        crawl_cache::CrawlCache, file_cache::FileCache, settings_cache::SettingsCache,
-        version_cache::VersionCache,
+        crawl_cache::CrawlCache, file_cache::FileCache,
+        settings_cache::SettingsCache, version_cache::VersionCache,
     },
     context::{file_system::FileSystem, git_scope::GitScope},
 };
 
 #[derive(Clone)]
 pub struct CacheScope {
+    pub crawl_cache: CrawlCache,
     pub version_cache: VersionCache,
     pub settings_cache: SettingsCache,
-    pub crawl_cache: CrawlCache,
 }
 
 static CACHE_DIRECTORY: &str = ".repokit_cache";
 
 impl CacheScope {
     pub fn new(git_scope: &GitScope, file_system: &FileSystem) -> CacheScope {
-        let cache_directory = CacheScope::resolve_cache_directory(&git_scope.root_commit_hash);
+        let home = home_dir();
+        let cache_directory =
+            CacheScope::resolve_cache_directory(&home, &git_scope.root_commit_hash);
         let mut instance = CacheScope {
             crawl_cache: CrawlCache::new(&cache_directory),
             version_cache: VersionCache::new(&cache_directory),
@@ -52,17 +53,11 @@ impl CacheScope {
         );
     }
 
-    pub fn home() -> Option<PathBuf> {
-        let expanded_path_str = tilde("~/");
-        let path = Path::new(expanded_path_str.as_ref()).normalize();
-        if path.is_absolute() && path.exists() {
-            return Some(path);
-        }
-        None
-    }
-
-    fn resolve_cache_directory(root_commit: &Option<String>) -> Option<PathBuf> {
-        if let Some(home) = CacheScope::home()
+    fn resolve_cache_directory(
+        home_path: &Option<PathBuf>,
+        root_commit: &Option<String>,
+    ) -> Option<PathBuf> {
+        if let Some(home) = home_path
             && let Some(commit_hash) = root_commit
         {
             let cache_dir = home.join(CACHE_DIRECTORY).join(commit_hash);

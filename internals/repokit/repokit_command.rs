@@ -46,7 +46,7 @@ impl RepoKitCommand {
                     failed_paths.push(path);
                 }
             } else {
-                let mut valid_command = repokit_command.expect("assertion success");
+                let mut valid_command = repokit_command.expect("parse success");
                 valid_command.location = format!("{}/{}", git_root, valid_command.location);
                 result.push(valid_command);
             }
