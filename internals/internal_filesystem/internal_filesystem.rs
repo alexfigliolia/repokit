@@ -292,16 +292,29 @@ impl InternalFileSystem {
 
     pub fn runtime_repokit_version() -> Option<String> {
         if let Some(home) = InternalFileSystem::home() {
-            let version = Executor::exec(
-                format!(
-                    "head -n 1 {}",
-                    home.join(".repokit").normalize().to_str().unwrap()
-                ),
-                |cmd| cmd,
-            );
-            if VERSION_REGEX.is_match(&version) {
-                return Some(version);
+            let path = home.join(".repokit");
+            return InternalFileSystem::get_version_at_path(&path);
+        }
+        None
+    }
+
+    pub fn new_cache_path_version() -> Option<String> {
+        if let Some(home) = InternalFileSystem::home() {
+            let path = home.join(".repokit_cache/.version");
+            if (&*path).exists() && path.is_file() {
+                return InternalFileSystem::get_version_at_path(&path);
             }
+        }
+        None
+    }
+
+    fn get_version_at_path(path: &PathBuf) -> Option<String> {
+        let version = Executor::exec(
+            format!("head -n 1 {}", path.normalize().to_str().unwrap()),
+            |cmd| cmd,
+        );
+        if VERSION_REGEX.is_match(&version) {
+            return Some(version);
         }
         None
     }

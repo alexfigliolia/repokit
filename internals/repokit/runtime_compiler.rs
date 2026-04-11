@@ -34,12 +34,15 @@ impl RuntimeCompiler {
     }
 
     fn with_version_mismatch(root: &str, func: impl Fn(&str, InternalFileSystem)) {
-        let scoped_fs = InternalFileSystem::new(root);
-        if let Some(installed_version) = scoped_fs.installed_repokit_version()
-            && let Some(runtime_version) = InternalFileSystem::runtime_repokit_version()
-            && runtime_version != installed_version
-        {
-            func(&installed_version, scoped_fs);
+        let scoped_fs: InternalFileSystem = InternalFileSystem::new(root);
+        if let Some(installed_version) = scoped_fs.installed_repokit_version() {
+            let runtime_version = InternalFileSystem::runtime_repokit_version();
+            let new_cache_path_version = InternalFileSystem::new_cache_path_version();
+            if runtime_version.is_some_and(|value| value != installed_version)
+                || new_cache_path_version.is_some_and(|value| value != installed_version)
+            {
+                func(&installed_version, scoped_fs);
+            }
         }
     }
 
