@@ -1,4 +1,4 @@
-CURRENT_VERSION="4.0.1"
+CURRENT_VERSION="4.0.2"
 CWD=$(pwd)
 
 REPLACEMENT="/node_modules"
@@ -45,7 +45,7 @@ if [ -f "$OLD_CACHE_FILE" ]; then
         read -r OLD_SCHEMA_CACHED_VERSION
         read -r OLD_SCHEMA_CACHED_THEME
     } < "$OLD_CACHE_FILE"
-    if [ ! -n "$ROOT_COMMIT" ] || [ -f "$REPO_CACHE_DIRECTORY/$SETTINGS_FILE" ]; then
+    if [ -n "$ROOT_COMMIT" ] && [ -f "$REPO_CACHE_DIRECTORY/$SETTINGS_FILE" ]; then
         OLD_SCHEMA_CACHED_THEME=""
     fi
 fi 
@@ -61,8 +61,10 @@ if [ -n "$ROOT_COMMIT" ]; then
         mkdir "$ROOT_COMMIT"
     fi
     cd $ROOT_COMMIT;
-    if [ -n "$OLD_SCHEMA_CACHED_THEME" ] && [ ! -f "$SETTINGS_FILE" ]; then
+    if [ ! -f "$SETTINGS_FILE" ]; then
         touch "$SETTINGS_FILE"
+    fi
+    if [ -n "$OLD_SCHEMA_CACHED_THEME" ]; then
         echo "$OLD_SCHEMA_CACHED_THEME\n" > "$SETTINGS_FILE"
     fi
     cd "../"
