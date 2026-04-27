@@ -11,20 +11,22 @@ pub enum ArgvType {
 #[derive(Clone)]
 pub struct ArgvOption {
     pub value_type: ArgvType,
-    pub short: Option<String>,
-    pub name: String,
+    pub short: Option<&'static str>,
+    pub name: &'static str,
     pub multiple: Option<bool>,
 }
 
 pub struct Argv {
     pub values: HashMap<String, Vec<String>>,
+    pub positionals: Vec<String>,
     lookup_table: HashMap<String, ArgvOption>,
 }
 
 impl Argv {
-    pub fn new(schema: Vec<ArgvOption>, args: Option<Vec<String>>) -> Argv {
+    pub fn new<const N: usize>(schema: [ArgvOption; N], args: Option<Vec<String>>) -> Argv {
         let mut argv = Argv {
             values: HashMap::new(),
+            positionals: Vec::new(),
             lookup_table: Argv::build_option_table(&schema),
         };
         argv.parse(args);
@@ -72,29 +74,26 @@ impl Argv {
                             if self.lookup_table.contains_key(value) {
                                 break;
                             }
-                            if values.len() == 1
-                                && (schema.multiple.is_none()
-                                    || schema.multiple.is_some_and(|v| !v))
-                            {
-                                Logger::error(
-                                    format!(
-                                        "Recived more than one value for the option {}",
-                                        Logger::with_theme(|theme| theme.highlight(&schema.name))
-                                    )
-                                    .as_str(),
-                                );
+                            let values_for_argument = values.len();
+                            if values_for_argument == 0 || schema.multiple.is_some_and(|v| v) {
+                                values.push(value.to_string());
+                                current += 1;
+                            } else {
+                                break;
                             }
-                            values.push(value.to_string());
-                            current += 1;
                         }
                     }
                 }
+            } else {
+                self.positionals.push(arg.to_owned());
             }
             pointer += 1;
         }
     }
 
-    fn build_option_table(options: &Vec<ArgvOption>) -> HashMap<String, ArgvOption> {
+    fn build_option_table<const N: usize>(
+        options: &[ArgvOption; N],
+    ) -> HashMap<String, ArgvOption> {
         let mut table: HashMap<String, ArgvOption> = HashMap::new();
         for option in options {
             if option.name.len() < 2 {
@@ -106,7 +105,7 @@ impl Argv {
                 .next()
                 .expect("already checked for emptiness")
                 .to_string();
-            let short_flag = option.short.as_ref().unwrap_or(&first_char);
+            let short_flag = option.short.unwrap_or(&first_char);
             let flags = [format!("--{}", option.name), format!("-{}", short_flag)];
             for flag in flags {
                 if table.contains_key(&flag) {
