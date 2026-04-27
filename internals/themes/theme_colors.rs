@@ -18,11 +18,7 @@ impl ThemeColors {
         ThemeColors {
             prefixColor: input.prefixColor.unwrap_or(Color::BrightMagenta),
             commandColor: input.commandColor.unwrap_or(Color::BrightBlue),
-            subcommandColor: input.subcommandColor.unwrap_or(Color::TrueColor {
-                r: 175,
-                g: 247,
-                b: 7,
-            }),
+            subcommandColor: input.subcommandColor.unwrap_or(Color::BrightCyan),
             argColor: input.argColor.unwrap_or(Color::Green),
             descriptionColor: input.descriptionColor.unwrap_or(Color::TrueColor {
                 r: 128,

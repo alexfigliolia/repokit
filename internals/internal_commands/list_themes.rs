@@ -69,8 +69,8 @@ impl ListThemes {
 impl InternalExecutable for ListThemes {
     fn run(&self, args: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         let argv = Argv::new(
-            vec![ArgvOption {
-                name: "set".to_string(),
+            [ArgvOption {
+                name: "set",
                 value_type: ArgvType::String,
                 short: None,
                 multiple: None,
