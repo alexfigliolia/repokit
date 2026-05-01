@@ -39,7 +39,7 @@
     "install:rust": "pnpm build:rust && cargo install --path .",
     "lint:all": "pnpm lint:ts && pnpm lint:rust",
     "lint:rust": "cargo clippy --fix --allow-dirty",
-    "lint:ts": "pnpm oxlint --type-aware --type-check --report-unused-disable-directives --fix && pnpm oxfmt",
+    "lint:ts": "oxlint --type-aware --type-check --report-unused-disable-directives --fix && oxfmt",
     "package:ts": "pnpm lint:ts && pnpm lint:rust && pnpm build:ts",
     "postinstall": "pnpm grant:exec && ./installation/install.sh",
     "repokit": "pnpm install:rust && repokit",
