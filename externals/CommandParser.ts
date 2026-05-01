@@ -1,10 +1,11 @@
-import { existsSync } from "node:fs";
-import { stat } from "node:fs/promises";
-import { join } from "node:path";
 import { parseArgs } from "node:util";
-import { RepoKitCommand } from "./RepoKitCommand";
-import { TSCompiler } from "./TSCompiler";
+import { join } from "node:path";
+import { stat } from "node:fs/promises";
+import { existsSync } from "node:fs";
+
 import type { ILocatedCommand } from "./types";
+import { TSCompiler } from "./TSCompiler";
+import { RepoKitCommand } from "./RepoKitCommand";
 /* oxlint-disable typescript-eslint(no-misused-spread) */
 
 export class CommandParser extends TSCompiler {

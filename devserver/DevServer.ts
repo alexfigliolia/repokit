@@ -1,14 +1,15 @@
-import type { ChildProcess as Child_Process } from "node:child_process";
-import { existsSync } from "node:fs";
-import { mkdir, rm, symlink } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import { mkdir, rm, symlink } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import type { ChildProcess as Child_Process } from "node:child_process";
+
 import { ChildProcess } from "@figliolia/child-process";
 
 export class DevServer {
   private static TS_PROCESS?: Child_Process;
-  private static readonly TSC_COMMAND = "yarn tsdown";
+  private static readonly TSC_COMMAND = "pnpm tsdown";
   // @ts-ignore
   private static readonly FILE = fileURLToPath(import.meta.url);
   private static readonly SCRIPT_ORIGIN = dirname(this.FILE);

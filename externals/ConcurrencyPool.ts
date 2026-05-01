@@ -1,4 +1,5 @@
 import { AutoIncrementingID } from "@figliolia/event-emitter";
+
 import type { AsyncTask } from "./types";
 
 export class ConcurrencyPool<T> {
