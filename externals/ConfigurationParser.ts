@@ -1,8 +1,9 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import { parseArgs } from "node:util";
-import { RepoKitConfig } from "./RepoKitConfig";
+import { join } from "node:path";
+import { existsSync } from "node:fs";
+
 import { TSCompiler } from "./TSCompiler";
+import { RepoKitConfig } from "./RepoKitConfig";
 
 export class ConfigurationParser extends TSCompiler {
   public static parse() {

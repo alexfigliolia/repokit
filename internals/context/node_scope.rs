@@ -107,7 +107,7 @@ impl NodeScope {
         let manager_map = HashMap::from([
             ("npm", "npx"),
             ("yarn", "yarn run -T"),
-            ("pnpm", "pnpm run"),
+            ("pnpm", "pnpm"),
             ("bun", "bunx"),
         ]);
         manager_map.get(package_manager).unwrap_or(&npx)

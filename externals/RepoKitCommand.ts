@@ -5,12 +5,7 @@ export class RepoKitCommand {
   owner: string;
   description: string;
   commands: Record<string, ICommand>;
-  constructor({
-    name,
-    description,
-    owner = "",
-    commands = {},
-  }: IRepoKitCommand) {
+  constructor({ name, description, owner = "", commands }: IRepoKitCommand) {
     this.name = name;
     this.owner = owner;
     this.commands = commands;

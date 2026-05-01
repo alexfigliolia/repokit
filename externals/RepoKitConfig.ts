@@ -1,6 +1,6 @@
-import { RepoKitCommand } from "./RepoKitCommand";
-import type { RepoKitTheme } from "./RepoKitTheme";
 import type { ICommand, IRepoKitConfig } from "./types";
+import type { RepoKitTheme } from "./RepoKitTheme";
+import { RepoKitCommand } from "./RepoKitCommand";
 /* eslint-disable typescript-eslint(no-misused-spread */
 
 export class RepoKitConfig {

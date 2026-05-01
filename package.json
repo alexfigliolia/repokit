@@ -31,19 +31,19 @@
     "access": "public"
   },
   "scripts": {
-    "build:all": "yarn lint:ts && yarn lint:rust && yarn install:rust",
+    "build:all": "pnpm lint:ts && pnpm lint:rust && pnpm install:rust",
     "build:rust": "cargo build --release",
     "build:ts": "tsx devserver/run.ts",
     "clean:ts": "tsx devserver/run.ts -c",
     "grant:exec": "chmod -R +x ./installation",
-    "install:rust": "yarn build:rust && cargo install --path .",
-    "lint:all": "yarn lint:ts && yarn lint:rust",
+    "install:rust": "pnpm build:rust && cargo install --path .",
+    "lint:all": "pnpm lint:ts && pnpm lint:rust",
     "lint:rust": "cargo clippy --fix --allow-dirty",
-    "lint:ts": "yarn oxlint --type-aware --type-check --report-unused-disable-directives --fix && yarn oxfmt",
-    "package:ts": "yarn lint:ts && yarn lint:rust && yarn build:ts",
-    "postinstall": "yarn grant:exec && ./installation/install.sh",
-    "repokit": "yarn install:rust && repokit",
-    "run:dev": "yarn build:ts && cargo run --package repokit --bin repokit",
+    "lint:ts": "pnpm oxlint --type-aware --type-check --report-unused-disable-directives --fix && pnpm oxfmt",
+    "package:ts": "pnpm lint:ts && pnpm lint:rust && pnpm build:ts",
+    "postinstall": "pnpm grant:exec && ./installation/install.sh",
+    "repokit": "pnpm install:rust && repokit",
+    "run:dev": "pnpm build:ts && cargo run --package repokit --bin repokit",
     "watch:ts": "tsx devserver/run.ts -w"
   },
   "dependencies": {
@@ -55,19 +55,13 @@
     "@figliolia/child-process": "^1.0.4",
     "@figliolia/semver": "^1.0.0",
     "@types/node": "^25.3.0",
-    "@typescript-eslint/eslint-plugin": "^8.57.1",
-    "@typescript-eslint/parser": "^8.57.1",
     "chalk": "^5.6.2",
-    "eslint": "^10.0.3",
-    "eslint-import-resolver-typescript": "^4.4.4",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-simple-import-sort": "^13.0.0",
-    "eslint-plugin-unused-imports": "^4.4.1",
     "oxfmt": "^0.47.0",
     "oxlint": "^1.42.0",
     "oxlint-tsgolint": "^0.22.0",
     "tsdown": "^0.21.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"
-  }
+  },
+  "packageManager": "pnpm@10.33.2"
 }

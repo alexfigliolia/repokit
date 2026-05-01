@@ -1,9 +1,10 @@
-import { createReadStream } from "node:fs";
-import { writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import { createInterface } from "node:readline/promises";
-import { ChildProcess } from "@figliolia/child-process";
+import { join } from "node:path";
+import { writeFile } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+
 import { Logger, SemverRelease } from "@figliolia/semver";
+import { ChildProcess } from "@figliolia/child-process";
 
 export class Release extends SemverRelease {
   private static readonly INSTALL_SCRIPT = join(
@@ -17,10 +18,10 @@ export class Release extends SemverRelease {
       onComplete: async version => {
         await Release.writeVersion(version);
         Logger.info("Linting Everything...");
-        await new ChildProcess("yarn lint:ts").handler;
-        await new ChildProcess("yarn lint:rust").handler;
+        await new ChildProcess("pnpm lint:ts").handler;
+        await new ChildProcess("pnpm lint:rust").handler;
         Logger.info("Compiling for production...");
-        await new ChildProcess("yarn build:ts").handler;
+        await new ChildProcess("pnpm build:ts").handler;
       },
     });
   }
