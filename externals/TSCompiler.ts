@@ -1,5 +1,5 @@
-import { register } from "ts-node";
 import type { RegisterOptions } from "ts-node";
+import { register } from "ts-node";
 
 import type { UnwrappedBrigdeOperation } from "./types";
 
