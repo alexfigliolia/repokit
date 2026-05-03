@@ -1,7 +1,7 @@
 use std::{
     fs::File,
     io::{BufRead, BufReader},
-    sync::{Arc, Mutex},
+    sync::{Arc, LazyLock, Mutex},
 };
 
 use ignore::{DirEntry, Error, ParallelVisitor, ParallelVisitorBuilder, WalkState};
@@ -14,11 +14,13 @@ pub struct TSFileVisitor {
     paths: Arc<Mutex<Vec<String>>>,
 }
 
+static REPOKIT_IMPORT_MATCHER: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(require\(|from[\s*]?)['"]@repokit/core["'][\)]?[;]?$"#).unwrap()
+});
+
 impl ParallelVisitor for TSFileVisitor {
     fn visit(&mut self, entry: Result<DirEntry, Error>) -> WalkState {
         let root_replacer = format!("{}/", self.root);
-        let repokit_import_matcher =
-            Regex::new(r#"(require\(|from[\s*]?)['"]@repokit/core["'][\)]?[;]?$"#).unwrap();
         if let Ok(entry) = entry {
             let path = entry.path();
             let path_string = path.to_str().map_or("", |f| f);
@@ -29,17 +31,17 @@ impl ParallelVisitor for TSFileVisitor {
                 for line_result in reader.lines() {
                     let unwrapped = line_result.unwrap();
                     let line = unwrapped.trim();
-                    if !open_comment && line.starts_with("/**") {
+                    if !open_comment && line.starts_with("/*") {
                         open_comment = true;
                         continue;
                     }
                     if open_comment {
-                        if line == "*/" {
+                        if line.ends_with("*/") {
                             open_comment = false;
                         }
                         continue;
                     }
-                    if repokit_import_matcher.is_match(line) {
+                    if REPOKIT_IMPORT_MATCHER.is_match(line) {
                         let mut vector = self.paths.lock().unwrap();
                         vector.push(path_string.to_string().replace(&root_replacer, ""));
                         break;
