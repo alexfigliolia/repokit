@@ -57,14 +57,11 @@ impl FileWalker {
                     paths_to_search.push(file.to_owned());
                 }
             }
-        });
-        RepoKitRuntime::with_runtime(|runtime| {
             if let Some(changed_files) = &runtime.caches.crawl_cache.changed_files {
                 let mut paths_to_import =
                     TSFileVisitor::traverse_list(&runtime.git.root, changed_files.to_owned());
                 if !paths_to_import.is_empty() {
-                    let mut search_paths = self.command_paths.lock().unwrap();
-                    search_paths.append(&mut paths_to_import);
+                    paths_to_search.append(&mut paths_to_import);
                 }
             }
         });
