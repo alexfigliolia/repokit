@@ -6,24 +6,23 @@ import { existsSync } from "node:fs";
 import type { ILocatedCommand } from "./types";
 import { TSCompiler } from "./TSCompiler";
 import { RepoKitCommand } from "./RepoKitCommand";
-/* oxlint-disable typescript-eslint(no-misused-spread) */
 
 export class CommandParser extends TSCompiler {
-  public static async parse() {
+  public static readonly parse = this.wrapParsingOperation(async () => {
     const { paths, root } = this.parsePaths();
     if (!root || !existsSync(root) || !(await stat(root)).isDirectory()) {
-      return console.log(JSON.stringify([]));
+      return [];
     }
     const pathList = paths.split(",").filter(Boolean);
-    const commands = pathList.map(path => this.parseCommand(root, path));
-    console.log(JSON.stringify(commands.flat()));
-  }
+    return pathList.map(path => this.parseCommand(root, path)).flat();
+  });
 
   private static parseCommand(root: string, path: string) {
     const commands: ILocatedCommand[] = [];
     const declaredExports = super.compile(join(root, path));
     for (const key in declaredExports) {
       if (declaredExports[key] instanceof RepoKitCommand) {
+        // oxlint-disable-next-line typescript-eslint(no-misused-spread)
         commands.push({ ...declaredExports[key], location: path });
       }
     }

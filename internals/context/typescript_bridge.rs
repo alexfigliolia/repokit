@@ -1,19 +1,25 @@
 use core::panic;
 use std::{
     path::{Path, PathBuf},
-    sync::MutexGuard,
+    sync::{LazyLock, MutexGuard},
 };
 
+use regex::Regex;
 use serde_json::{Value, from_str};
 
 use crate::{
     context::{file_system::FileSystem, node_scope::NodeScope},
     executor::executor::Executor,
+    logger::logger::Logger,
     repokit::{
         repokit_command::RepoKitCommand, repokit_config::RepoKitConfig,
         repokit_runtime::RepoKitRuntime,
     },
 };
+
+static BRIDGE_PARSING_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"=============== REPOKIT PARSE FLAG ===============(.*)=============== REPOKIT PARSE FLAG ==============="#).unwrap()
+});
 
 pub struct TypeScriptBridge;
 
@@ -27,14 +33,14 @@ impl TypeScriptBridge {
         if stdout.is_empty() {
             RepoKitConfig::create(files);
         }
-        let result: Result<Value, serde_json::Error> = from_str(stdout.as_str());
-        match result {
-            Ok(config) => RepoKitConfig::from_input(&files.git_root, node, config),
-            Err(_) => {
-                RepoKitConfig::on_parsing_error(&files.git_root, node, Value::Null);
-                panic!();
+        if let Some(parsed_config) = TypeScriptBridge::unwrap_stdout(&stdout) {
+            let parse_result: Result<Value, serde_json::Error> = from_str(parsed_config);
+            if let Ok(config) = parse_result {
+                return RepoKitConfig::from_input(&files.git_root, node, config);
             }
         }
+        Logger::parse_error("configuration", &stdout);
+        panic!();
     }
 
     pub fn parse_commands(path_list: &MutexGuard<Vec<String>>) -> Vec<RepoKitCommand> {
@@ -50,19 +56,29 @@ impl TypeScriptBridge {
                 .as_str(),
             )
         });
-        let result: Result<Vec<Value>, serde_json::Error> = serde_json::from_str(&stdout);
-        match result {
-            Ok(commands) => RepoKitCommand::from_input(commands),
-            Err(_) => {
-                RepoKitCommand::full_blown_crash();
-                panic!();
+        if let Some(parsed_commands) = TypeScriptBridge::unwrap_stdout(&stdout) {
+            let parse_result: Result<Vec<Value>, serde_json::Error> =
+                serde_json::from_str(parsed_commands);
+            if let Ok(commands) = parse_result {
+                return RepoKitCommand::from_input(commands);
             }
         }
+        Logger::parse_error("commands", &stdout);
+        panic!();
     }
 
     fn execute_with_node(root: &PathBuf, args: &str) -> String {
         Executor::exec(format!("node {args}"), |cmd| {
             cmd.current_dir(Path::new(root))
         })
+    }
+
+    fn unwrap_stdout(stdout: &str) -> Option<&str> {
+        if let Some(capture) = BRIDGE_PARSING_REGEX.captures(stdout)
+            && let Some(result) = capture.get(1)
+        {
+            return Some(result.as_str());
+        }
+        None
     }
 }

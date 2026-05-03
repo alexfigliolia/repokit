@@ -6,19 +6,20 @@ import { TSCompiler } from "./TSCompiler";
 import { RepoKitConfig } from "./RepoKitConfig";
 
 export class ConfigurationParser extends TSCompiler {
-  public static parse() {
+  public static readonly parse = this.wrapParsingOperation(() => {
     const root = this.parseRoot();
     const path = join(root, "repokit.ts");
     if (!existsSync(path)) {
-      return;
+      return undefined;
     }
     const config = super.compile(path);
     for (const key in config) {
       if (config[key] instanceof RepoKitConfig) {
-        return console.log(JSON.stringify(config[key].toScoped(path)));
+        return config[key].toScoped(path);
       }
     }
-  }
+    return undefined;
+  });
 
   private static parseRoot() {
     return parseArgs({
