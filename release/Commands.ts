@@ -7,15 +7,16 @@ export const Commands = new RepoKitCommand({
   commands: {
     patch: {
       command: "pnpm tsx $(pwd)/run.ts -t patch",
-      description: `Bumps the patch version and lints the code base`,
+      description: "Bumps the patch version and lints the code base",
     },
     minor: {
       command: "pnpm tsx $(pwd)/run.ts -t minor",
-      description: `Bumps the minor version and lints the code base`,
+      description: "Bumps the minor version and lints the code base",
     },
     major: {
       command: "pnpm tsx $(pwd)/run.ts -t major",
-      description: `Bumps the major version and lints the code base`,
+      description:
+        "Bumps the major version and lints the code base asdfasdfasdf",
     },
   },
 });

@@ -13,12 +13,14 @@ use crate::{
 #[derive(Clone)]
 pub struct CrawlCache {
     pub cache_directory: Option<PathBuf>,
+    pub changed_files: Option<Vec<String>>,
     pub files_to_crawl: Option<Vec<String>>,
 }
 
 impl CrawlCache {
     pub fn new(cache_directory: &Option<PathBuf>) -> Self {
         CrawlCache {
+            changed_files: None,
             files_to_crawl: None,
             cache_directory: cache_directory.clone(),
         }
@@ -34,7 +36,7 @@ impl CrawlCache {
             if commit_hash != head_commit {
                 return;
             }
-            let mut lines = self.line_buffer_to_vec(lines);
+            let lines = self.line_buffer_to_vec(lines);
             if lines.is_empty() {
                 return;
             }
@@ -48,8 +50,8 @@ impl CrawlCache {
                     changed_files.remove(line);
                 }
             }
-            for line in changed_files {
-                lines.push(line);
+            if !changed_files.is_empty() {
+                self.changed_files = Some(changed_files.into_iter().collect());
             }
             self.files_to_crawl = Some(lines);
         }
