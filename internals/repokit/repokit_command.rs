@@ -73,32 +73,6 @@ impl RepoKitCommand {
         None
     }
 
-    pub fn full_blown_crash() {
-        Logger::error("I hit a snag parsing your commands");
-        Logger::error(
-            format!(
-                "This kind of error is indicative of a bug within {}",
-                Logger::with_theme(|theme| theme.highlight("Repokit"))
-            )
-            .as_str(),
-        );
-        println!();
-        Logger::info("Let's blaim the AI's for this one");
-        let version = RepoKitRuntime::with_runtime(|runtime| {
-            runtime.caches.version_cache.installed_version.clone()
-        });
-        Logger::info(
-            format!(
-                "In the interim, please file a bug here and downgrade to the most recent version behind {}",
-                Logger::with_theme(|theme| theme.highlight(&version))
-            )
-            .as_str(),
-        );
-        Logger::log_issue_link();
-        Logger::info("We'll get a hotfix out asap!");
-        panic!();
-    }
-
     fn register_encountered_errors(failed_paths: Vec<String>) {
         PostProcessor::get().register_task(move || {
             println!();

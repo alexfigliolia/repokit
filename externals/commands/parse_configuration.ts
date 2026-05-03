@@ -1,5 +1,3 @@
 import { ConfigurationParser } from "../ConfigurationParser";
 
-(() => {
-  ConfigurationParser.parse();
-})();
+ConfigurationParser.parse();

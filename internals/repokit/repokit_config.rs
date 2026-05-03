@@ -74,12 +74,14 @@ impl RepoKitConfig {
         if path.exists() {
             Logger::info(
                 format!(
-                    "I found a Repokit configuration without an exported {} instance",
+                    "I found a Repokit configuration but could not resolve the exported {} instance",
                     Logger::with_theme(|theme| theme.highlight("RepokitConfig"))
                 )
                 .as_str(),
             );
-            return Logger::exit_with_info("Please create an instance and export it");
+            Logger::exit_with_info(
+                "Please double check that your config file is free of any sideffects that can cause the parser to crash",
+            );
         }
         Logger::info("Welcome to Repokit! Let's get you setup");
         Logger::info("Creating your configuration file:");

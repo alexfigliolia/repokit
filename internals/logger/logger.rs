@@ -55,6 +55,20 @@ impl Logger {
         })
     }
 
+    pub fn parse_error(file_type: &str, stdout: &str) {
+        Logger::info(format!("There was an error parsing your {}", file_type).as_str());
+        Logger::info(
+            "This can occur when RepoKit attempts to parse a TypeScript file that can terminate the process upon evaluation",
+        );
+        Logger::info("Please file a bug to with any related error or stack trace found below");
+        Logger::log_issue_link();
+        println!();
+        if !stdout.is_empty() {
+            println!("{stdout}");
+        }
+        panic!();
+    }
+
     pub fn space_around(message: &str) {
         println!("\n{}{}\n", Logger::info_prefix(), message);
     }

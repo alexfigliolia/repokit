@@ -45,3 +45,8 @@ export interface IRepoKitTheme {
   name: string;
   colors: RepoKitThemeColors;
 }
+
+export type UnwrappedBrigdeOperation<
+  F extends (...args: unknown[]) => unknown,
+  T = void,
+> = ReturnType<F> extends Promise<unknown> ? Promise<T> : T;
