@@ -35,12 +35,15 @@
     "build:rust": "cargo build --release",
     "build:ts": "tsx devserver/run.ts",
     "clean:ts": "tsx devserver/run.ts -c",
+    "format:toml": "taplo lint && taplo format",
     "install:rust": "pnpm build:rust && cargo install --path .",
-    "lint:all": "pnpm lint:ts && pnpm lint:rust",
-    "lint:rust": "cargo clippy --fix --allow-dirty",
-    "lint:ts": "oxlint --type-aware --type-check --report-unused-disable-directives --fix && oxfmt",
+    "lint:all": "pnpm lint:rust && pnpm lint:ts",
+    "lint:rust": "cargo clippy --fix --allow-dirty && pnpm format:toml",
+    "lint:rust:ci": "cargo clippy --fix",
+    "lint:ts": "oxlint --type-aware --report-unused-disable-directives --fix && oxfmt",
     "package:ts": "pnpm lint:ts && pnpm lint:rust && pnpm build:ts",
     "postinstall": "chmod -R +x ./installation && ./installation/install.sh",
+    "prepare": "husky",
     "repokit": "pnpm install:rust && repokit",
     "run:dev": "pnpm build:ts && cargo run --package repokit --bin repokit",
     "watch:ts": "tsx devserver/run.ts -w"
@@ -53,14 +56,28 @@
   "devDependencies": {
     "@figliolia/child-process": "^1.0.4",
     "@figliolia/semver": "^1.0.0",
+    "@taplo/cli": "^0.7.0",
     "@types/node": "^25.3.0",
     "chalk": "^5.6.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "oxfmt": "^0.47.0",
     "oxlint": "^1.42.0",
     "oxlint-tsgolint": "^0.22.0",
     "tsdown": "^0.21.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"
+  },
+  "lint-staged": {
+    "*.@(js|ts|tsx|yml|yaml|md|json)": [
+      "pnpm lint:ts"
+    ],
+    "*.toml": [
+      "pnpm format:toml"
+    ],
+    "*.rs": [
+      "pnpm lint:rust"
+    ]
   },
   "packageManager": "pnpm@10.33.2"
 }

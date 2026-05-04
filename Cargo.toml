@@ -2,13 +2,19 @@
 name = "repokit"
 version = "4.0.6"
 edition = "2024"
+license = "MIT"
+readme = "README.md"
+authors = ["Alex Figliolia"]
+homepage = "https://github.com/alexfigliolia/repokit"
+repository = "https://github.com/alexfigliolia/repokit"
+keywords = ["cli", "developer tool", "repository", "toolchain"]
 
 [[bin]]
 name = "repokit"
 path = "internals/main.rs"
 
 [dependencies]
-jsonschema = { version = "0.46.2", default-features = false }
+jsonschema = { version = "0.46.4", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 colored = "3"
