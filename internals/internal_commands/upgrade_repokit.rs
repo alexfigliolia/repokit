@@ -29,7 +29,7 @@ impl UpgradeRepoKit {
         }
     }
 
-    pub fn static_execute(&self) {
+    pub fn install_at_latest(&self) {
         Logger::info("Upgrading installation");
         let handle = SpinnerBuilder::new()
             .spinner(&BOUNCING_BALL)
@@ -48,7 +48,7 @@ impl UpgradeRepoKit {
 
 impl InternalExecutable for UpgradeRepoKit {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
-        self.static_execute();
+        self.install_at_latest();
         if let Some(new_version) = RepoKitRuntime::with_runtime(|runtime| {
             runtime
                 .caches

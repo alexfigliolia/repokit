@@ -18,10 +18,9 @@ export class Release extends SemverRelease {
       onComplete: async version => {
         await Release.writeVersion(version);
         Logger.info("Linting Everything...");
-        await new ChildProcess("pnpm lint:ts").handler;
-        await new ChildProcess("pnpm lint:rust").handler;
+        await new ChildProcess("pnpm lint:all").handler;
         Logger.info("Compiling for production...");
-        await new ChildProcess("pnpm build:ts").handler;
+        await new ChildProcess("pnpm build").handler;
       },
     });
   }

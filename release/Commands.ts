@@ -15,8 +15,7 @@ export const Commands = new RepoKitCommand({
     },
     major: {
       command: "pnpm tsx $(pwd)/run.ts -t major",
-      description:
-        "Bumps the major version and lints the code base asdfasdfasdf",
+      description: "Bumps the major version and lints the code base",
     },
   },
 });
