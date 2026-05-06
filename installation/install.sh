@@ -11,21 +11,12 @@ if [[ "$CWD" != *"$REPLACEMENT"* ]]; then
     exit 0;
 fi
 
-
-cd $REPO_ROOT
-
-command_exists() {
-    command -v "$1" > /dev/null 2>&1
-}
-
-if command_exists rustc && command_exists cargo; then
-    echo "Rust is installed."
-else
-    echo "Installing rust"
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-fi
-
 echo "Installing Repokit CLI"
+
+## TODO Symlink binary file while falling back to local compilation
+
+
+echo "Setting up Cache Files"
 
 ROOT_COMMIT=$(git rev-list --parents HEAD | tail -1) || ROOT_COMMIT=""
 
@@ -89,11 +80,3 @@ if [ -f "$OLD_CACHE_FILE" ]; then
     tail +2 "$OLD_CACHE_FILE" >> "$TEMP_FILE"
     mv "$TEMP_FILE" "$OLD_CACHE_FILE"
 fi
-
-cd $CWD
-
-echo "Compiling from $CWD"
-
-. "$HOME/.cargo/env"
-RUSTFLAGS="-Awarnings" cargo build --release
-cargo install --path .
