@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use terminal_spinners::{BOUNCING_BALL, SpinnerBuilder};
-
 use crate::{
     executables::{
         internal_executable::InternalExecutable,
@@ -31,17 +29,17 @@ impl UpgradeRepoKit {
 
     pub fn install_at_latest(&self) {
         Logger::info("Upgrading installation");
-        let handle = SpinnerBuilder::new()
-            .spinner(&BOUNCING_BALL)
-            .text(" Installing")
-            .start();
+        // let handle = SpinnerBuilder::new()
+        //     .spinner(&BOUNCING_BALL)
+        //     .text(" Installing")
+        //     .start();
         RepoKitRuntime::with_runtime(|runtime| {
             Executor::exec(
                 format!("{} @repokit/core@latest", runtime.node.install_command).as_str(),
                 |cmd| cmd.current_dir(&runtime.git.root),
             )
         });
-        handle.done();
+        // handle.done();
         Logger::info("Upgrade Complete!");
     }
 }

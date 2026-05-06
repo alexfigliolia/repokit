@@ -81,7 +81,7 @@ jobs:
             build: cargo zigbuild
           - host: ubuntu-latest
             target: x86_64-unknown-freebsd
-            build: cargo zigbuild
+            build: RUST_LIBC_UNSTABLE_FREEBSD_VERSION=14 cargo zigbuild
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             build: cargo build

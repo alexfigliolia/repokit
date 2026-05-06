@@ -1,7 +1,5 @@
 use std::env::args;
 
-use terminal_spinners::{BOUNCING_BALL, SpinnerBuilder};
-
 use crate::{
     context::file_system::FileSystem, executor::executor::Executor, logger::logger::Logger,
 };
@@ -26,16 +24,15 @@ impl RepoKitVersionResolver {
     }
 
     fn run_post_install(files: &FileSystem) -> Option<String> {
-        let handle = SpinnerBuilder::new()
-            .spinner(&BOUNCING_BALL)
-            .text(" Installing")
-            .start();
-        let result =
-            Executor::exec_with_errors(format!("./{}", files.install_script_location), |cmd| {
+        // let handle = SpinnerBuilder::new()
+        //     .spinner(&BOUNCING_BALL)
+        //     .text(" Installing")
+        //     .start();
+        
+        // handle.done();
+        Executor::exec_with_errors(format!("./{}", files.install_script_location), |cmd| {
                 cmd.current_dir(&files.package_directory)
-            });
-        handle.done();
-        result
+            })
     }
 
     fn re_run_command() {
