@@ -1,0 +1,348 @@
+name: CI
+env:
+  MACOSX_DEPLOYMENT_TARGET: "10.13"
+  CARGO_INCREMENTAL: "1"
+permissions:
+  contents: write
+  id-token: write
+"on":
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - "**"
+    paths-ignore:
+      - "**/*.md"
+      - LICENSE
+      - "**/*.gitignore"
+      - .editorconfig
+      - docs/**
+  pull_request: null
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: setup pnpm
+        uses: pnpm/action-setup@v6
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Install dependencies
+        run: pnpm install
+      - name: Lint Typescript
+        run: pnpm lint:ts
+      - name: Lint Rust
+        run: pnpm lint:rust:ci
+  build-binaries:
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - host: macos-latest
+            target: x86_64-apple-darwin
+            build: cargo build
+          - host: windows-latest
+            target: x86_64-pc-windows-msvc
+            build: cargo build
+          - host: windows-latest
+            target: i686-pc-windows-msvc
+            build: cargo build
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            build: cross build
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            build: cargo zigbuild
+          - host: macos-latest
+            target: aarch64-apple-darwin
+            build: cargo build
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            build: CFLAGS=-D__ARM_ARCH=8 cross build
+          - host: ubuntu-latest
+            target: armv7-unknown-linux-gnueabihf
+            build: cross build
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            build: cargo zigbuild
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            build: cargo zigbuild
+          - host: ubuntu-latest
+            target: x86_64-unknown-freebsd
+            build: RUST_LIBC_UNSTABLE_FREEBSD_VERSION=14 cargo zigbuild
+          - host: windows-latest
+            target: aarch64-pc-windows-msvc
+            build: cargo build
+          # - host: ubuntu-latest
+          #   target: aarch64-linux-android
+          #   build: cargo build
+          # - host: ubuntu-latest
+          #   target: armv7-linux-androideabi
+          #   build: cargo build
+    name: stable - ${{ matrix.settings.target }} - node@22
+    runs-on: ${{ matrix.settings.host }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: ${{ matrix.settings.target }}
+      - name: Cache cargo
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            target/
+          key: ${{ matrix.settings.target }}-cargo-${{ matrix.settings.host }}
+      - uses: mlugg/setup-zig@v2
+        if: ${{ contains(matrix.settings.target, 'musl') || contains(matrix.settings.target, 'freebsd') }}
+        with:
+          version: 0.15.2
+      - name: Install cargo-zigbuild
+        uses: taiki-e/install-action@v2
+        if: ${{ contains(matrix.settings.target, 'musl') || contains(matrix.settings.target, 'freebsd') }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tool: cargo-zigbuild
+      - name: Install cross
+        run: cargo install cross --locked
+        if: ${{ contains(matrix.settings.build, 'cross') }}
+      - name: Setup toolchain
+        run: ${{ matrix.settings.setup }}
+        if: ${{ matrix.settings.setup }}
+        shell: bash
+      - name: Build Binary
+        run: ${{ matrix.settings.build }} --release --target ${{ matrix.settings.target }}
+        shell: bash
+      - name: List Release Artifacts
+        run: ls -R target/${{ matrix.settings.target }}/release
+        shell: bash
+      - name: Upload Binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: repokit-${{ matrix.settings.target }}
+          path: target/${{ matrix.settings.target }}/release/repokit${{ contains(matrix.settings.target, 'windows') && '.exe' || ''  }}
+          if-no-files-found: error
+  build-javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: setup pnpm
+        uses: pnpm/action-setup@v6
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build JavaScript
+        run: pnpm build:ts
+        shell: bash
+      - name: Upload JavaScript
+        uses: actions/upload-artifact@v7
+        with:
+          name: built-javascript
+          path: dist
+          if-no-files-found: error
+          overwrite: true
+  test-macOS-windows-binding:
+    name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
+    needs:
+      - build-binaries
+      - build-javascript
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - host: windows-latest
+            target: x86_64-pc-windows-msvc
+            architecture: x64
+          - host: macos-latest
+            target: x86_64-apple-darwin
+            architecture: x64
+          - host: macos-latest
+            target: aarch64-apple-darwin
+            architecture: arm64
+        node:
+          - "22"
+    runs-on: ${{ matrix.settings.host }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: setup pnpm
+        uses: pnpm/action-setup@v6
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+          architecture: ${{ matrix.settings.architecture }}
+      - name: Install dependencies
+        run: pnpm install
+      - name: Download Binary
+        uses: actions/download-artifact@v8
+        with:
+          name: repokit-${{ matrix.settings.target }}
+          path: dist
+      - name: Download JavaScript
+        uses: actions/download-artifact@v8
+        with:
+          name: built-javascript
+          path: dist
+      - name: List packages
+        run: ls -R .
+        shell: bash
+      - name: Test bindings
+        run: pnpm test:ci
+  test-linux-binding:
+    name: Test ${{ matrix.target }} - node@${{ matrix.node }}
+    needs:
+      - build-binaries
+      - build-javascript
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-gnu
+          - aarch64-unknown-linux-musl
+          - armv7-unknown-linux-gnueabihf
+        node:
+          - "22"
+    runs-on: ${{ contains(matrix.target, 'aarch64') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: setup pnpm
+        uses: pnpm/action-setup@v6
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - name: Output docker params
+        id: docker
+        run: |
+          node -e "
+            if ('${{ matrix.target }}'.startsWith('aarch64')) {
+              console.log('PLATFORM=linux/arm64')
+            } else if ('${{ matrix.target }}'.startsWith('armv7')) {
+              console.log('PLATFORM=linux/arm/v7')
+            } else {
+              console.log('PLATFORM=linux/amd64')
+            }
+          " >> $GITHUB_OUTPUT
+          node -e "
+            if ('${{ matrix.target }}'.endsWith('-musl')) {
+              console.log('IMAGE=node:${{ matrix.node }}-alpine')
+            } else {
+              console.log('IMAGE=node:${{ matrix.node }}-slim')
+            }
+          " >> $GITHUB_OUTPUT
+          echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+      - name: Install dependencies
+        run: pnpm install --force
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: repokit-${{ matrix.target }}
+          path: dist
+      - name: Download JavaScript
+        uses: actions/download-artifact@v8
+        with:
+          name: built-javascript
+          path: dist
+      - name: List packages
+        run: ls -R .
+        shell: bash
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+        if: ${{ contains(matrix.target, 'armv7') }}
+        with:
+          platforms: all
+      - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+        if: ${{ contains(matrix.target, 'armv7') }}
+      - name: Test bindings
+        uses: tj-actions/docker-run@v2
+        with:
+          image: ${{ steps.docker.outputs.IMAGE }}
+          name: test-binding
+          options: "-v ${{ steps.docker.outputs.PNPM_STORE_PATH }}:${{ steps.docker.outputs.PNPM_STORE_PATH }} -v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} --platform ${{ steps.docker.outputs.PLATFORM }}"
+          args: npm run test:ci
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - test-macOS-windows-binding
+      - test-linux-binding
+    steps:
+      - uses: actions/checkout@v6
+      - name: setup pnpm
+        uses: pnpm/action-setup@v6
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
+        run: pnpm install
+      - name: Download Binary Packages
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+      - name: List artifacts
+        run: ls -R ./artifacts
+      - name: Download Javascript
+        uses: actions/download-artifact@v8
+        with:
+          path: dist
+          name: built-javascript
+      - name: Create release directories
+        run: pnpm run distribute
+      - name: List packages
+        run: ls -R ./
+        shell: bash
+      - name: Publish
+        run: |
+          npm config set provenance true
+          if git log -1 --pretty=%B | grep "^v\?[0-9]\+\.[0-9]\+\.[0-9]\+$";
+          then
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            npm publish --access public
+            for dir in npm/*/; do
+              (cd "$dir" && npm publish --access public)
+            done
+          elif git log -1 --pretty=%B | grep "^v\?[0-9]\+\.[0-9]\+\.[0-9]\+";
+          then
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            npm publish --tag next --access public
+            for dir in npm/*/; do
+              (cd "$dir" && npm publish --tag next --access public)
+            done
+          else
+            echo "Not a release, skipping publish"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

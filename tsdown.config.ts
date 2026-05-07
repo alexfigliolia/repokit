@@ -4,6 +4,6 @@ export default defineConfig({
   entry: ["externals/index.ts", "externals/commands/*.ts"],
   dts: true,
   shims: true,
-  clean: true,
+  clean: false,
   unbundle: true,
 });

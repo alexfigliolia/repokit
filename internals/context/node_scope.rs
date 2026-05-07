@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::Path};
 use normalize_path::NormalizePath;
 
 use crate::{
-    caches::version_cache::VERSION_REGEX, executor::executor::Executor, logger::logger::Logger,
+    context::file_system::VERSION_REGEX, executor::executor::Executor, logger::logger::Logger,
 };
 
 #[derive(Clone)]

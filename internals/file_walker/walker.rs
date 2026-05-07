@@ -17,7 +17,7 @@ pub struct TSFileVisitor {
 }
 
 static REPOKIT_IMPORT_MATCHER: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(require\(|from[\s*]?)['"]@repokit/core["'][\)]?[;]?$"#).unwrap()
+    Regex::new(r#"(require\(|from[\s*]?)['"]@repokit/native-test["'][\)]?[;]?$"#).unwrap()
 });
 
 impl ParallelVisitor for TSFileVisitor {
