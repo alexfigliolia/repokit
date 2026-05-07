@@ -1,5 +1,5 @@
 {
-  "name": "@repokit/native",
+  "name": "@repokit/native-test",
   "version": "1.0.0",
   "description": "A knowledgebase for your repository - wrapped in a CLI",
   "keywords": [
