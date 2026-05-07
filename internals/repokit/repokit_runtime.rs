@@ -1,6 +1,5 @@
 use std::sync::{LazyLock, Mutex, MutexGuard};
 
-
 use crate::{
     context::{
         cache_scope::CacheScope, file_system::FileSystem, git_scope::GitScope,
@@ -24,7 +23,7 @@ impl RepoKitRuntime {
     pub fn new() -> RepoKitRuntime {
         let git = GitScope::new();
         let files = FileSystem::new(&git.root);
-        let caches = CacheScope::new(&git, &files);
+        let caches = CacheScope::new(&git);
         let mut node = NodeScope::new(&git.root);
         let configuration = TypeScriptBridge::parse_configuration(&files, &mut node);
         RepoKitRuntime {

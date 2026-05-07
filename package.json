@@ -1,6 +1,6 @@
 {
-  "name": "@repokit/core",
-  "version": "4.0.6",
+  "name": "@repokit/native",
+  "version": "1.0.0",
   "description": "A knowledgebase for your repository - wrapped in a CLI",
   "keywords": [
     "cli",
@@ -15,12 +15,15 @@
     "type": "git",
     "url": "git+https://github.com/alexfigliolia/repokit.git"
   },
+  "bin": {
+    "repokit": "run.sh"
+  },
   "files": [
     "media",
     "dist",
     "externals",
     "internals",
-    "installation",
+    "run.sh",
     "Cargo.lock",
     "Cargo.toml"
   ],

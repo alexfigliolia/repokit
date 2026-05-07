@@ -1,8 +1,10 @@
 use normalize_path::NormalizePath;
+use regex::Regex;
 
 use std::{
     fs::File,
     path::{Path, PathBuf},
+    sync::LazyLock,
 };
 
 use crate::{internal_filesystem::file_builder::FileBuilder, logger::logger::Logger};
@@ -14,14 +16,13 @@ pub struct FileSystem {
     pub package_directory: PathBuf,
     pub commands_directory: PathBuf,
     pub templates_directory: PathBuf,
-    pub install_script_path: PathBuf,
-    pub install_script_location: &'static str,
 }
 
-static INSTALL_SCRIPT_LOCATION: &str = "installation/install.sh";
 static INSTALLED_PACKAGE_PATH: &str = "node_modules/@repokit/core";
 static TYPESCRIPT_COMMANDS: &str = "dist/commands";
 static TYPESCRIPT_TEMPLATES: &str = "externals/templates";
+pub static VERSION_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"\d*\.\d*.\d*"#).unwrap());
 
 impl FileSystem {
     pub fn new(git_root: &str) -> FileSystem {
@@ -30,11 +31,9 @@ impl FileSystem {
         FileSystem {
             git_root_path,
             git_root: git_root.to_owned(),
-            install_script_path: FileSystem::join_with(&package_directory, INSTALL_SCRIPT_LOCATION),
             commands_directory: FileSystem::join_with(&package_directory, TYPESCRIPT_COMMANDS),
             templates_directory: FileSystem::join_with(&package_directory, TYPESCRIPT_TEMPLATES),
             package_directory,
-            install_script_location: INSTALL_SCRIPT_LOCATION,
         }
     }
 
