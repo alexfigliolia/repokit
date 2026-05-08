@@ -77,20 +77,11 @@ jobs:
             target: aarch64-unknown-linux-musl
             build: cargo zigbuild
           - host: ubuntu-latest
-            target: aarch64-unknown-linux-musl
-            build: cargo zigbuild
-          - host: ubuntu-latest
             target: x86_64-unknown-freebsd
             build: RUST_LIBC_UNSTABLE_FREEBSD_VERSION=14 cargo zigbuild
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             build: cargo build
-          # - host: ubuntu-latest
-          #   target: aarch64-linux-android
-          #   build: cargo build
-          # - host: ubuntu-latest
-          #   target: armv7-linux-androideabi
-          #   build: cargo build
     name: stable - ${{ matrix.settings.target }} - node@22
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -289,6 +280,8 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs:
       - lint
       - test-macOS-windows-binding
@@ -317,31 +310,26 @@ jobs:
         with:
           path: dist
           name: built-javascript
-      - name: Create release directories
-        run: pnpm run distribute
-      - name: List packages
-        run: ls -R ./
-        shell: bash
+      - name: Get Release Tag
+        id: get_version_from_commit
+        run: |
+          echo "RELEASE_VERSION=$(git log -1 --pretty=%B | grep "^v\?[0-9]\+\.[0-9]\+\.[0-9]\+$")" >> $GITHUB_OUTPUT
+          if [[ -n $RELEASE_VERSION ]]; then
+            echo "$(git log -1 --pretty=%B)" >> "release.md"
+          fi
+      - name: Create Release
+        if: steps.get_version_from_commit.outputs.RELEASE_VERSION != ''
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "artifacts/**/*"
+          bodyFile: "release.md"
+          name: ${{ steps.get_version_from_commit.outputs.RELEASE_VERSION }}
       - name: Publish
+        if: steps.get_version_from_commit.outputs.RELEASE_VERSION != ''
         run: |
           npm config set provenance true
-          if git log -1 --pretty=%B | grep "^v\?[0-9]\+\.[0-9]\+\.[0-9]\+$";
-          then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            npm publish --access public
-            for dir in npm/*/; do
-              (cd "$dir" && npm publish --access public)
-            done
-          elif git log -1 --pretty=%B | grep "^v\?[0-9]\+\.[0-9]\+\.[0-9]\+";
-          then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            npm publish --tag next --access public
-            for dir in npm/*/; do
-              (cd "$dir" && npm publish --tag next --access public)
-            done
-          else
-            echo "Not a release, skipping publish"
-          fi
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+          npm publish --access public
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

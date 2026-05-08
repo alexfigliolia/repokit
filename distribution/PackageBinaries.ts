@@ -17,15 +17,12 @@ export class PackageBinaries {
     "aarch64-unknown-linux-gnu",
     "i686-pc-windows-msvc",
     "armv7-unknown-linux-gnueabihf",
-    // "aarch64-linux-android",
     "x86_64-unknown-freebsd",
     "aarch64-unknown-linux-musl",
     "aarch64-pc-windows-msvc",
-    // "armv7-linux-androideabi",
   ];
   public static readonly OS_MAP = {
     windows: "win32",
-    androideabi: "android",
   };
   public static readonly CPU_ARCH_MAP = {
     x86_64: "x64",
