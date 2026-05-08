@@ -82,12 +82,6 @@ jobs:
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             build: cargo build
-          # - host: ubuntu-latest
-          #   target: aarch64-linux-android
-          #   build: cargo build
-          # - host: ubuntu-latest
-          #   target: armv7-linux-androideabi
-          #   build: cargo build
     name: stable - ${{ matrix.settings.target }} - node@22
     runs-on: ${{ matrix.settings.host }}
     steps:
