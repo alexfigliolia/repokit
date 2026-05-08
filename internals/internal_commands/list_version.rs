@@ -1,7 +1,13 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{BufRead, BufReader},
+};
+
+use regex::Regex;
 
 use crate::{
-    caches::version_cache::VERSION_REGEX,
+    context::file_system::{FileSystem, VERSION_REGEX},
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
@@ -31,26 +37,48 @@ impl ListVersion {
     fn log_version(&self, version: &str) {
         Logger::info(format!("{}", Logger::with_theme(|theme| theme.highlight(version))).as_str());
     }
+
+    pub fn get_installed_version(files: &FileSystem) -> Option<String> {
+        let package_path = FileSystem::join_with(&files.package_directory, "package.json");
+        if !package_path.exists() || !package_path.is_file() {
+            return None;
+        }
+        let file = File::open(package_path);
+        if file.is_err() {
+            return None;
+        }
+        let lines = BufReader::new(file.unwrap()).lines();
+        let version_matcher = Regex::new(r#""([^"]*)""#).unwrap();
+        for line in lines.map_while(Result::ok) {
+            if line.contains("\"version\": ") {
+                let captures: Vec<String> = version_matcher
+                    .captures_iter(&line)
+                    .filter_map(|item| {
+                        item.get(1)
+                            .map(|match_text| match_text.as_str().to_string())
+                    })
+                    .collect();
+                if let Some(version) = captures.get(1)
+                    && VERSION_REGEX.is_match(version)
+                {
+                    return Some(version.to_string());
+                }
+                return None;
+            }
+        }
+        None
+    }
 }
 
 impl InternalExecutable for ListVersion {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Fetching the installed version of repokit");
-        if RepoKitRuntime::with_runtime(|runtime| {
-            if VERSION_REGEX.is_match(&runtime.caches.version_cache.installed_version) {
-                self.log_version(&runtime.caches.version_cache.installed_version);
-                return true;
+        RepoKitRuntime::with_runtime(|runtime| {
+            if let Some(version) = ListVersion::get_installed_version(&runtime.files) {
+                return self.log_version(&version);
             }
-            if VERSION_REGEX.is_match(&runtime.caches.version_cache.runtime_version) {
-                Logger::info("Falling back to the runtime version");
-                self.log_version(&runtime.caches.version_cache.runtime_version);
-                return true;
-            }
-            false
-        }) {
-            return;
-        }
-        Executor::with_stdio("npm list @repokit/core", |cmd| cmd);
+            Executor::with_stdio("npm list @repokit/native-test", |cmd| cmd);
+        });
     }
 
     fn get_definition(&self) -> &InternalExecutableDefinition {

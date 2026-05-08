@@ -1,45 +1,35 @@
 use futures::{executor::block_on, join};
-use std::{
-    env::home_dir,
-    fs::create_dir_all,
-    path::PathBuf,
-};
+use std::{env::home_dir, fs::create_dir_all, path::PathBuf};
 
 use crate::{
-    caches::{
-        crawl_cache::CrawlCache, file_cache::FileCache,
-        settings_cache::SettingsCache, version_cache::VersionCache,
-    },
-    context::{file_system::FileSystem, git_scope::GitScope},
+    caches::{crawl_cache::CrawlCache, file_cache::FileCache, settings_cache::SettingsCache},
+    context::git_scope::GitScope,
 };
 
 #[derive(Clone)]
 pub struct CacheScope {
     pub crawl_cache: CrawlCache,
-    pub version_cache: VersionCache,
     pub settings_cache: SettingsCache,
 }
 
 static CACHE_DIRECTORY: &str = ".repokit_cache";
 
 impl CacheScope {
-    pub fn new(git_scope: &GitScope, file_system: &FileSystem) -> CacheScope {
+    pub fn new(git_scope: &GitScope) -> CacheScope {
         let home = home_dir();
         let cache_directory =
             CacheScope::resolve_cache_directory(&home, &git_scope.root_commit_hash);
         let mut instance = CacheScope {
             crawl_cache: CrawlCache::new(&cache_directory),
-            version_cache: VersionCache::new(&cache_directory),
             settings_cache: SettingsCache::new(&cache_directory),
         };
-        block_on(instance.initialize_all(git_scope, file_system));
+        block_on(instance.initialize_all(git_scope));
         instance
     }
 
-    async fn initialize_all(&mut self, git_scope: &GitScope, file_system: &FileSystem) {
+    async fn initialize_all(&mut self, git_scope: &GitScope) {
         self.create_cache_files().await;
         join!(
-            self.version_cache.initialize(file_system),
             self.settings_cache.initialize(),
             self.crawl_cache.initialize(git_scope),
         );
@@ -47,7 +37,6 @@ impl CacheScope {
 
     async fn create_cache_files(&self) {
         join!(
-            self.version_cache.create_cache_file_if_not_exists(),
             self.settings_cache.create_cache_file_if_not_exists(),
             self.crawl_cache.create_cache_file_if_not_exists(),
         );
