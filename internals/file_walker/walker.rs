@@ -26,7 +26,8 @@ impl ParallelVisitor for TSFileVisitor {
         if let Ok(file_entry) = entry
             && file_entry.file_type().is_some_and(|ft| ft.is_file())
             && file_entry.file_name().to_string_lossy().ends_with(".ts")
-            && let Some(matched_path) = TSFileVisitor::on_file(file_entry.path())
+            && let Some(matched_path) =
+                TSFileVisitor::on_file(&Path::new(&self.root).join(file_entry.path()))
         {
             let mut vector = self.paths.lock().unwrap();
             vector.push(matched_path.to_string_lossy().replace(&root_replacer, ""));
@@ -42,8 +43,11 @@ impl TSFileVisitor {
         let mut handles = JoinSet::new();
         let root_replacer = format!("{}/", root);
         for path in path_list {
+            let root_clone = root.to_owned();
             handles.spawn(async move {
-                if let Some(result) = TSFileVisitor::on_file(Path::new(&path)) {
+                if let Some(result) =
+                    TSFileVisitor::on_file(&Path::new(&root_clone).join(Path::new(&path)))
+                {
                     return Some(result.to_owned());
                 }
                 None

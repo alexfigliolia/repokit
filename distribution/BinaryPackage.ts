@@ -6,9 +6,12 @@ import { existsSync } from "node:fs";
 export class BinaryPackage {
   private packagePath?: string;
   public readonly packageName: string;
+  public readonly fullNPMName: string;
+  public static readonly NPM_PREFIX = "native-binary-";
   public static readonly SET = new Set<string>();
   constructor(public readonly config: IBinaryPackage) {
     this.packageName = `${config.OS}-${config.CPU}-${config.FLAVOR}`;
+    this.fullNPMName = `@repokit/${BinaryPackage.NPM_PREFIX}${this.packageName}`;
     if (BinaryPackage.SET.has(this.packageName)) {
       throw new Error(`Duplicate package found: ${this.packageName}`);
     }
@@ -45,7 +48,7 @@ export class BinaryPackage {
   private createPackageFile() {
     // oxlint-disable-next-line typescript-eslint(no-explicit-any)
     const JSON: Record<string, any> = {
-      name: `@repokit/${this.packageName}`,
+      name: this.fullNPMName,
       version: this.config.version,
       cpu: [this.config.CPU],
       main: this.config.binaryName,

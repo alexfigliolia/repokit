@@ -53,9 +53,8 @@ export class PackageBinaries {
     await Promise.all(packages.map(t => t.shipBinary(artifacts)));
     packageJSON["optionalDependencies"] = {};
     for (const binaryPackage of packages) {
-      packageJSON["optionalDependencies"][
-        `@repokit/${binaryPackage.packageName}`
-      ] = packageJSON["version"];
+      packageJSON["optionalDependencies"][binaryPackage.fullNPMName] =
+        packageJSON["version"];
     }
     await writeFile(
       join(root, "package.json"),
@@ -70,30 +69,21 @@ export class PackageBinaries {
       const CPU = this.mapTo(this.CPU_ARCH_MAP, cpu ?? "");
       const OS = this.mapTo(this.OS_MAP, os ?? "");
       const LIBC = this.tryMap(this.LIB_C_MAP, libcOrFlavor);
-      const FLAVOR = libcOrFlavor ?? vendor;
-      if (!!CPU && !!OS && typeof FLAVOR === "string") {
-        tasks.push(
-          new BinaryPackage({
-            OS,
-            CPU,
-            LIBC,
-            FLAVOR,
-            version,
-            platform,
-            binaryName: OS === "win32" ? "repokit.exe" : "repokit",
-          }),
-        );
+      const FLAVOR = libcOrFlavor ?? vendor ?? "";
+      const binaryPackage = new BinaryPackage({
+        OS,
+        CPU,
+        LIBC,
+        FLAVOR,
+        version,
+        platform,
+        binaryName: OS === "win32" ? "repokit.exe" : "repokit",
+      });
+      if (!!CPU && !!OS) {
+        tasks.push(binaryPackage);
       } else {
         throw new Error(`Failed to construct Binary Package for: ${platform}`, {
-          cause: {
-            OS,
-            CPU,
-            LIBC,
-            FLAVOR,
-            version,
-            platform,
-            binaryName: OS === "win32" ? "repokit.exe" : "repokit",
-          },
+          cause: binaryPackage,
         });
       }
     }
