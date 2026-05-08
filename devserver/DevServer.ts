@@ -26,10 +26,6 @@ export class DevServer {
     this.SCRIPT_ORIGIN,
     "../package.json",
   );
-  private static readonly INSTALLATION_ROOT = join(
-    this.SCRIPT_ORIGIN,
-    "../installation",
-  );
   private static readonly SYMLINK_BUILD_TARGET = join(
     this.SYMLINK_ROOT,
     "dist",
@@ -41,10 +37,6 @@ export class DevServer {
   private static readonly SYMLINK_PACKAGE_FILE_TARGET = join(
     this.SYMLINK_ROOT,
     "package.json",
-  );
-  private static readonly SYMLINK_INSTALL_SCRIPTS_TARGET = join(
-    this.SYMLINK_ROOT,
-    "installation",
   );
 
   public static run() {
@@ -102,12 +94,6 @@ export class DevServer {
     }
     if (!existsSync(this.SYMLINK_PACKAGE_FILE_TARGET)) {
       await symlink(this.PACKAGE_FILE, this.SYMLINK_PACKAGE_FILE_TARGET);
-    }
-    if (!existsSync(this.SYMLINK_INSTALL_SCRIPTS_TARGET)) {
-      await symlink(
-        this.INSTALLATION_ROOT,
-        this.SYMLINK_INSTALL_SCRIPTS_TARGET,
-      );
     }
   }
 

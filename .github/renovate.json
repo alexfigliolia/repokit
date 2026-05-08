@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    "group:allNonMajor",
+    ":preserveSemverRanges",
+    ":disablePeerDependencies"
+  ],
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "matchPackagePatterns": [
+        "^oxlint",
+        "^oxfmt",
+        "^oxlint-tsgolint",
+        "^husky",
+        "^lint-staged"
+      ],
+      "groupName": "linter"
+    }
+  ],
+  "commitMessagePrefix": "chore: ",
+  "commitMessageAction": "bump up",
+  "commitMessageTopic": "{{depName}} version",
+  "ignoreDeps": []
+}
