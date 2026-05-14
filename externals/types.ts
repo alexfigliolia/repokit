@@ -2,7 +2,7 @@ import type { RepoKitConfig } from "./RepoKitConfig";
 
 export interface IRepoKitConfig extends Omit<
   Partial<RepoKitConfig>,
-  "project"
+  "project" | "toScoped"
 > {
   project: string;
 }

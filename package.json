@@ -1,6 +1,6 @@
 {
-  "name": "@repokit/native-test",
-  "version": "1.0.5",
+  "name": "@repokit/core",
+  "version": "4.0.7",
   "description": "A knowledgebase for your repository - wrapped in a CLI",
   "keywords": [
     "cli",
@@ -38,13 +38,11 @@
     "clean:ts": "tsx devserver/run.ts -c",
     "distribute": "tsx distribution/run.ts",
     "format:toml": "taplo lint && taplo format",
-    "install:rust": "pnpm build:rust && cargo install --path .",
     "lint:all": "pnpm lint:rust && pnpm lint:ts",
     "lint:rust": "cargo clippy --fix --allow-dirty && pnpm format:toml",
     "lint:rust:ci": "cargo clippy --fix",
     "lint:ts": "oxlint --type-aware --report-unused-disable-directives --fix && oxfmt",
     "package:ts": "pnpm lint:ts && pnpm lint:rust && pnpm build:ts",
-    "postinstall": "tsx installation/install.ts",
     "prepare": "husky",
     "release": "tsx release/run.ts",
     "run:dev": "pnpm build:ts && cargo run --bin repokit",

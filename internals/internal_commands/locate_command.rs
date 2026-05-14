@@ -40,7 +40,13 @@ impl LocateCommand {
     fn search_root(&self, command: &str) {
         RepoKitRuntime::with_runtime(|runtime| {
             if runtime.configuration.commands.contains_key(command) {
-                Logger::log_file_path(format!("{}/repokit.ts", &runtime.git.root).as_str());
+                Logger::log_file_path(
+                    &runtime
+                        .installation
+                        .install_path
+                        .join("repokit.ts")
+                        .to_string_lossy(),
+                );
                 panic!();
             }
         });

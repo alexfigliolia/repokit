@@ -1,7 +1,4 @@
-use std::{
-    collections::HashSet,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashSet, path::PathBuf};
 
 use regex::Regex;
 
@@ -18,45 +15,6 @@ pub struct CrawlCache {
 }
 
 impl CrawlCache {
-    pub fn new(cache_directory: &Option<PathBuf>) -> Self {
-        CrawlCache {
-            changed_files: None,
-            files_to_crawl: None,
-            cache_directory: cache_directory.clone(),
-        }
-    }
-
-    pub async fn initialize(&mut self, git_scope: &GitScope) {
-        let head_commit = git_scope
-            .head_commit_hash
-            .to_owned()
-            .unwrap_or("".to_string());
-        if let Some((mut lines, path)) = self.read() {
-            let commit_hash = self.unwrap_line(lines.nth(0), "non_existent_hash");
-            if commit_hash != head_commit {
-                return;
-            }
-            let lines = self.line_buffer_to_vec(lines);
-            if lines.is_empty() {
-                return;
-            }
-            let (git_ignore_changed, mut changed_files) = self.get_changed_files(&git_scope.root);
-            if git_ignore_changed {
-                CrawlCache::clear_cache_file(path.to_owned(), false);
-                return;
-            }
-            for line in &lines {
-                if changed_files.contains(line) {
-                    changed_files.remove(line);
-                }
-            }
-            if !changed_files.is_empty() {
-                self.changed_files = Some(changed_files.into_iter().collect());
-            }
-            self.files_to_crawl = Some(lines);
-        }
-    }
-
     pub fn crawl_cache_enabled(&self) -> bool {
         self.files_to_crawl.is_some()
     }
@@ -82,11 +40,10 @@ impl CrawlCache {
         }
     }
 
-    fn get_changed_files(&self, git_root: &str) -> (bool, HashSet<String>) {
+    fn get_changed_files(&self, git_root: &PathBuf) -> (bool, HashSet<String>) {
         let mut contains_git_ignore = false;
         let file_path_matcher = Regex::new(r#"^.*\s(.*\.ts)$"#).unwrap();
         let stdout = Executor::exec("git status --porcelain -uall", |cmd| cmd);
-        let git_root_path = Path::new(git_root);
         let files: HashSet<String> = stdout
             .split("\n")
             .filter_map(|file| {
@@ -104,7 +61,7 @@ impl CrawlCache {
                     })
                     .collect();
                 if let Some(file_path) = matches.first()
-                    && git_root_path.join(file_path).exists()
+                    && git_root.join(file_path).exists()
                 {
                     return Some(file_path.to_string());
                 }
@@ -115,12 +72,50 @@ impl CrawlCache {
     }
 }
 
-impl FileCache for CrawlCache {
+impl FileCache<GitScope> for CrawlCache {
     fn cache_file(&self) -> &str {
         ".crawl_cache"
     }
 
     fn cache_directory(&self) -> &Option<PathBuf> {
         &self.cache_directory
+    }
+
+    fn creator(cache_directory: Option<PathBuf>) -> Self {
+        CrawlCache {
+            changed_files: None,
+            files_to_crawl: None,
+            cache_directory: cache_directory.clone(),
+        }
+    }
+
+    async fn initialize(&mut self, git_scope: GitScope) {
+        if let Some(head_commit) = &git_scope.head_commit_hash
+            && let Some((mut lines, path)) = self.read()
+        {
+            if &self.unwrap_line(lines.nth(0), "non_existent_hash") != head_commit {
+                return;
+            }
+            let lines = self.line_buffer_to_vec(lines);
+            if lines.is_empty() {
+                return;
+            }
+            if let Some(git_root) = &git_scope.root_path {
+                let (git_ignore_changed, mut changed_files) = self.get_changed_files(git_root);
+                if git_ignore_changed {
+                    CrawlCache::clear_cache_file(path.to_owned(), false);
+                    return;
+                }
+                for line in &lines {
+                    if changed_files.contains(line) {
+                        changed_files.remove(line);
+                    }
+                }
+                if !changed_files.is_empty() {
+                    self.changed_files = Some(changed_files.into_iter().collect());
+                }
+                self.files_to_crawl = Some(lines);
+            }
+        }
     }
 }

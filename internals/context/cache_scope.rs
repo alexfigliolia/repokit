@@ -1,5 +1,5 @@
-use futures::{executor::block_on, join};
 use std::{env::home_dir, fs::create_dir_all, path::PathBuf};
+use tokio::{join, runtime::Runtime, task::JoinHandle};
 
 use crate::{
     caches::{crawl_cache::CrawlCache, file_cache::FileCache, settings_cache::SettingsCache},
@@ -15,31 +15,36 @@ pub struct CacheScope {
 static CACHE_DIRECTORY: &str = ".repokit_cache";
 
 impl CacheScope {
-    pub fn new(git_scope: &GitScope) -> CacheScope {
+    pub async fn new(git_scope: &GitScope, runtime: &Runtime) -> Self {
         let home = home_dir();
         let cache_directory =
             CacheScope::resolve_cache_directory(&home, &git_scope.root_commit_hash);
-        let mut instance = CacheScope {
-            crawl_cache: CrawlCache::new(&cache_directory),
-            settings_cache: SettingsCache::new(&cache_directory),
-        };
-        block_on(instance.initialize_all(git_scope));
-        instance
+        let (crawl_cache, settings_cache) = join!(
+            CacheScope::crawl_cache_thread(&cache_directory, git_scope, runtime),
+            CacheScope::settings_cache_thread(&cache_directory, runtime)
+        );
+        CacheScope {
+            crawl_cache: crawl_cache.unwrap(),
+            settings_cache: settings_cache.unwrap(),
+        }
     }
 
-    async fn initialize_all(&mut self, git_scope: &GitScope) {
-        self.create_cache_files().await;
-        join!(
-            self.settings_cache.initialize(),
-            self.crawl_cache.initialize(git_scope),
-        );
+    fn crawl_cache_thread(
+        cache_directory: &Option<PathBuf>,
+        git_scope: &GitScope,
+        runtime: &Runtime,
+    ) -> JoinHandle<CrawlCache> {
+        let dir_clone = cache_directory.clone();
+        let scope_clone = git_scope.clone();
+        runtime.spawn(CrawlCache::spawn(dir_clone, scope_clone))
     }
 
-    async fn create_cache_files(&self) {
-        join!(
-            self.settings_cache.create_cache_file_if_not_exists(),
-            self.crawl_cache.create_cache_file_if_not_exists(),
-        );
+    fn settings_cache_thread(
+        cache_directory: &Option<PathBuf>,
+        runtime: &Runtime,
+    ) -> JoinHandle<SettingsCache> {
+        let dir_clone = cache_directory.clone();
+        runtime.spawn(SettingsCache::spawn(dir_clone, ()))
     }
 
     fn resolve_cache_directory(

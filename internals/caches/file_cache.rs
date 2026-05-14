@@ -8,10 +8,24 @@ use normalize_path::NormalizePath;
 
 use crate::{logger::logger::Logger, post_processing::post_processor::PostProcessor};
 
-pub trait FileCache {
+pub trait FileCache<T> {
+    async fn spawn(cache_directory: Option<PathBuf>, options: T) -> Self
+    where
+        Self: Sized,
+    {
+        let mut instance: Self = FileCache::creator(cache_directory);
+        instance.create_cache_file_if_not_exists().await;
+        instance.initialize(options).await;
+        instance
+    }
+
+    fn creator(options: Option<PathBuf>) -> Self;
+
     fn cache_file(&self) -> &str;
 
     fn cache_directory(&self) -> &Option<PathBuf>;
+
+    async fn initialize(&mut self, options: T);
 
     fn storage_path(&self) -> Option<PathBuf> {
         if let Some(storage_path) = self.perspective_path()
@@ -77,7 +91,6 @@ pub trait FileCache {
     }
 
     fn clear_cache_file(path: PathBuf, notify: bool) {
-        // This is post-processed so it doesn't block the command the user is executing
         PostProcessor::get().register_task(move || {
             if write(&path, "").is_err() {
                 Logger::error("I was unable to remove a cache on disk");

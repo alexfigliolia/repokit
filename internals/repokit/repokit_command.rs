@@ -34,7 +34,13 @@ impl RepoKitCommand {
         let mut result: Vec<RepoKitCommand> = Vec::new();
         let mut failures = 0;
         let mut failed_paths: Vec<String> = Vec::new();
-        let git_root = RepoKitRuntime::with_runtime(|runtime| runtime.git.root.clone());
+        let install_path = RepoKitRuntime::with_runtime(|runtime| {
+            runtime
+                .installation
+                .install_path
+                .to_string_lossy()
+                .to_string()
+        });
         for command in input {
             let repokit_command: Result<RepoKitCommand, serde_json::Error> =
                 from_value(command.clone());
@@ -47,7 +53,7 @@ impl RepoKitCommand {
                 }
             } else {
                 let mut valid_command = repokit_command.expect("parse success");
-                valid_command.location = format!("{}/{}", git_root, valid_command.location);
+                valid_command.location = format!("{}/{}", &install_path, valid_command.location);
                 result.push(valid_command);
             }
         }
@@ -61,14 +67,14 @@ impl RepoKitCommand {
         let location = command.get("location");
         println!();
         if location.is_some_and(|v| v.is_string()) {
-            let path = RepoKitRuntime::with_runtime(|runtime| {
-                format!(
-                    "{}/{}",
-                    runtime.git.root,
-                    location.unwrap().as_str().unwrap()
-                )
-            });
-            return Some(path);
+            return Some(RepoKitRuntime::with_runtime(|runtime| {
+                runtime
+                    .installation
+                    .install_path
+                    .join(location.unwrap().as_str().unwrap())
+                    .to_string_lossy()
+                    .to_string()
+            }));
         }
         None
     }

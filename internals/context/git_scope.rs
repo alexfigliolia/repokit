@@ -1,48 +1,56 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-use futures::{executor::block_on, join};
+use futures::join;
 
-use crate::{executor::executor::Executor, logger::logger::Logger};
+use crate::{
+    context::async_scope::AsyncScope, executor::executor::Executor, logger::logger::Logger,
+    post_processing::post_processor::PostProcessor,
+};
 
 #[derive(Clone)]
 pub struct GitScope {
-    pub root: String,
+    pub root_path: Option<PathBuf>,
     pub root_commit_hash: Option<String>,
     pub head_commit_hash: Option<String>,
 }
 
-impl GitScope {
-    pub fn new() -> GitScope {
-        let mut instance = GitScope {
-            root: "".to_string(),
-            root_commit_hash: None,
-            head_commit_hash: None,
-        };
-        block_on(instance.resolve());
-        instance
+impl AsyncScope<(Option<PathBuf>, Option<String>, Option<String>)> for GitScope {
+    async fn new() -> Self {
+        let (root_path, root_commit_hash, head_commit_hash) = GitScope::resolve().await;
+        Self {
+            root_path,
+            root_commit_hash,
+            head_commit_hash,
+        }
     }
 
-    async fn resolve(&mut self) {
-        let (root, root_commit, head_commit) = join!(
+    async fn resolve() -> (Option<PathBuf>, Option<String>, Option<String>) {
+        join!(
             GitScope::find_root(),
             GitScope::get_root_commit(),
             GitScope::get_head_commit()
-        );
-        self.root = root;
-        self.root_commit_hash = root_commit;
-        self.head_commit_hash = head_commit;
+        )
     }
+}
 
-    async fn find_root() -> String {
+impl GitScope {
+    async fn find_root() -> Option<PathBuf> {
         if let Some(root) = Executor::exec_with_stdout("git rev-parse --show-toplevel", |cmd| cmd)
             && !root.is_empty()
-            && Path::new(&root).exists()
         {
-            return root;
+            let path = Path::new(&root);
+            if path.exists() {
+                return Some(path.to_path_buf());
+            }
         }
-        Logger::info("Please initialize your repository by running");
-        Logger::log_file_path("git init");
-        panic!();
+        PostProcessor::get().register_task(|| {
+            Logger::info(format!(
+            "Running {} in your workspace will allow {} to cache file crawls more aggressively and improve performance",
+            Logger::with_theme(|theme| theme.highlight("git init")),
+            Logger::with_theme(|theme| theme.highlight("Repokit"))
+        ).as_str());
+        });
+        None
     }
 
     async fn get_head_commit() -> Option<String> {
