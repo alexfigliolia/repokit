@@ -31,7 +31,6 @@
     "build:debug": "pnpm build:ts && cargo build",
     "build:ts": "tsx devserver/run.ts",
     "clean:ts": "tsx devserver/run.ts -c",
-    "distribute": "tsx distribution/run.ts",
     "format:toml": "taplo lint && taplo format",
     "lint:all": "pnpm lint:rust && pnpm lint:ts",
     "lint:rust": "cargo clippy --fix --allow-dirty --allow-no-vcs && pnpm format:toml",
@@ -41,8 +40,6 @@
     "prepare": "husky",
     "release": "tsx release/run.ts",
     "run:dev": "pnpm build:ts && cargo run --bin repokit",
-    "test": "pnpm build && ava",
-    "test:ci": "ava",
     "watch:ts": "tsx devserver/run.ts -w"
   },
   "dependencies": {
