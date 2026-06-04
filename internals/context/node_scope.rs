@@ -1,4 +1,7 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use normalize_path::NormalizePath;
 
@@ -28,11 +31,9 @@ impl NodeScope {
         }
     }
 
-    pub fn type_check_file(&mut self, file_path: &PathBuf) {
+    pub fn type_check_file(&mut self, file_path: &Path) {
         let command = self.get_typecheck_command(&file_path.to_string_lossy());
-        Executor::with_stdio(command, |cmd| {
-            cmd.current_dir(&self.repokit_installation)
-        });
+        Executor::with_stdio(command, |cmd| cmd.current_dir(&self.repokit_installation));
     }
 
     pub fn get_typecheck_command(&mut self, file_path: &str) -> String {
@@ -49,7 +50,7 @@ impl NodeScope {
         tsc_command
     }
 
-    pub fn prompt_to_fix_errors(config_path: &PathBuf) {
+    pub fn prompt_to_fix_errors(config_path: &Path) {
         Logger::info(
             "Please fix the above type-errors and rerun your command"
                 .to_string()

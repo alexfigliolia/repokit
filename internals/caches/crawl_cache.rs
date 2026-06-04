@@ -1,4 +1,7 @@
-use std::{collections::HashSet, path::PathBuf};
+use std::{
+    collections::HashSet,
+    path::{Path, PathBuf},
+};
 
 use regex::Regex;
 
@@ -40,7 +43,7 @@ impl CrawlCache {
         }
     }
 
-    fn get_changed_files(&self, git_root: &PathBuf) -> (bool, HashSet<String>) {
+    fn get_changed_files(&self, git_root: &Path) -> (bool, HashSet<String>) {
         let mut contains_git_ignore = false;
         let file_path_matcher = Regex::new(r#"^.*\s(.*\.ts)$"#).unwrap();
         let stdout = Executor::exec("git status --porcelain -uall", |cmd| cmd);
@@ -79,6 +82,10 @@ impl FileCache<GitScope> for CrawlCache {
 
     fn cache_directory(&self) -> &Option<PathBuf> {
         &self.cache_directory
+    }
+
+    fn default_cache_contents(&self) -> &str {
+        ""
     }
 
     fn creator(cache_directory: Option<PathBuf>) -> Self {

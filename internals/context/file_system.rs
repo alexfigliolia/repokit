@@ -1,7 +1,11 @@
 use normalize_path::NormalizePath;
 use regex::Regex;
 
-use std::{fs::File, path::PathBuf, sync::LazyLock};
+use std::{
+    fs::File,
+    path::{Path, PathBuf},
+    sync::LazyLock,
+};
 
 use crate::{internal_filesystem::file_builder::FileBuilder, logger::logger::Logger};
 
@@ -38,7 +42,7 @@ impl FileSystem {
         }
     }
 
-    pub fn join_with(root: &PathBuf, segment: &str) -> PathBuf {
+    pub fn join_with(root: &Path, segment: &str) -> PathBuf {
         root.join(segment).normalize()
     }
 
@@ -60,7 +64,7 @@ impl FileSystem {
         )
     }
 
-    pub fn path_buf_to_str(path: &PathBuf) -> String {
+    pub fn path_buf_to_str(path: &Path) -> String {
         path.to_string_lossy().to_string()
     }
 }

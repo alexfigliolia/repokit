@@ -52,7 +52,7 @@ impl RepoKitCommand {
                     failed_paths.push(path);
                 }
             } else {
-                let mut valid_command = repokit_command.expect("parse success");
+                let mut valid_command = repokit_command.unwrap();
                 valid_command.location = format!("{}/{}", &install_path, valid_command.location);
                 result.push(valid_command);
             }

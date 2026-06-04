@@ -21,7 +21,7 @@ impl CacheScope {
             CacheScope::resolve_cache_directory(&home, &git_scope.root_commit_hash);
         let (crawl_cache, settings_cache) = join!(
             CacheScope::crawl_cache_thread(&cache_directory, git_scope, runtime),
-            CacheScope::settings_cache_thread(&cache_directory, runtime)
+            CacheScope::settings_cache_thread(&cache_directory, runtime),
         );
         CacheScope {
             crawl_cache: crawl_cache.unwrap(),

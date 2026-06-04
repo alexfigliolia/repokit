@@ -3,7 +3,11 @@ use jsonschema::Validator;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use serde_json::{Value, from_value, to_value};
-use std::{collections::HashMap, path::PathBuf, sync::LazyLock};
+use std::{
+    collections::HashMap,
+    path::Path,
+    sync::LazyLock,
+};
 
 use crate::{
     context::{file_system::FileSystem, node_scope::NodeScope},
@@ -38,7 +42,8 @@ impl RootCommand {
 #[derive(Debug, Deserialize, Clone, JsonSchema)]
 pub struct RepoKitConfig {
     pub project: String,
-    pub thirdParty: Vec<RepoKitCommand>,
+    #[serde(rename = "thirdParty")]
+    pub third_party: Vec<RepoKitCommand>,
     pub commands: HashMap<String, CommandDefinition>,
     pub themes: Vec<RepoKitTheme>,
 }
@@ -50,7 +55,7 @@ static REPOKIT_CONFIG_VALIDATOR: LazyLock<Validator> = LazyLock::new(|| {
 impl RepoKitConstructValidator for RepoKitConfig {}
 
 impl RepoKitConfig {
-    pub fn from_input(root: &PathBuf, node: &mut NodeScope, input: Value) -> RepoKitConfig {
+    pub fn from_input(root: &Path, node: &mut NodeScope, input: Value) -> RepoKitConfig {
         let repokit_config: Result<RepoKitConfig, serde_json::Error> = from_value(input.clone());
         if !RepoKitConfig::is_valid(&REPOKIT_CONFIG_VALIDATOR, &input) || repokit_config.is_err() {
             RepoKitConfig::on_parsing_error(root, node, Value::Null);
@@ -58,7 +63,7 @@ impl RepoKitConfig {
         repokit_config.expect("assertions succeeded")
     }
 
-    pub fn on_parsing_error(root: &PathBuf, node: &mut NodeScope, _: Value) -> Option<String> {
+    pub fn on_parsing_error(root: &Path, node: &mut NodeScope, _: Value) -> Option<String> {
         let path_buf = root.join("repokit.ts");
         node.type_check_file(&path_buf);
         println!();

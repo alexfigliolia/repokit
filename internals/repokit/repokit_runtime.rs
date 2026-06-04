@@ -27,14 +27,19 @@ static REPOKIT_RUNTIME: LazyLock<Mutex<RepoKitRuntime>> =
 impl RepoKitRuntime {
     pub fn new() -> RepoKitRuntime {
         let runtime = Builder::new_multi_thread().enable_all().build().unwrap();
-        let git_init = runtime.spawn(GitScope::new());
-        let install_init = runtime.spawn(InstallationScope::new());
-        let git = block_on(git_init).unwrap();
-        let installation = block_on(install_init).unwrap();
-        let files = FileSystem::new(&installation.install_path);
-        let mut node = NodeScope::new(&installation.install_path);
+        let git_init = GitScope::new();
+        let installation_init = runtime.spawn(async move { InstallationScope::new() });
+        let git = block_on(git_init);
+        let installation = block_on(installation_init).unwrap();
         let caches = block_on(CacheScope::new(&git, &runtime));
+        let p1 = installation.install_path.to_path_buf();
+        let p2 = installation.install_path.to_path_buf();
+        let files_init = runtime.spawn(async move { FileSystem::new(&p1) });
+        let node_init = runtime.spawn(async move { NodeScope::new(&p2) });
+        let files = block_on(files_init).unwrap();
+        let mut node = block_on(node_init).unwrap();
         let configuration = TypeScriptBridge::parse_configuration(&files, &mut node);
+        runtime.shutdown_background();
         RepoKitRuntime {
             git,
             node,

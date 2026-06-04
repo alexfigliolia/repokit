@@ -3,37 +3,37 @@ use colored::Color;
 use crate::themes::theme_colors::ThemeColors;
 
 pub const SEEING_RED: ThemeColors = ThemeColors {
-    prefixColor: Color::TrueColor {
+    prefix_color: Color::TrueColor {
         r: 220,
         g: 36,
         b: 91,
     },
-    commandColor: Color::TrueColor {
+    command_color: Color::TrueColor {
         r: 220,
         g: 36,
         b: 36,
     },
-    subcommandColor: Color::TrueColor {
+    subcommand_color: Color::TrueColor {
         r: 220,
         g: 131,
         b: 36,
     },
-    argColor: Color::TrueColor {
+    arg_color: Color::TrueColor {
         r: 220,
         g: 205,
         b: 36,
     },
-    descriptionColor: Color::TrueColor {
+    description_color: Color::TrueColor {
         r: 179,
         g: 100,
         b: 151,
     },
-    errorPrefixColor: Color::TrueColor {
+    error_prefix_color: Color::TrueColor {
         r: 220,
         g: 36,
         b: 39,
     },
-    highlightColor: Color::TrueColor {
+    highlight_color: Color::TrueColor {
         r: 237,
         g: 175,
         b: 41,

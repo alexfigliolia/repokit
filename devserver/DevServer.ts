@@ -13,18 +13,19 @@ export class DevServer {
   // @ts-ignore
   private static readonly FILE = fileURLToPath(import.meta.url);
   private static readonly SCRIPT_ORIGIN = dirname(this.FILE);
-  private static readonly DIST_DIRECTORY = join(this.SCRIPT_ORIGIN, "../dist");
+  private static readonly REPOSITORY_ROOT = join(this.SCRIPT_ORIGIN, "..");
+  private static readonly DIST_DIRECTORY = join(this.REPOSITORY_ROOT, "dist");
   private static readonly SOURCE_DIRECTORY = join(
-    this.SCRIPT_ORIGIN,
-    "../externals",
+    this.REPOSITORY_ROOT,
+    "externals",
   );
   private static readonly SYMLINK_ROOT = join(
-    this.SCRIPT_ORIGIN,
-    "../node_modules/@repokit/core",
+    this.REPOSITORY_ROOT,
+    "node_modules/@repokit/core",
   );
   private static readonly PACKAGE_FILE = join(
-    this.SCRIPT_ORIGIN,
-    "../package.json",
+    this.REPOSITORY_ROOT,
+    "package.json",
   );
   private static readonly SYMLINK_BUILD_TARGET = join(
     this.SYMLINK_ROOT,

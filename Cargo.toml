@@ -1,6 +1,6 @@
 [package]
 name = "repokit"
-version = "4.0.7"
+version = "5.0.0"
 edition = "2024"
 license = "MIT"
 readme = "README.md"

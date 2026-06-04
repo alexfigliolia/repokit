@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::{
     caches::file_cache::FileCache, logger::logger::Logger,
-    post_processing::post_processor::PostProcessor,
+    post_processing::post_processor::PostProcessor, themes::theme_registry::DEFAULT_THEME_NAME,
 };
 
 #[derive(Clone)]
@@ -53,6 +53,10 @@ impl FileCache<()> for SettingsCache {
 
     fn cache_directory(&self) -> &Option<PathBuf> {
         &self.cache_directory
+    }
+
+    fn default_cache_contents(&self) -> &str {
+        DEFAULT_THEME_NAME
     }
 
     fn creator(cache_directory: Option<PathBuf>) -> Self {
