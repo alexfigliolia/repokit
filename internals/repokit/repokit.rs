@@ -27,7 +27,7 @@ impl RepoKit {
             if let Some(root_script) = runtime.configuration.commands.get(&command) {
                 Executor::with_stdio(
                     format!("{} {}", root_script.command, &args.join(" ")),
-                    |cmd| cmd.current_dir(&runtime.files.git_root_path),
+                    |cmd| cmd.current_dir(&runtime.files.install_path),
                 );
                 panic!();
             }
@@ -44,7 +44,8 @@ impl RepoKit {
             if let Some(script) = interface.commands.get(sub_command) {
                 let executable = format!("{} {}", &script.command, &args[1..].join(" "));
                 if let Some(working_dir) = Path::new(&interface.location).parent() {
-                    return Executor::with_stdio(executable, |cmd| cmd.current_dir(working_dir));
+                    Executor::with_stdio(executable, |cmd| cmd.current_dir(working_dir));
+                    return;
                 }
                 return self.working_directory_not_found(interface, &executable);
             }

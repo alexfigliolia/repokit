@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use ignore::WalkBuilder;
 
 use crate::{
-    file_walker::walker::{TSFileVisitor, TSFileVisitorBuilder},
+    file_walker::command_walker::{TSCommandVisitor, TSCommandVisitorBuilder},
     repokit::repokit_runtime::RepoKitRuntime,
 };
 
@@ -35,8 +35,11 @@ impl FileWalker {
 
     fn crawl_file_system(&self) {
         RepoKitRuntime::with_runtime(|runtime| {
-            let mut visitor = TSFileVisitorBuilder::new(&runtime.git.root, &self.command_paths);
-            WalkBuilder::new(&runtime.files.git_root_path)
+            let mut visitor = TSCommandVisitorBuilder::new(
+                &runtime.installation.install_path,
+                &self.command_paths,
+            );
+            WalkBuilder::new(&runtime.installation.install_path)
                 .build_parallel()
                 .visit(&mut visitor);
             if let Some(head_commit) = &runtime.git.head_commit_hash {
@@ -58,8 +61,10 @@ impl FileWalker {
                 }
             }
             if let Some(changed_files) = &runtime.caches.crawl_cache.changed_files {
-                let mut paths_to_import =
-                    TSFileVisitor::traverse_list(&runtime.git.root, changed_files.to_owned());
+                let mut paths_to_import = TSCommandVisitor::traverse_list(
+                    &runtime.installation.install_path,
+                    changed_files.to_owned(),
+                );
                 if !paths_to_import.is_empty() {
                     paths_to_search.append(&mut paths_to_import);
                 }

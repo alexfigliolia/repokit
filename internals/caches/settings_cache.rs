@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::{
     caches::file_cache::FileCache, logger::logger::Logger,
-    post_processing::post_processor::PostProcessor,
+    post_processing::post_processor::PostProcessor, themes::theme_registry::DEFAULT_THEME_NAME,
 };
 
 #[derive(Clone)]
@@ -12,22 +12,6 @@ pub struct SettingsCache {
 }
 
 impl SettingsCache {
-    pub fn new(cache_directory: &Option<PathBuf>) -> Self {
-        SettingsCache {
-            cache_directory: cache_directory.clone(),
-            theme_preference: Logger::with_registry(|registry| registry.default_theme.to_owned()),
-        }
-    }
-
-    pub async fn initialize(&mut self) {
-        if let Some((mut lines, _)) = self.read()
-            && let Some(result) = lines.nth(0)
-            && let Ok(theme) = result
-        {
-            self.theme_preference = theme;
-        }
-    }
-
     pub fn store_theme_preference(&self, theme: &str) {
         self.write(format!("{theme}\n").as_str(), |_| {
             self.on_theme_storage_error(theme);
@@ -62,12 +46,32 @@ impl SettingsCache {
     }
 }
 
-impl FileCache for SettingsCache {
+impl FileCache<()> for SettingsCache {
     fn cache_file(&self) -> &str {
         ".settings"
     }
 
     fn cache_directory(&self) -> &Option<PathBuf> {
         &self.cache_directory
+    }
+
+    fn default_cache_contents(&self) -> &str {
+        DEFAULT_THEME_NAME
+    }
+
+    fn creator(cache_directory: Option<PathBuf>) -> Self {
+        SettingsCache {
+            cache_directory: cache_directory.clone(),
+            theme_preference: Logger::with_registry(|registry| registry.default_theme.to_owned()),
+        }
+    }
+
+    async fn initialize(&mut self, _: ()) {
+        if let Some((mut lines, _)) = self.read()
+            && let Some(result) = lines.nth(0)
+            && let Ok(theme) = result
+        {
+            self.theme_preference = theme;
+        }
     }
 }

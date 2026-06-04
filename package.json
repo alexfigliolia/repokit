@@ -1,6 +1,6 @@
 {
-  "name": "@repokit/native-test",
-  "version": "1.0.5",
+  "name": "@repokit/core",
+  "version": "5.0.0",
   "description": "A knowledgebase for your repository - wrapped in a CLI",
   "keywords": [
     "cli",
@@ -38,13 +38,11 @@
     "clean:ts": "tsx devserver/run.ts -c",
     "distribute": "tsx distribution/run.ts",
     "format:toml": "taplo lint && taplo format",
-    "install:rust": "pnpm build:rust && cargo install --path .",
     "lint:all": "pnpm lint:rust && pnpm lint:ts",
-    "lint:rust": "cargo clippy --fix --allow-dirty && pnpm format:toml",
+    "lint:rust": "cargo clippy --fix --allow-dirty --allow-no-vcs && pnpm format:toml",
     "lint:rust:ci": "cargo clippy --fix",
     "lint:ts": "oxlint --type-aware --report-unused-disable-directives --fix && oxfmt",
     "package:ts": "pnpm lint:ts && pnpm lint:rust && pnpm build:ts",
-    "postinstall": "tsx installation/install.ts",
     "prepare": "husky",
     "release": "tsx release/run.ts",
     "run:dev": "pnpm build:ts && cargo run --bin repokit",
@@ -60,22 +58,16 @@
   "devDependencies": {
     "@figliolia/child-process": "^1.0.4",
     "@figliolia/semver": "^1.0.0",
-    "@oxc-node/core": "^0.1.0",
     "@taplo/cli": "^0.7.0",
     "@types/node": "^25.3.0",
-    "@types/unzipper": "^0.10.11",
-    "ava": "^8.0.0",
-    "chalk": "^5.6.2",
-    "detect-libc": "^2.1.2",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.2",
-    "oxfmt": "^0.48.0",
+    "oxfmt": "^0.53.0",
     "oxlint": "^1.42.0",
-    "oxlint-tsgolint": "^0.22.0",
+    "oxlint-tsgolint": "^0.23.0",
     "tsdown": "^0.22.0",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2",
-    "unzipper": "^0.12.3"
+    "typescript": "^6.0.2"
   },
   "lint-staged": {
     "*.@(js|ts|tsx|yml|yaml|md|json)": [
@@ -87,26 +79,6 @@
     "*.rs": [
       "pnpm lint:rust"
     ]
-  },
-  "ava": {
-    "environmentVariables": {
-      "TS_NODE_PROJECT": "./tsconfig.json"
-    },
-    "extensions": [
-      "ts"
-    ],
-    "files": [
-      "./__test__/**/*"
-    ],
-    "nodeArguments": [
-      "--import",
-      "@oxc-node/core/register"
-    ],
-    "timeout": "2m",
-    "workerThreads": false
-  },
-  "engines": {
-    "node": ">= 10"
   },
   "packageManager": "pnpm@10.33.2"
 }

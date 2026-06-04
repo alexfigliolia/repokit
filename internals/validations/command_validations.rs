@@ -23,7 +23,7 @@ impl CommandValidations {
         let result = walker.get();
         let externals = TypeScriptBridge::parse_commands(&result);
         let all = RepoKitRuntime::with_runtime(|runtime| {
-            [&externals[..], &runtime.configuration.thirdParty[..]].concat()
+            [&externals[..], &runtime.configuration.third_party[..]].concat()
         });
         CommandValidations::detect_collisions_between_root_commands_and_externals(&all)
     }

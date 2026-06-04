@@ -11,33 +11,38 @@ use crate::{internal_filesystem::file_builder::FileBuilder, logger::logger::Logg
 
 #[derive(Clone)]
 pub struct FileSystem {
-    pub git_root: String,
-    pub git_root_path: PathBuf,
+    pub install_path: PathBuf,
     pub package_directory: PathBuf,
+    pub workspace_directory: PathBuf,
     pub commands_directory: PathBuf,
     pub templates_directory: PathBuf,
 }
 
-static INSTALLED_PACKAGE_PATH: &str = "node_modules/@repokit/native-test";
+pub static WORKSPACE_NAME: &str = "@repokit";
+pub static PACKAGE_NAME: LazyLock<String> = LazyLock::new(|| format!("{WORKSPACE_NAME}/core"));
+pub static INSTALLED_WORKSPACE_PATH: LazyLock<String> =
+    LazyLock::new(|| format!("node_modules/{WORKSPACE_NAME}"));
+pub static INSTALLED_PACKAGE_PATH: LazyLock<String> =
+    LazyLock::new(|| format!("node_modules/{}", PACKAGE_NAME.as_str()));
 static TYPESCRIPT_COMMANDS: &str = "dist/commands";
 static TYPESCRIPT_TEMPLATES: &str = "externals/templates";
 pub static VERSION_REGEX: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r#"\d*\.\d*.\d*"#).unwrap());
+    LazyLock::new(|| Regex::new(r#"\d+\.\d+.\d+"#).unwrap());
 
 impl FileSystem {
-    pub fn new(git_root: &str) -> FileSystem {
-        let git_root_path = Path::new(&git_root).normalize();
-        let package_directory = FileSystem::join_with(&git_root_path, INSTALLED_PACKAGE_PATH);
+    pub fn new(repokit_installation: &PathBuf) -> FileSystem {
+        let install_path = repokit_installation.to_owned();
+        let package_directory = FileSystem::join_with(&install_path, &INSTALLED_PACKAGE_PATH);
         FileSystem {
-            git_root_path,
-            git_root: git_root.to_owned(),
             commands_directory: FileSystem::join_with(&package_directory, TYPESCRIPT_COMMANDS),
             templates_directory: FileSystem::join_with(&package_directory, TYPESCRIPT_TEMPLATES),
+            workspace_directory: FileSystem::join_with(&install_path, &INSTALLED_WORKSPACE_PATH),
+            install_path,
             package_directory,
         }
     }
 
-    pub fn join_with(root: &PathBuf, segment: &str) -> PathBuf {
+    pub fn join_with(root: &Path, segment: &str) -> PathBuf {
         root.join(segment).normalize()
     }
 
@@ -59,7 +64,7 @@ impl FileSystem {
         )
     }
 
-    pub fn path_buf_to_str(path: &PathBuf) -> String {
+    pub fn path_buf_to_str(path: &Path) -> String {
         path.to_string_lossy().to_string()
     }
 }

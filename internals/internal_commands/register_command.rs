@@ -40,7 +40,7 @@ impl RegisterCommand {
             RegisterCommand::exit_on_missing_path();
         }
         let path = RepoKitRuntime::with_runtime(|runtime| {
-            runtime.files.git_root_path.join(&path_arg).normalize()
+            runtime.files.install_path.join(&path_arg).normalize()
         });
         if !path.exists() {
             Logger::info(

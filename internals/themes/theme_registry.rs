@@ -1,17 +1,19 @@
 use std::collections::HashMap;
 
 use crate::themes::{
-        built_in_themes::{money::MONEY, seeing_red::SEEING_RED, the_blues::THE_BLUES},
-        theme::Theme,
-        theme_colors::ThemeColors,
-        theme_inputs::{RepoKitTheme, ThemeInputColors},
-    };
+    built_in_themes::{money::MONEY, seeing_red::SEEING_RED, the_blues::THE_BLUES},
+    theme::Theme,
+    theme_colors::ThemeColors,
+    theme_inputs::{RepoKitTheme, ThemeInputColors},
+};
 
 pub struct ThemeRegistry {
     pub theme: String,
     pub default_theme: String,
     pub themes: HashMap<String, Theme>,
 }
+
+pub static DEFAULT_THEME_NAME: &str = "default";
 
 impl ThemeRegistry {
     pub fn new() -> ThemeRegistry {
@@ -77,11 +79,10 @@ impl ThemeRegistry {
     }
 
     fn built_in_color_schemes() -> (String, [(&'static str, ThemeColors); 4]) {
-        let default_theme_name = "default";
         (
-            default_theme_name.to_string(),
+            DEFAULT_THEME_NAME.to_string(),
             [
-                (default_theme_name, ThemeRegistry::create_default()),
+                (DEFAULT_THEME_NAME, ThemeRegistry::create_default()),
                 ("seeing-red", SEEING_RED),
                 ("the-blues", THE_BLUES),
                 ("money", MONEY),
@@ -91,13 +92,13 @@ impl ThemeRegistry {
 
     fn create_default() -> ThemeColors {
         ThemeColors::from_options(ThemeInputColors {
-            prefixColor: None,
-            commandColor: None,
-            subcommandColor: None,
-            argColor: None,
-            descriptionColor: None,
-            errorPrefixColor: None,
-            highlightColor: None,
+            prefix_color: None,
+            command_color: None,
+            subcommand_color: None,
+            arg_color: None,
+            description_color: None,
+            error_prefix_color: None,
+            highlight_color: None,
         })
     }
 

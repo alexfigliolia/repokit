@@ -27,8 +27,12 @@ impl TypeScriptBridge {
     pub fn parse_configuration(files: &FileSystem, node: &mut NodeScope) -> RepoKitConfig {
         let executable = files.resolve_command("parse_configuration");
         let stdout = TypeScriptBridge::execute_with_node(
-            &files.git_root_path,
-            format!("{executable} --root {}", &files.git_root).as_str(),
+            &files.install_path,
+            format!(
+                "{executable} --root {}",
+                &files.install_path.to_string_lossy()
+            )
+            .as_str(),
         );
         if stdout.is_empty() {
             RepoKitConfig::create(files);
@@ -36,7 +40,7 @@ impl TypeScriptBridge {
         if let Some(parsed_config) = TypeScriptBridge::unwrap_stdout(&stdout) {
             let parse_result: Result<Value, serde_json::Error> = from_str(parsed_config);
             if let Ok(config) = parse_result {
-                return RepoKitConfig::from_input(&files.git_root, node, config);
+                return RepoKitConfig::from_input(&files.install_path, node, config);
             }
         }
         Logger::parse_error("configuration", &stdout);
@@ -48,10 +52,10 @@ impl TypeScriptBridge {
         let stdout = RepoKitRuntime::with_runtime(|runtime| {
             let executable = runtime.files.resolve_command("parse_commands");
             TypeScriptBridge::execute_with_node(
-                &runtime.files.git_root_path,
+                &runtime.files.install_path,
                 format!(
                     "{executable} --paths {paths} --root {}",
-                    runtime.files.git_root
+                    runtime.files.install_path.to_string_lossy()
                 )
                 .as_str(),
             )

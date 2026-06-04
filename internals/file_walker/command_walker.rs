@@ -1,7 +1,7 @@
 use std::{
     fs::File,
     io::{BufRead, BufReader},
-    path::Path,
+    path::{Path, PathBuf},
     sync::{Arc, LazyLock, Mutex},
 };
 
@@ -11,23 +11,24 @@ use tokio::task::JoinSet;
 
 use crate::{internal_filesystem::file_builder::FileBuilder, logger::logger::Logger};
 
-pub struct TSFileVisitor {
-    root: String,
+pub struct TSCommandVisitor {
+    root: PathBuf,
     paths: Arc<Mutex<Vec<String>>>,
+    root_replacer: String,
 }
 
 static REPOKIT_IMPORT_MATCHER: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(require\(|from[\s*]?)['"]@repokit/native-test["'][\)]?[;]?$"#).unwrap()
+    Regex::new(r#"(require\(|from[\s*]?)['"]@repokit/core["'][\)]?[;]?$"#).unwrap()
 });
 
-impl ParallelVisitor for TSFileVisitor {
+impl ParallelVisitor for TSCommandVisitor {
     fn visit(&mut self, entry: Result<DirEntry, Error>) -> WalkState {
-        let root_replacer = format!("{}/", self.root);
+        let root_replacer = format!("{}/", self.root_replacer);
         if let Ok(file_entry) = entry
             && file_entry.file_type().is_some_and(|ft| ft.is_file())
             && file_entry.file_name().to_string_lossy().ends_with(".ts")
             && let Some(matched_path) =
-                TSFileVisitor::on_file(&Path::new(&self.root).join(file_entry.path()))
+                TSCommandVisitor::on_file(&self.root.join(file_entry.path()))
         {
             let mut vector = self.paths.lock().unwrap();
             vector.push(matched_path.to_string_lossy().replace(&root_replacer, ""));
@@ -37,16 +38,15 @@ impl ParallelVisitor for TSFileVisitor {
     }
 }
 
-impl TSFileVisitor {
+impl TSCommandVisitor {
     #[tokio::main]
-    pub async fn traverse_list(root: &str, path_list: Vec<String>) -> Vec<String> {
+    pub async fn traverse_list(root: &PathBuf, path_list: Vec<String>) -> Vec<String> {
         let mut handles = JoinSet::new();
-        let root_replacer = format!("{}/", root);
+        let root_replacer = format!("{}/", root.to_string_lossy());
         for path in path_list {
             let root_clone = root.to_owned();
             handles.spawn(async move {
-                if let Some(result) =
-                    TSFileVisitor::on_file(&Path::new(&root_clone).join(Path::new(&path)))
+                if let Some(result) = TSCommandVisitor::on_file(&root_clone.join(Path::new(&path)))
                 {
                     return Some(result.to_owned());
                 }
@@ -97,22 +97,26 @@ impl TSFileVisitor {
     }
 }
 
-pub struct TSFileVisitorBuilder<'a> {
-    pub root: &'a str,
+pub struct TSCommandVisitorBuilder<'a> {
+    pub root: &'a PathBuf,
     pub paths: &'a Arc<Mutex<Vec<String>>>,
 }
 
-impl<'a> TSFileVisitorBuilder<'a> {
-    pub fn new(root: &'a str, paths: &'a Arc<Mutex<Vec<String>>>) -> TSFileVisitorBuilder<'a> {
-        TSFileVisitorBuilder { paths, root }
+impl<'a> TSCommandVisitorBuilder<'a> {
+    pub fn new(
+        root: &'a PathBuf,
+        paths: &'a Arc<Mutex<Vec<String>>>,
+    ) -> TSCommandVisitorBuilder<'a> {
+        TSCommandVisitorBuilder { paths, root }
     }
 }
 
-impl<'s> ParallelVisitorBuilder<'s> for TSFileVisitorBuilder<'s> {
+impl<'s> ParallelVisitorBuilder<'s> for TSCommandVisitorBuilder<'s> {
     fn build(&mut self) -> Box<dyn ParallelVisitor + 's> {
-        Box::new(TSFileVisitor {
-            root: self.root.to_string(),
+        Box::new(TSCommandVisitor {
             paths: self.paths.clone(),
+            root: self.root.to_owned(),
+            root_replacer: self.root.to_string_lossy().to_string(),
         })
     }
 }

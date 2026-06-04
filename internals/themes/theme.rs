@@ -16,64 +16,64 @@ impl Theme {
         Theme {
             name: input.name,
             colors: ThemeColors {
-                prefixColor: input.colors.prefixColor.unwrap_or(Color::BrightMagenta),
-                commandColor: input.colors.commandColor.unwrap_or(Color::BrightBlue),
-                subcommandColor: input.colors.subcommandColor.unwrap_or(Color::TrueColor {
+                prefix_color: input.colors.prefix_color.unwrap_or(Color::BrightMagenta),
+                command_color: input.colors.command_color.unwrap_or(Color::BrightBlue),
+                subcommand_color: input.colors.subcommand_color.unwrap_or(Color::TrueColor {
                     r: 175,
                     g: 247,
                     b: 7,
                 }),
-                argColor: input.colors.argColor.unwrap_or(Color::Green),
-                descriptionColor: input.colors.descriptionColor.unwrap_or(Color::TrueColor {
+                arg_color: input.colors.arg_color.unwrap_or(Color::Green),
+                description_color: input.colors.description_color.unwrap_or(Color::TrueColor {
                     r: 128,
                     g: 128,
                     b: 128,
                 }),
-                errorPrefixColor: input.colors.errorPrefixColor.unwrap_or(Color::Red),
-                highlightColor: input.colors.highlightColor.unwrap_or(Color::BrightBlue),
+                error_prefix_color: input.colors.error_prefix_color.unwrap_or(Color::Red),
+                highlight_color: input.colors.highlight_color.unwrap_or(Color::BrightBlue),
             },
         }
     }
 
     pub fn prefix(&self, msg: &str) -> ColoredString {
-        msg.color(self.colors.prefixColor).bold()
+        msg.color(self.colors.prefix_color).bold()
     }
 
     pub fn command(&self, msg: &str) -> ColoredString {
-        msg.color(self.colors.commandColor)
+        msg.color(self.colors.command_color)
     }
 
     pub fn sub_command(&self, msg: &str) -> ColoredString {
-        msg.color(self.colors.subcommandColor)
+        msg.color(self.colors.subcommand_color)
     }
 
     pub fn arg(&self, msg: &str) -> ColoredString {
-        msg.color(self.colors.argColor)
+        msg.color(self.colors.arg_color)
     }
 
     pub fn description(&self, msg: &str) -> ColoredString {
-        msg.color(self.colors.descriptionColor)
+        msg.color(self.colors.description_color)
     }
 
     pub fn error_prefix(&self, msg: &str) -> ColoredString {
-        msg.color(self.colors.errorPrefixColor).bold()
+        msg.color(self.colors.error_prefix_color).bold()
     }
 
     pub fn highlight(&self, msg: &str) -> ColoredString {
-        msg.color(self.colors.highlightColor)
+        msg.color(self.colors.highlight_color)
     }
 
     pub fn from_configuration(theme: &RepoKitTheme) -> Theme {
         Theme::new(ThemeInput {
             name: theme.name.clone(),
             colors: ThemeInputColors {
-                prefixColor: Theme::parse_rgb(&theme.colors.prefixColor),
-                commandColor: Theme::parse_rgb(&theme.colors.commandColor),
-                subcommandColor: Theme::parse_rgb(&theme.colors.subcommandColor),
-                argColor: Theme::parse_rgb(&theme.colors.argColor),
-                descriptionColor: Theme::parse_rgb(&theme.colors.descriptionColor),
-                errorPrefixColor: Theme::parse_rgb(&theme.colors.errorPrefixColor),
-                highlightColor: Theme::parse_rgb(&theme.colors.highlightColor),
+                prefix_color: Theme::parse_rgb(&theme.colors.prefix_color),
+                command_color: Theme::parse_rgb(&theme.colors.command_color),
+                subcommand_color: Theme::parse_rgb(&theme.colors.subcommand_color),
+                arg_color: Theme::parse_rgb(&theme.colors.arg_color),
+                description_color: Theme::parse_rgb(&theme.colors.description_color),
+                error_prefix_color: Theme::parse_rgb(&theme.colors.error_prefix_color),
+                highlight_color: Theme::parse_rgb(&theme.colors.highlight_color),
             },
         })
     }

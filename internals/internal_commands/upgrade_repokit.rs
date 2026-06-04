@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
+    context::file_system::PACKAGE_NAME,
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
@@ -8,7 +9,6 @@ use crate::{
         },
     },
     executor::executor::Executor,
-    internal_commands::list_version::ListVersion,
     logger::logger::Logger,
     repokit::repokit_runtime::RepoKitRuntime,
 };
@@ -27,37 +27,23 @@ impl UpgradeRepoKit {
             }),
         }
     }
-
-    pub fn install_at_latest(&self) {
-        Logger::info("Upgrading installation");
-        RepoKitRuntime::with_runtime(|runtime| {
-            Executor::with_stdio(
-                format!(
-                    "{} @repokit/native-test@latest",
-                    runtime.node.install_command
-                )
-                .as_str(),
-                |cmd| cmd.current_dir(&runtime.git.root),
-            )
-        });
-        Logger::info("Upgrade Complete!");
-    }
 }
 
 impl InternalExecutable for UpgradeRepoKit {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
-        self.install_at_latest();
-        if let Some(new_version) = RepoKitRuntime::with_runtime(|runtime| {
-            ListVersion::get_installed_version(&runtime.files)
-        }) {
-            Logger::info(
+        Logger::info("Upgrading installation");
+        RepoKitRuntime::with_runtime(|runtime| {
+            Executor::with_stdio(
                 format!(
-                    "The currently installed version is {}",
-                    Logger::with_theme(|theme| theme.highlight(&new_version))
+                    "{} {}@latest",
+                    runtime.node.install_command,
+                    PACKAGE_NAME.as_str()
                 )
                 .as_str(),
-            );
-        }
+                |cmd| cmd.current_dir(&runtime.installation.install_path),
+            )
+        });
+        Logger::info("Upgrade Complete!");
     }
 
     fn get_definition(&self) -> &InternalExecutableDefinition {

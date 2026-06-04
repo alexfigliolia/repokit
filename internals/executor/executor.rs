@@ -47,11 +47,14 @@ impl Executor {
     pub fn with_stdio<T: AsRef<OsStr>>(
         command: T,
         composer: impl Fn(&mut Command) -> &mut Command,
-    ) {
-        let mut child = composer(&mut Executor::spawn(command))
+    ) -> bool {
+        let child = composer(&mut Executor::spawn(command))
             .spawn()
             .expect("Failed to execute");
-        child.wait().expect("failed to wait on child process");
+        let output = child
+            .wait_with_output()
+            .expect("failed to wait on child process");
+        output.status.success()
     }
 
     pub fn spawn<T: AsRef<OsStr>>(program: T) -> Command {

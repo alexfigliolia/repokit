@@ -62,10 +62,16 @@ impl SearchCommands {
         if command.owner.to_lowercase().contains(query) {
             return true;
         }
-        let git_root = RepoKitRuntime::with_runtime(|runtime| runtime.git.root.clone());
+        let install_root = RepoKitRuntime::with_runtime(|runtime| {
+            runtime
+                .installation
+                .install_path
+                .to_string_lossy()
+                .to_string()
+        });
         if command
             .location
-            .replace(&git_root, "")
+            .replace(&install_root, "")
             .to_lowercase()
             .contains(query)
         {

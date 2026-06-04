@@ -40,8 +40,7 @@ impl ListThemes {
         let mut keys: Vec<&String> = themes.keys().collect();
         sort_str_slice(&mut keys);
         Logger::with_surrounding_space(|| {
-            let mut pointer = 1;
-            for name in &keys {
+            for (index, name) in keys.iter().enumerate() {
                 let mut post_fix = "";
                 let is_active_theme = name.as_str() == current_theme;
                 if is_active_theme {
@@ -56,11 +55,10 @@ impl ListThemes {
                         } else {
                             theme.highlight(name)
                         };
-                        format!("{}. {}", pointer.to_string().as_str(), name_text)
+                        format!("{}. {}", (index + 1).to_string().as_str(), name_text)
                     }),
                     post_fix
                 );
-                pointer += 1;
             }
         });
     }
