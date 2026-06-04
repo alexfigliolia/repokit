@@ -18,12 +18,7 @@
   "files": [
     "media",
     "dist",
-    "distribution",
-    "installation",
-    "externals",
-    "internals",
-    "Cargo.lock",
-    "Cargo.toml"
+    "externals"
   ],
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
