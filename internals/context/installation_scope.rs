@@ -34,13 +34,29 @@ impl InstallationScope {
                 )
                 .as_str(),
             );
-            Executor::with_stdio(
+            let success = Executor::with_stdio(
                 format!("cargo install repokit@{}", desired_version),
                 |cmd| cmd,
             );
-            PostProcessor::get().register_task(move || {
-                Executor::with_stdio("repokit", |cmd| cmd.args(args()));
-            });
+            if success {
+                PostProcessor::get().register_task(move || {
+                    Executor::with_stdio("repokit", |cmd| cmd.args(args()));
+                });
+            } else {
+                Logger::info(
+                    format!(
+                        "Failed to install version {}",
+                        Logger::with_theme(|theme| theme.highlight(&desired_version))
+                    )
+                    .as_str(),
+                );
+                Logger::info(format!(
+                    "This could be caused by your locally installed version number being out of range, or a bug within {}",
+                    Logger::with_theme(|theme| theme.highlight("repokit"))
+                ).as_str());
+                Logger::info("If you believe it to be the latter, please file a bug here:");
+                Logger::log_issue_link();
+            }
             panic!();
         }
         Self { install_path }
@@ -58,8 +74,7 @@ impl InstallationScope {
     }
 
     fn resolve_installed_version(installed_path: &Path) -> String {
-        let package_path = installed_path
-            .join(format!("{}/package.json", *INSTALLED_PACKAGE_PATH));
+        let package_path = installed_path.join(format!("{}/package.json", *INSTALLED_PACKAGE_PATH));
         if package_path.exists()
             && let Ok(file) = File::open(&package_path)
         {
