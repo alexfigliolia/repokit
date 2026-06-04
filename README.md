@@ -4,7 +4,7 @@
 
 A knowledgebase for your repository - wrapped in a CLI.
 
-Repokit is designed for large teams in complex codebases to publish self-documenting commands, API's, and workflows to a central CLI.
+Repokit is designed for large teams in complex codebases to publish self-documenting commands, API's, and workflows to a central repository-owned CLI.
 
 The Repokit CLI exists as a living source of documentation and knowledge - growing alongside your team.
 
@@ -12,7 +12,20 @@ The Repokit CLI exists as a living source of documentation and knowledge - growi
 
 ### Installation
 
-If you do not have node.js setup in your repository, you'll first want to install node.js.
+Installation requires `rust` and `node.js` installed on your machine
+
+#### Rust Installation
+
+```bash
+# install rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# install repokit
+cargo install repokit
+```
+
+#### Node.js
+
+If you do not have node.js setup on your machine, you'll first want to install node.js.
 
 [NVM is a popular posix compliant installer](https://github.com/nvm-sh/nvm)
 
@@ -25,10 +38,10 @@ npm init
 If you don't have `typescript` already setup in your repository, you can run:
 
 ```bash
-npm i -D typescript && tsc --init
+npm i -D typescript && npx tsc --init
 ```
 
-Next, install repokit:
+Next, install repokit's command definition library:
 
 ```bash
 npm i -D @repokit/core
