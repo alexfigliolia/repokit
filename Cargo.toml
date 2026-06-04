@@ -5,9 +5,10 @@ edition = "2024"
 license = "MIT"
 readme = "README.md"
 authors = ["Alex Figliolia"]
+description = "A knowledgebase for your repository - wrapped in a CLI"
 homepage = "https://github.com/alexfigliolia/repokit"
 repository = "https://github.com/alexfigliolia/repokit"
-keywords = ["cli", "developer tool", "repository", "toolchain"]
+keywords = ["cli", "devtool", "repository", "toolchain"]
 
 [[bin]]
 name = "repokit"
