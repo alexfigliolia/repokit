@@ -27,7 +27,7 @@ export class Release extends SemverRelease {
 
   private static async writeVersionCache(version: string) {
     let write = true;
-    const declaration = "pub static REPOKIT_VERSION: &'static str = ";
+    const declaration = "pub static REPOKIT_VERSION: &str = ";
     const content = await this.streamFileContent(
       this.VERSION_CACHE_PATH,
       line => {

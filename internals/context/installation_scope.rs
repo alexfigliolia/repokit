@@ -9,11 +9,16 @@ use std::{
 use regex::Regex;
 
 use crate::{
-    context::file_system::INSTALLED_PACKAGE_PATH, executor::executor::Executor,
-    file_walker::upward_walker::UpwardWalker, internal_commands::list_version::REPOKIT_VERSION,
-    logger::logger::Logger, post_processing::post_processor::PostProcessor,
+    context::{file_system::INSTALLED_PACKAGE_PATH, node_scope::NodeScope},
+    executor::executor::Executor,
+    file_walker::upward_walker::UpwardWalker,
+    internal_commands::{list_version::REPOKIT_VERSION, upgrade_repokit::UpgradeRepoKit},
+    logger::logger::Logger,
+    post_processing::post_processor::PostProcessor,
+    prompts::{inquire_theme::PRE_RUNTIME_INQUIRE_THEME, options::YesNo},
 };
 
+pub static NODE_PACKAGE_FILE: &str = "package.json";
 pub static PACKAGE_VERSION_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"\s*?"version":\s*?"(\d.\d.\d)""#).unwrap());
 
@@ -69,12 +74,13 @@ impl InstallationScope {
                 return installation_path;
             }
         }
-        InstallationScope::register_install_error();
+        InstallationScope::on_package_not_found();
         panic!()
     }
 
     fn resolve_installed_version(installed_path: &Path) -> String {
-        let package_path = installed_path.join(format!("{}/package.json", *INSTALLED_PACKAGE_PATH));
+        let package_path =
+            installed_path.join(format!("{}/{NODE_PACKAGE_FILE}", *INSTALLED_PACKAGE_PATH));
         if package_path.exists()
             && let Ok(file) = File::open(&package_path)
         {
@@ -91,20 +97,24 @@ impl InstallationScope {
         REPOKIT_VERSION.to_string()
     }
 
-    fn register_install_error() {
+    fn on_package_not_found() {
+        Logger::info(
+            format!(
+                "I could not find a {} installation relative to this working directory",
+                Logger::with_theme(|theme| theme.highlight("Repokit"))
+            )
+            .as_str(),
+        );
+        if InstallationScope::run_installation_flow() {
+            Executor::with_stdio("repokit", |cmd| cmd);
+            panic!();
+        }
         PostProcessor::get().register_task(|| {
             Logger::error(
                 format!(
-                    "I could not find your {} installation",
-                    Logger::with_theme(|theme| theme.highlight("Repokit"))
-                )
-                .as_str(),
-            );
-            Logger::error(
-                format!(
-                    "Please make sure you execute the {} command from a working directory or subdirectory containing your {} installation",
+                    "Please make sure you execute the {} command from a working directory or subdirectory containing an installation of {}",
                     Logger::with_theme(|theme| theme.highlight("repokit")),
-                    Logger::with_theme(|theme| theme.highlight("Repokit"))
+                    Logger::with_theme(|theme| theme.highlight("@repokit/core"))
                 )
                 .as_str(),
             );
@@ -112,5 +122,31 @@ impl InstallationScope {
                format!("If you believe this to be a bug within {}, please file a bug here", Logger::with_theme(|theme| theme.highlight("Repokit"))).as_str()
             );
         });
+    }
+
+    fn run_installation_flow() -> bool {
+        if let Ok(working_directory) = current_dir() {
+            let walker = UpwardWalker::new(&working_directory);
+            if let Some(package_directory) = walker.search_for(NODE_PACKAGE_FILE) {
+                return InstallationScope::prompt_to_install(&package_directory);
+            }
+        }
+        false
+    }
+
+    fn prompt_to_install(install_path: &PathBuf) -> bool {
+        if let Ok(result) = YesNo::select("Would you like me to install it?")
+            .with_render_config(*PRE_RUNTIME_INQUIRE_THEME)
+            .prompt()
+        {
+            return match &result {
+                YesNo::No => false,
+                YesNo::Yes => {
+                    let node_scope = NodeScope::new(install_path);
+                    UpgradeRepoKit::install_latest_repokit(&node_scope, install_path)
+                }
+            };
+        }
+        false
     }
 }

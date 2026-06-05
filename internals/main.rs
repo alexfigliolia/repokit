@@ -12,6 +12,7 @@ mod internal_commands;
 mod internal_filesystem;
 mod logger;
 mod post_processing;
+mod prompts;
 mod repokit;
 mod themes;
 mod validations;

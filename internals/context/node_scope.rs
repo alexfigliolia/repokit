@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
+    process::Command,
 };
 
 use normalize_path::NormalizePath;
@@ -57,6 +58,14 @@ impl NodeScope {
                 .as_str(),
         );
         Logger::log_file_path(&config_path.to_string_lossy());
+    }
+
+    pub fn install_package(
+        &self,
+        package: &str,
+        composer: impl Fn(&mut Command) -> &mut Command,
+    ) -> bool {
+        Executor::with_stdio(format!("{} {package}", self.install_command), composer)
     }
 
     fn get_typescript_version(&mut self) -> u32 {
