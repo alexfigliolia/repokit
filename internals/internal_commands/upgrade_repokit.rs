@@ -1,14 +1,16 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 
 use crate::{
-    context::file_system::PACKAGE_NAME,
+    context::{
+        file_system::PACKAGE_NAME,
+        node_scope::NodeScope,
+    },
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
-    executor::executor::Executor,
     logger::logger::Logger,
     repokit::repokit_runtime::RepoKitRuntime,
 };
@@ -27,23 +29,35 @@ impl UpgradeRepoKit {
             }),
         }
     }
+
+    pub fn install_latest_repokit(node_scope: &NodeScope, working_directory: &PathBuf) -> bool {
+        let repokit_package = format!("{}@latest", *PACKAGE_NAME);
+        let success =
+            node_scope.install_package(&repokit_package, |cmd| cmd.current_dir(working_directory));
+        if success {
+            return true;
+        }
+        Logger::info(
+            "Something went wrong during the upgrade. Here's the command I attempted to run",
+        );
+        Logger::log_file_path(
+            format!("{} {}", node_scope.install_command, &repokit_package).as_str(),
+        );
+        false
+    }
 }
 
 impl InternalExecutable for UpgradeRepoKit {
     fn run(&self, _: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
         Logger::info("Upgrading installation");
         RepoKitRuntime::with_runtime(|runtime| {
-            Executor::with_stdio(
-                format!(
-                    "{} {}@latest",
-                    runtime.node.install_command,
-                    PACKAGE_NAME.as_str()
-                )
-                .as_str(),
-                |cmd| cmd.current_dir(&runtime.installation.install_path),
-            )
+            if UpgradeRepoKit::install_latest_repokit(
+                &runtime.node,
+                &runtime.installation.install_path,
+            ) {
+                Logger::info("Upgrade Complete!");
+            }
         });
-        Logger::info("Upgrade Complete!");
     }
 
     fn get_definition(&self) -> &InternalExecutableDefinition {
