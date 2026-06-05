@@ -43,7 +43,6 @@
     "watch:ts": "tsx devserver/run.ts -w"
   },
   "dependencies": {
-    "@figliolia/event-emitter": "^1.2.0",
     "@swc/core": "^1.15.18",
     "ts-node": "^10.9.2"
   },
