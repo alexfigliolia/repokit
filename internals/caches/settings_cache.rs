@@ -66,7 +66,7 @@ impl FileCache<()> for SettingsCache {
         }
     }
 
-    async fn initialize(&mut self, _: ()) {
+    fn initialize(&mut self, _: ()) {
         if let Some((mut lines, _)) = self.read()
             && let Some(result) = lines.nth(0)
             && let Ok(theme) = result

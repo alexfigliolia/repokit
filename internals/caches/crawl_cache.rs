@@ -96,7 +96,7 @@ impl FileCache<GitScope> for CrawlCache {
         }
     }
 
-    async fn initialize(&mut self, git_scope: GitScope) {
+    fn initialize(&mut self, git_scope: GitScope) {
         if let Some(head_commit) = &git_scope.head_commit_hash
             && let Some((mut lines, path)) = self.read()
         {
