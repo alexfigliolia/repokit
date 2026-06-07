@@ -85,7 +85,6 @@ impl RepoKitConfig {
             ).as_str());
         }
         Logger::info("Welcome to Repokit! Let's get you setup");
-        Logger::info("Creating your configuration file:");
         let mut source = library.resolve_template(TypeScriptTemplate::ConfigurationTemplate);
         let mut target = FileBuilder::create(&library.config_path, |_| Logger::file_create_error());
         FileBuilder::copy_to(&mut source, &mut target, |_| Logger::file_write_error());
