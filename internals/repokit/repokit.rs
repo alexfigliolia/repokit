@@ -27,7 +27,7 @@ impl RepoKit {
             if let Some(root_script) = runtime.configuration.commands.get(&command) {
                 Executor::with_stdio(
                     format!("{} {}", root_script.command, &args.join(" ")),
-                    |cmd| cmd.current_dir(&runtime.files.install_path),
+                    |cmd| cmd.current_dir(&runtime.typescript_library.install_path),
                 );
                 panic!();
             }

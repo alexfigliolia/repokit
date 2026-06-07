@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, sync::LazyLock};
 
 use crate::{
-    context::{file_system::PACKAGE_NAME, node_scope::NodeScope},
+    context::{node_scope::NodeScope, typescript_library_installation::PACKAGE_NAME},
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
@@ -52,7 +52,7 @@ impl InternalExecutable for UpgradeRepoKit {
         RepoKitRuntime::with_runtime(|runtime| {
             if UpgradeRepoKit::install_latest_repokit(
                 &runtime.node,
-                &runtime.installation.install_path,
+                &runtime.typescript_library.install_path,
             ) {
                 Logger::info("Upgrade Complete!");
             }

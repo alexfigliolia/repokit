@@ -15,6 +15,7 @@ mod post_processing;
 mod prompts;
 mod repokit;
 mod themes;
+mod typescript_library;
 mod validations;
 
 fn main() {

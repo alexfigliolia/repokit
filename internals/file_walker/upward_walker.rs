@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::context::file_system::FileSystem;
+use normalize_path::NormalizePath;
 
 #[derive(Clone)]
 pub struct UpwardWalker<'a> {
@@ -49,7 +49,7 @@ impl UpwardWalker<'_> {
     }
 
     fn match_current_path(&self, path: &PathBuf, segment: &str) -> Option<PathBuf> {
-        let attempting_path = FileSystem::join_with(path, segment);
+        let attempting_path = path.join(segment).normalize();
         if attempting_path.exists() {
             return Some(path.to_owned());
         }

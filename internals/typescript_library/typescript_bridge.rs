@@ -8,13 +8,16 @@ use regex::Regex;
 use serde_json::{Value, from_str};
 
 use crate::{
-    context::{file_system::FileSystem, node_scope::NodeScope},
+    context::{
+        node_scope::NodeScope, typescript_library_installation::TypeScriptLibraryInstallation,
+    },
     executor::executor::Executor,
     logger::logger::Logger,
     repokit::{
         repokit_command::RepoKitCommand, repokit_config::RepoKitConfig,
         repokit_runtime::RepoKitRuntime,
     },
+    typescript_library::typescript_commands::TypeScriptCommand,
 };
 
 static BRIDGE_PARSING_REGEX: LazyLock<Regex> = LazyLock::new(|| {
@@ -24,23 +27,26 @@ static BRIDGE_PARSING_REGEX: LazyLock<Regex> = LazyLock::new(|| {
 pub struct TypeScriptBridge;
 
 impl TypeScriptBridge {
-    pub fn parse_configuration(files: &FileSystem, node: &mut NodeScope) -> RepoKitConfig {
-        let executable = files.resolve_command("parse_configuration");
+    pub fn parse_configuration(
+        library: &TypeScriptLibraryInstallation,
+        node: &mut NodeScope,
+    ) -> RepoKitConfig {
+        let executable = library.resolve_command(TypeScriptCommand::ParseConfiguration);
         let stdout = TypeScriptBridge::execute_with_node(
-            &files.install_path,
+            &library.install_path,
             format!(
                 "{executable} --root {}",
-                &files.install_path.to_string_lossy()
+                &library.install_path.to_string_lossy()
             )
             .as_str(),
         );
         if stdout.is_empty() {
-            RepoKitConfig::create(files);
+            RepoKitConfig::create(library);
         }
         if let Some(parsed_config) = TypeScriptBridge::unwrap_stdout(&stdout) {
             let parse_result: Result<Value, serde_json::Error> = from_str(parsed_config);
             if let Ok(config) = parse_result {
-                return RepoKitConfig::from_input(&files.install_path, node, config);
+                return RepoKitConfig::from_input(&library.config_path, node, config);
             }
         }
         Logger::parse_error("configuration", &stdout);
@@ -50,12 +56,14 @@ impl TypeScriptBridge {
     pub fn parse_commands(path_list: &MutexGuard<Vec<String>>) -> Vec<RepoKitCommand> {
         let paths = path_list.join(",");
         let stdout = RepoKitRuntime::with_runtime(|runtime| {
-            let executable = runtime.files.resolve_command("parse_commands");
+            let executable = runtime
+                .typescript_library
+                .resolve_command(TypeScriptCommand::ParseCommands);
             TypeScriptBridge::execute_with_node(
-                &runtime.files.install_path,
+                &runtime.typescript_library.install_path,
                 format!(
                     "{executable} --paths {paths} --root {}",
-                    runtime.files.install_path.to_string_lossy()
+                    runtime.typescript_library.install_path.to_string_lossy()
                 )
                 .as_str(),
             )

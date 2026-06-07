@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
 use crate::{
-    context::typescript_bridge::TypeScriptBridge,
+    context::typescript_library_installation::CONFIG_FILE_NAME,
     executables::internal_executable::InternalExecutable,
     file_walker::file_walker::FileWalker,
     internal_commands::internal_registry::InternalCommandRegistry,
     logger::logger::Logger,
     repokit::{repokit_command::RepoKitCommand, repokit_runtime::RepoKitRuntime},
+    typescript_library::typescript_bridge::TypeScriptBridge,
 };
 
 pub struct CommandValidations;
@@ -59,7 +60,7 @@ impl CommandValidations {
                     format!(
                         "I encountered a command named {} in your {} file that conflicts with one of my internals",
                         Logger::with_theme(|theme|theme.highlight(name)),
-                        Logger::with_theme(|theme|theme.highlight("repokit.ts")),
+                        Logger::with_theme(|theme|theme.highlight(CONFIG_FILE_NAME)),
                     )
                     .as_str(),
                 );
@@ -94,7 +95,7 @@ impl CommandValidations {
         Logger::info(format!(
                 "I encountered a package command named {} that conflicts with a command in your {} file",
                 Logger::with_theme(|theme|theme.highlight(&command.name)),
-                Logger::with_theme(|theme|theme.highlight("repokit.ts"))
+                Logger::with_theme(|theme|theme.highlight(CONFIG_FILE_NAME))
             )
             .as_str(),
         );

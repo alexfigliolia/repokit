@@ -7,7 +7,7 @@ use std::{
 use normalize_path::NormalizePath;
 
 use crate::{
-    context::file_system::VERSION_REGEX, executor::executor::Executor,
+    context::typescript_library_installation::VERSION_REGEX, executor::executor::Executor,
     file_walker::upward_walker::UpwardWalker, logger::logger::Logger,
 };
 
