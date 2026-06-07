@@ -57,13 +57,13 @@ impl TypeScriptBridge {
         let paths = path_list.join(",");
         let stdout = RepoKitRuntime::with_runtime(|runtime| {
             let executable = runtime
-                .library
+                .typescript_library
                 .resolve_command(TypeScriptCommand::ParseCommands);
             TypeScriptBridge::execute_with_node(
-                &runtime.library.install_path,
+                &runtime.typescript_library.install_path,
                 format!(
                     "{executable} --paths {paths} --root {}",
-                    runtime.library.install_path.to_string_lossy()
+                    runtime.typescript_library.install_path.to_string_lossy()
                 )
                 .as_str(),
             )

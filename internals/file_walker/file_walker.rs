@@ -36,10 +36,10 @@ impl FileWalker {
     fn crawl_file_system(&self) {
         RepoKitRuntime::with_runtime(|runtime| {
             let mut visitor = TSCommandVisitorBuilder::new(
-                &runtime.installation.install_path,
+                &runtime.typescript_library.install_path,
                 &self.command_paths,
             );
-            WalkBuilder::new(&runtime.installation.install_path)
+            WalkBuilder::new(&runtime.typescript_library.install_path)
                 .build_parallel()
                 .visit(&mut visitor);
             if let Some(head_commit) = &runtime.git.head_commit_hash {
@@ -62,7 +62,7 @@ impl FileWalker {
             }
             if let Some(changed_files) = &runtime.caches.crawl_cache.changed_files {
                 let mut paths_to_import = TSCommandVisitor::traverse_list(
-                    &runtime.installation.install_path,
+                    &runtime.typescript_library.install_path,
                     changed_files.to_owned(),
                 );
                 if !paths_to_import.is_empty() {

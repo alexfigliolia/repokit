@@ -41,7 +41,11 @@ impl RegisterCommand {
             RegisterCommand::exit_on_missing_path();
         }
         let path = RepoKitRuntime::with_runtime(|runtime| {
-            runtime.library.install_path.join(&path_arg).normalize()
+            runtime
+                .typescript_library
+                .install_path
+                .join(&path_arg)
+                .normalize()
         });
         if !path.exists() {
             Logger::info(
@@ -86,7 +90,7 @@ impl InternalExecutable for RegisterCommand {
         let command_path = self.validate_path(args);
         let mut source = RepoKitRuntime::with_runtime(|runtime| {
             runtime
-                .library
+                .typescript_library
                 .resolve_template(TypeScriptTemplate::CommandTemplate)
         });
         let mut target = FileBuilder::create(&command_path, |_| Logger::file_create_error());

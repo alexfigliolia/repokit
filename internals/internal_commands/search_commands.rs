@@ -59,25 +59,10 @@ impl SearchCommands {
         if command.name.to_lowercase().contains(query) {
             return true;
         }
-        if command.owner.to_lowercase().contains(query) {
-            return true;
-        }
-        let install_root = RepoKitRuntime::with_runtime(|runtime| {
-            runtime
-                .installation
-                .install_path
-                .to_string_lossy()
-                .to_string()
-        });
-        if command
-            .location
-            .replace(&install_root, "")
-            .to_lowercase()
-            .contains(query)
+        if command.owner.to_lowercase().contains(query)
+            || command.location.to_lowercase().contains(query)
+            || command.description.to_lowercase().contains(query)
         {
-            return true;
-        }
-        if command.description.to_lowercase().contains(query) {
             return true;
         }
         for (command_name, definition) in &command.commands {

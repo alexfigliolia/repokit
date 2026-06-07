@@ -52,7 +52,7 @@ impl InternalExecutable for UpgradeRepoKit {
         RepoKitRuntime::with_runtime(|runtime| {
             if UpgradeRepoKit::install_latest_repokit(
                 &runtime.node,
-                &runtime.installation.install_path,
+                &runtime.typescript_library.install_path,
             ) {
                 Logger::info("Upgrade Complete!");
             }

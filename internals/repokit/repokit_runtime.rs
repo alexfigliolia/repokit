@@ -18,8 +18,7 @@ pub struct RepoKitRuntime {
     pub node: NodeScope,
     pub caches: CacheScope,
     pub configuration: RepoKitConfig,
-    pub installation: InstallationScope,
-    pub library: TypeScriptLibraryInstallation,
+    pub typescript_library: TypeScriptLibraryInstallation,
 }
 
 static REPOKIT_RUNTIME: LazyLock<Mutex<RepoKitRuntime>> =
@@ -38,17 +37,16 @@ impl RepoKitRuntime {
         let library_init = runtime.spawn(async move { TypeScriptLibraryInstallation::new(&p1) });
         let node_init = runtime.spawn(async move { NodeScope::new(&p2) });
         let caches = block_on(cache_init);
-        let library = block_on(library_init).unwrap();
+        let typescript_library = block_on(library_init).unwrap();
         let mut node = block_on(node_init).unwrap();
-        let configuration = TypeScriptBridge::parse_configuration(&library, &mut node);
+        let configuration = TypeScriptBridge::parse_configuration(&typescript_library, &mut node);
         runtime.shutdown_background();
         RepoKitRuntime {
             git,
             node,
             caches,
-            library,
-            installation,
             configuration,
+            typescript_library,
         }
     }
 

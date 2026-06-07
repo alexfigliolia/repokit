@@ -36,7 +36,7 @@ impl RepoKitCommand {
         let mut failed_paths: Vec<String> = Vec::new();
         let install_path = RepoKitRuntime::with_runtime(|runtime| {
             runtime
-                .installation
+                .typescript_library
                 .install_path
                 .to_string_lossy()
                 .to_string()
@@ -69,7 +69,7 @@ impl RepoKitCommand {
         if location.is_some_and(|v| v.is_string()) {
             return Some(RepoKitRuntime::with_runtime(|runtime| {
                 runtime
-                    .installation
+                    .typescript_library
                     .install_path
                     .join(location.unwrap().as_str().unwrap())
                     .to_string_lossy()
