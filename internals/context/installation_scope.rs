@@ -9,7 +9,7 @@ use std::{
 use regex::Regex;
 
 use crate::{
-    context::{file_system::INSTALLED_PACKAGE_PATH, node_scope::NodeScope},
+    context::{node_scope::NodeScope, typescript_library_installation::INSTALLED_PACKAGE_PATH},
     executor::executor::Executor,
     file_walker::upward_walker::UpwardWalker,
     internal_commands::{list_version::REPOKIT_VERSION, upgrade_repokit::UpgradeRepoKit},

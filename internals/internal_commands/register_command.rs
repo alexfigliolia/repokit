@@ -11,6 +11,7 @@ use crate::{
     internal_filesystem::file_builder::FileBuilder,
     logger::logger::Logger,
     repokit::repokit_runtime::RepoKitRuntime,
+    typescript_library::typescript_templates::TypeScriptTemplate,
 };
 
 pub struct RegisterCommand {
@@ -40,7 +41,7 @@ impl RegisterCommand {
             RegisterCommand::exit_on_missing_path();
         }
         let path = RepoKitRuntime::with_runtime(|runtime| {
-            runtime.files.install_path.join(&path_arg).normalize()
+            runtime.library.install_path.join(&path_arg).normalize()
         });
         if !path.exists() {
             Logger::info(
@@ -84,7 +85,9 @@ impl InternalExecutable for RegisterCommand {
         Logger::info("Registering a new command");
         let command_path = self.validate_path(args);
         let mut source = RepoKitRuntime::with_runtime(|runtime| {
-            runtime.files.resolve_template("command_template.txt")
+            runtime
+                .library
+                .resolve_template(TypeScriptTemplate::CommandTemplate)
         });
         let mut target = FileBuilder::create(&command_path, |_| Logger::file_create_error());
         FileBuilder::copy_to(&mut source, &mut target, |_| Logger::file_write_error());

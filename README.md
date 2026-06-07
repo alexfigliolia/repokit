@@ -281,7 +281,7 @@ export const Kit = new RepoKitConfig({
 });
 ```
 
-All properties on the `RepoKitTheme.colors` are optional overrides for `RepoKit`'s default styling. A color can be any CSS-valid `rgb()` string.
+All properties on the `RepoKitTheme.colors` are optional overrides for `RepoKit`'s default styling. A color can be any valid `rgb()` string.
 
 <img src="media/seeing-red.webp" width="100%" alt="seeing red theme" />
 

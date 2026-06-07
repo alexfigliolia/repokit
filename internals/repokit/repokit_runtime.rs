@@ -5,20 +5,21 @@ use tokio::runtime::Builder;
 
 use crate::{
     context::{
-        async_scope::AsyncScope, cache_scope::CacheScope, file_system::FileSystem,
-        git_scope::GitScope, installation_scope::InstallationScope, node_scope::NodeScope,
-        typescript_bridge::TypeScriptBridge,
+        async_scope::AsyncScope, cache_scope::CacheScope, git_scope::GitScope,
+        installation_scope::InstallationScope, node_scope::NodeScope,
+        typescript_library_installation::TypeScriptLibraryInstallation,
     },
     repokit::repokit_config::RepoKitConfig,
+    typescript_library::typescript_bridge::TypeScriptBridge,
 };
 
 pub struct RepoKitRuntime {
     pub git: GitScope,
     pub node: NodeScope,
-    pub files: FileSystem,
     pub caches: CacheScope,
     pub configuration: RepoKitConfig,
     pub installation: InstallationScope,
+    pub library: TypeScriptLibraryInstallation,
 }
 
 static REPOKIT_RUNTIME: LazyLock<Mutex<RepoKitRuntime>> =
@@ -31,22 +32,23 @@ impl RepoKitRuntime {
         let installation_init = runtime.spawn(async move { InstallationScope::new() });
         let git = block_on(git_init);
         let installation = block_on(installation_init).unwrap();
-        let caches = block_on(CacheScope::new(&git, &runtime));
+        let cache_init = CacheScope::new(&git, &runtime);
         let p1 = installation.install_path.to_path_buf();
         let p2 = installation.install_path.to_path_buf();
-        let files_init = runtime.spawn(async move { FileSystem::new(&p1) });
+        let library_init = runtime.spawn(async move { TypeScriptLibraryInstallation::new(&p1) });
         let node_init = runtime.spawn(async move { NodeScope::new(&p2) });
-        let files = block_on(files_init).unwrap();
+        let caches = block_on(cache_init);
+        let library = block_on(library_init).unwrap();
         let mut node = block_on(node_init).unwrap();
-        let configuration = TypeScriptBridge::parse_configuration(&files, &mut node);
+        let configuration = TypeScriptBridge::parse_configuration(&library, &mut node);
         runtime.shutdown_background();
         RepoKitRuntime {
             git,
             node,
-            files,
             caches,
-            configuration,
+            library,
             installation,
+            configuration,
         }
     }
 
