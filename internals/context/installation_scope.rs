@@ -143,7 +143,11 @@ impl InstallationScope {
                 YesNo::No => false,
                 YesNo::Yes => {
                     let node_scope = NodeScope::new(install_path);
-                    UpgradeRepoKit::install_latest_repokit(&node_scope, install_path)
+                    let result = UpgradeRepoKit::install_latest_repokit(&node_scope, install_path);
+                    if !result {
+                        panic!();
+                    }
+                    result
                 }
             };
         }
