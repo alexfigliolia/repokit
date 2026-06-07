@@ -9,17 +9,17 @@ use normalize_path::NormalizePath;
 use crate::{logger::logger::Logger, post_processing::post_processor::PostProcessor};
 
 pub trait FileCache<T> {
-    async fn spawn(cache_directory: Option<PathBuf>, options: T) -> Self
+    fn spawn(cache_directory: Option<PathBuf>, options: T) -> Self
     where
         Self: Sized,
     {
         let mut instance: Self = FileCache::creator(cache_directory);
-        instance.create_cache_file_if_not_exists().await;
-        instance.initialize(options).await;
+        instance.create_cache_file_if_not_exists();
+        instance.initialize(options);
         instance
     }
 
-    fn creator(options: Option<PathBuf>) -> Self;
+    fn creator(path: Option<PathBuf>) -> Self;
 
     fn cache_file(&self) -> &str;
 
@@ -27,7 +27,7 @@ pub trait FileCache<T> {
 
     fn default_cache_contents(&self) -> &str;
 
-    async fn initialize(&mut self, options: T);
+    fn initialize(&mut self, options: T);
 
     fn storage_path(&self) -> Option<PathBuf> {
         if let Some(storage_path) = self.perspective_path()
@@ -45,7 +45,7 @@ pub trait FileCache<T> {
         None
     }
 
-    async fn create_cache_file_if_not_exists(&self) -> Option<PathBuf> {
+    fn create_cache_file_if_not_exists(&self) -> Option<PathBuf> {
         if let Some(storage_path) = self.perspective_path()
             && !&storage_path.exists()
             && write(&storage_path, self.default_cache_contents()).is_ok()

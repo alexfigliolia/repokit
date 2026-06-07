@@ -36,7 +36,7 @@ impl CacheScope {
     ) -> JoinHandle<CrawlCache> {
         let dir_clone = cache_directory.clone();
         let scope_clone = git_scope.clone();
-        runtime.spawn(CrawlCache::spawn(dir_clone, scope_clone))
+        runtime.spawn(async move { CrawlCache::spawn(dir_clone, scope_clone) })
     }
 
     fn settings_cache_thread(
@@ -44,7 +44,7 @@ impl CacheScope {
         runtime: &Runtime,
     ) -> JoinHandle<SettingsCache> {
         let dir_clone = cache_directory.clone();
-        runtime.spawn(SettingsCache::spawn(dir_clone, ()))
+        runtime.spawn(async move { SettingsCache::spawn(dir_clone, ()) })
     }
 
     fn resolve_cache_directory(
