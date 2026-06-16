@@ -1,7 +1,7 @@
 import type { IRepoKitTheme, RepoKitThemeColors } from "./types";
 
 /**
- * Repokit Theme
+ * ## Repokit Theme
  *
  * A repokit theme allows you to customize the color
  * usage of the CLI by adding a `RepoKitTheme` instance
