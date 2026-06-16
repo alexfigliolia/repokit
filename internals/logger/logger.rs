@@ -29,6 +29,10 @@ impl Logger {
         });
     }
 
+    pub fn with_info_prefix(message: &str) -> String {
+        format!("{}{message}", Logger::info_prefix())
+    }
+
     pub fn info(message: &str) {
         println!("{}{}", Logger::info_prefix(), message);
     }
@@ -147,7 +151,7 @@ impl Logger {
         panic!();
     }
 
-    fn info_prefix() -> String {
+    pub fn info_prefix() -> String {
         Logger::with_theme(|theme| format!("{}: ", theme.prefix(&REGISTERED_NAME.lock().unwrap())))
     }
 
@@ -159,5 +163,9 @@ impl Logger {
 
     fn set_name(value: &str) {
         *REGISTERED_NAME.lock().unwrap() = value.to_string();
+    }
+
+    pub fn get_name() -> String {
+        REGISTERED_NAME.lock().unwrap().to_string()
     }
 }

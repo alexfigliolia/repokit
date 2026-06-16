@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use crate::{
     executables::internal_executable::InternalExecutable,
     internal_commands::{
-        list_commands::ListCommands, list_owners::ListOwners, list_themes::ListThemes,
-        list_version::ListVersion, locate_command::LocateCommand, onboarder::Onboarder,
-        register_command::RegisterCommand, search_commands::SearchCommands,
+        interactive::Interactive, list_commands::ListCommands, list_owners::ListOwners,
+        list_themes::ListThemes, list_version::ListVersion, locate_command::LocateCommand,
+        onboarder::Onboarder, register_command::RegisterCommand, search_commands::SearchCommands,
         upgrade_repokit::UpgradeRepoKit,
     },
 };
@@ -18,8 +18,9 @@ impl InternalCommandRegistry {
     }
 
     pub fn get_all(&self) -> HashMap<String, Box<dyn InternalExecutable>> {
-        let internals: [Box<dyn InternalExecutable>; 9] = [
+        let internals: [Box<dyn InternalExecutable>; 10] = [
             Box::new(Onboarder::new()),
+            Box::new(Interactive::new()),
             Box::new(ListCommands::new()),
             Box::new(SearchCommands::new()),
             Box::new(ListOwners::new()),
