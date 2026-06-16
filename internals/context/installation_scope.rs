@@ -15,7 +15,7 @@ use crate::{
     internal_commands::{list_version::REPOKIT_VERSION, upgrade_repokit::UpgradeRepoKit},
     logger::logger::Logger,
     post_processing::post_processor::PostProcessor,
-    prompts::{inquire_theme::PRE_RUNTIME_INQUIRE_THEME, options::YesNo},
+    prompts::{inquire_theme::PRE_RUNTIME_INQUIRE_THEME, yes_no::YesNo},
 };
 
 pub static NODE_PACKAGE_FILE: &str = "package.json";

@@ -20,9 +20,9 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.150"
 colored = "3"
 normalize-path = "0.2.1"
-alphanumeric-sort = "1.5.6"
+alphanumeric-sort = "1.5.7"
 ignore = "0.4.26"
-regex = { version = "1.12.3", features = ["std", "unicode"] }
+regex = { version = "1.12.4", features = ["std", "unicode"] }
 shellexpand = "3.1.2"
 schemars = "1.2.1"
 futures = "0.3.32"

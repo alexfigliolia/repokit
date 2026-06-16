@@ -1,4 +1,5 @@
 pub mod help;
+pub mod interactive;
 pub mod internal_registry;
 pub mod list_commands;
 pub mod list_owners;

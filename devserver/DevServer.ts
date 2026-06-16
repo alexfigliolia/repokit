@@ -55,6 +55,9 @@ export class DevServer {
     this.bindToExit();
     const { handler, process } = new ChildProcess(
       `${this.TSC_COMMAND} --watch`,
+      {
+        cwd: this.REPOSITORY_ROOT,
+      },
     );
     this.TS_PROCESS = process;
     return handler;
@@ -62,7 +65,9 @@ export class DevServer {
 
   public static async build() {
     await this.clean();
-    await new ChildProcess(this.TSC_COMMAND).handler;
+    await new ChildProcess(this.TSC_COMMAND, {
+      cwd: this.REPOSITORY_ROOT,
+    }).handler;
     await this.createSymlinks();
   }
 
