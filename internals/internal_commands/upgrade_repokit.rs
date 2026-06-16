@@ -1,13 +1,18 @@
 use std::{collections::HashMap, path::PathBuf, sync::LazyLock};
 
 use crate::{
-    context::{node_scope::NodeScope, typescript_library_installation::PACKAGE_NAME},
+    context::{
+        installation_scope::InstallationScope, node_scope::NodeScope,
+        typescript_library_installation::PACKAGE_NAME,
+    },
     executables::{
         internal_executable::InternalExecutable,
         internal_executable_definition::{
             InternalExecutableDefinition, InternalExecutableDefinitionInput,
         },
     },
+    executor::executor::Executor,
+    internal_commands::list_version::REPOKIT_VERSION,
     logger::logger::Logger,
     repokit::repokit_runtime::RepoKitRuntime,
 };
@@ -54,6 +59,23 @@ impl InternalExecutable for UpgradeRepoKit {
                 &runtime.node,
                 &runtime.typescript_library.install_path,
             ) {
+                let new_version = InstallationScope::resolve_installed_version(
+                    &runtime.typescript_library.install_path,
+                );
+                if new_version != REPOKIT_VERSION {
+                    let success = Executor::with_stdio(
+                        format!("cargo install repokit@{}", new_version),
+                        |cmd| cmd,
+                    );
+                    if !success {
+                        Logger::info(
+                            "Please run the following command to complete the installation",
+                        );
+                        return Logger::log_file_path(&format!(
+                            "cargo install repokit@{new_version}"
+                        ));
+                    }
+                }
                 Logger::info("Upgrade Complete!");
             }
         });

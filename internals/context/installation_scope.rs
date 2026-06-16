@@ -78,7 +78,7 @@ impl InstallationScope {
         panic!()
     }
 
-    fn resolve_installed_version(installed_path: &Path) -> String {
+    pub fn resolve_installed_version(installed_path: &Path) -> String {
         let package_path =
             installed_path.join(format!("{}/{NODE_PACKAGE_FILE}", *INSTALLED_PACKAGE_PATH));
         if package_path.exists()
