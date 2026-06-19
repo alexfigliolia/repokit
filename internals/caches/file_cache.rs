@@ -64,12 +64,13 @@ pub trait FileCache<T> {
         None
     }
 
-    fn write(&self, content: &str, on_error: impl Fn(Error)) {
+    fn write<R>(&self, content: &str, mut on_error: impl FnMut(Error) -> R) -> Option<R> {
         if let Some(path) = self.storage_path()
             && let Err(error) = write(path, content)
         {
             on_error(error);
         }
+        None
     }
 
     fn line_buffer_to_vec(&self, lines: Lines<BufReader<File>>) -> Vec<String> {

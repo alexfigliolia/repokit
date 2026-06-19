@@ -31,7 +31,7 @@ impl RepoKitRuntime {
         let installation_init = runtime.spawn(async move { InstallationScope::new() });
         let git = block_on(git_init);
         let installation = block_on(installation_init).unwrap();
-        let cache_init = CacheScope::new(&git, &runtime);
+        let cache_init = CacheScope::new(&git, &installation, &runtime);
         let p1 = installation.install_path.to_path_buf();
         let p2 = installation.install_path.to_path_buf();
         let library_init = runtime.spawn(async move { TypeScriptLibraryInstallation::new(&p1) });
