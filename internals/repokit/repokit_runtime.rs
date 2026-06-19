@@ -21,8 +21,10 @@ pub struct RepoKitRuntime {
     pub typescript_library: TypeScriptLibraryInstallation,
 }
 
+thread_local! {
 static REPOKIT_RUNTIME: LazyLock<Mutex<RepoKitRuntime>> =
     LazyLock::new(|| Mutex::new(RepoKitRuntime::new()));
+}
 
 impl RepoKitRuntime {
     pub fn new() -> RepoKitRuntime {
@@ -51,7 +53,6 @@ impl RepoKitRuntime {
     }
 
     pub fn with_runtime<R>(mut func: impl FnMut(MutexGuard<'_, RepoKitRuntime>) -> R) -> R {
-        let registry = REPOKIT_RUNTIME.lock().unwrap();
-        func(registry)
+        REPOKIT_RUNTIME.with(|instance| func(instance.lock().unwrap()))
     }
 }
