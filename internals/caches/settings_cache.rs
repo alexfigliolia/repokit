@@ -1,4 +1,9 @@
-use std::path::PathBuf;
+use std::{
+    fs::{read_to_string, remove_file},
+    path::PathBuf,
+};
+
+use normalize_path::NormalizePath;
 
 use crate::{
     caches::file_cache::FileCache, logger::logger::Logger,
@@ -44,9 +49,31 @@ impl SettingsCache {
             });
         }
     }
+
+    fn migrate(&self, old_cache_dir: Option<PathBuf>) -> Option<String> {
+        if let Some(cache_dir) = old_cache_dir {
+            let file_path = cache_dir.join(self.cache_file()).normalize();
+            if file_path.exists()
+                && let Ok(contents) = read_to_string(&file_path)
+            {
+                let _ = remove_file(&file_path);
+                return Some(contents);
+            }
+        }
+        None
+    }
+
+    fn read_theme_preference(&mut self) {
+        if let Some((mut lines, _)) = self.read()
+            && let Some(result) = lines.nth(0)
+            && let Ok(theme) = result
+        {
+            self.theme_preference = theme;
+        }
+    }
 }
 
-impl FileCache<()> for SettingsCache {
+impl FileCache<Option<PathBuf>> for SettingsCache {
     fn cache_file(&self) -> &str {
         ".settings"
     }
@@ -66,12 +93,13 @@ impl FileCache<()> for SettingsCache {
         }
     }
 
-    fn initialize(&mut self, _: ()) {
-        if let Some((mut lines, _)) = self.read()
-            && let Some(result) = lines.nth(0)
-            && let Ok(theme) = result
+    fn initialize(&mut self, old_cache_dir: Option<PathBuf>) {
+        if let Some(settings) = self.migrate(old_cache_dir)
+            && self.write(&settings, |_| {}).is_none()
         {
-            self.theme_preference = theme;
+            self.theme_preference = settings.trim().to_owned();
+            return;
         }
+        self.read_theme_preference();
     }
 }
