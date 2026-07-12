@@ -305,4 +305,4 @@ Most of the time landing them in GChat asking for help.
 
 During my time there, I never met an engineer with a fully functioning local environment.
 
-It was there that I designed an early version **repokit.**
+It was there that I designed an early version of **repokit.**

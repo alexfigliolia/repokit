@@ -170,7 +170,7 @@ impl Interactive {
         ));
     }
 
-    pub fn to_bold(&self, options: &Vec<String>) -> Vec<BoldOption> {
+    pub fn to_bold(&self, options: &[String]) -> Vec<BoldOption> {
         options
             .iter()
             .map(|opt| BoldOption(opt.to_owned()))
