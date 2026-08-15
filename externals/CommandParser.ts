@@ -22,7 +22,7 @@ export class CommandParser extends TSCompiler {
     const declaredExports = super.compile(join(root, path));
     for (const key in declaredExports) {
       if (declaredExports[key] instanceof RepoKitCommand) {
-        // oxlint-disable-next-line typescript-eslint(no-misused-spread)
+        // oxlint-disable-next-line typescript-eslint/no-misused-spread
         commands.push({ ...declaredExports[key], location: path });
       }
     }

@@ -26,7 +26,7 @@ impl RepoKit {
         RepoKitRuntime::with_runtime(|runtime| {
             if let Some(root_script) = runtime.configuration.commands.get(&command) {
                 Executor::with_stdio(
-                    format!("{} {}", root_script.command, &args.join(" ")),
+                    format!("{} {}", root_script.command, args.join(" ")),
                     |cmd| cmd.current_dir(&runtime.typescript_library.install_path),
                 );
                 panic!();
@@ -42,7 +42,7 @@ impl RepoKit {
             }
             let sub_command = &args[0];
             if let Some(script) = interface.commands.get(sub_command) {
-                let executable = format!("{} {}", &script.command, &args[1..].join(" "));
+                let executable = format!("{} {}", script.command, args[1..].join(" "));
                 if let Some(working_dir) = Path::new(&interface.location).parent() {
                     Executor::with_stdio(executable, |cmd| cmd.current_dir(working_dir));
                     return;
