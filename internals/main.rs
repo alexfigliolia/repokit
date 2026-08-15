@@ -19,7 +19,9 @@ mod typescript_library;
 mod validations;
 
 fn main() {
-    panic::set_hook(Box::new(|_| PostProcessor::get().flush()));
-    RepoKit::new().invoke();
+    panic::set_hook(Box::new(|_| {}));
+    let _ = panic::catch_unwind(|| {
+        RepoKit::new().invoke();
+    });
     PostProcessor::get().flush();
 }

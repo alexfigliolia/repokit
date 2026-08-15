@@ -1,6 +1,6 @@
 {
   "name": "@repokit/core",
-  "version": "5.1.4",
+  "version": "5.1.5",
   "description": "A knowledgebase for your repository - wrapped in a CLI",
   "keywords": [
     "cli",
@@ -39,7 +39,7 @@
     "package:ts": "pnpm lint:ts && pnpm lint:rust && pnpm build:ts",
     "prepare": "husky",
     "release": "tsx release/run.ts",
-    "run:dev": "pnpm build:ts && cargo run --bin repokit",
+    "run:dev": "pnpm build:ts && cargo run --bin repokit --manifest-path ./Cargo.toml",
     "watch:ts": "tsx devserver/run.ts -w"
   },
   "dependencies": {
@@ -53,7 +53,7 @@
     "@types/node": "^25.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.2",
-    "oxfmt": "^0.55.0",
+    "oxfmt": "^0.63.0",
     "oxlint": "^1.42.0",
     "oxlint-tsgolint": "^0.23.0",
     "tsdown": "^0.22.0",
