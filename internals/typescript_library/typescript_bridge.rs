@@ -36,7 +36,7 @@ impl TypeScriptBridge {
             &library.install_path,
             format!(
                 "{executable} --root {}",
-                &library.install_path.to_string_lossy()
+                library.install_path.to_string_lossy()
             )
             .as_str(),
         );

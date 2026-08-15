@@ -57,7 +57,7 @@ export class TSCompiler {
   }
 
   private static plugExits() {
-    // oxlint-disable-next-line typescript-eslint(unbound-method)
+    // oxlint-disable-next-line typescript-eslint/unbound-method
     const { exit, abort } = process;
     process.abort = () => undefined as never;
     process.exit = (_code?: string | number | null) => undefined as never;

@@ -53,7 +53,7 @@ impl RepoKitCommand {
                 }
             } else {
                 let mut valid_command = repokit_command.unwrap();
-                valid_command.location = format!("{}/{}", &install_path, valid_command.location);
+                valid_command.location = format!("{}/{}", install_path, valid_command.location);
                 result.push(valid_command);
             }
         }

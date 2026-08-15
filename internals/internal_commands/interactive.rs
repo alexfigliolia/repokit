@@ -154,7 +154,7 @@ impl Interactive {
                 && let Some(script) = definition.commands.get(sub_command.get())
                 && let Ok(args) = self.prompt_arguments(command)
             {
-                let executable = format!("{} {}", &script.command, args);
+                let executable = format!("{} {}", script.command, args);
                 if let Some(working_dir) = Path::new(&definition.location).parent() {
                     Executor::with_stdio(executable, |cmd| cmd.current_dir(working_dir));
                     panic!();

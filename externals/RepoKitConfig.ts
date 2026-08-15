@@ -1,7 +1,7 @@
 import type { ICommand, IRepoKitConfig } from "./types";
 import type { RepoKitTheme } from "./RepoKitTheme";
 import { RepoKitCommand } from "./RepoKitCommand";
-/* eslint-disable typescript-eslint(no-misused-spread */
+/* oxlint-disable typescript-eslint/no-misused-spread */
 
 /**
  * ## RepoKitConfig

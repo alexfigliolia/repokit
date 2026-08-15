@@ -49,7 +49,7 @@ impl InternalExecutable for ListOwners {
                 println!(
                     "{}{}",
                     Logger::indent(None),
-                    Logger::cyan(format!("{}. {}", index + 1, &owner).as_str()),
+                    Logger::cyan(format!("{}. {}", index + 1, owner).as_str()),
                 );
             }
         });
