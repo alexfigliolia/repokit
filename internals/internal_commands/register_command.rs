@@ -1,5 +1,5 @@
 use normalize_path::NormalizePath;
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, env::current_dir, path::{Path, PathBuf}};
 
 use crate::{
     executables::{
@@ -40,13 +40,19 @@ impl RegisterCommand {
         if path_arg.is_empty() {
             RegisterCommand::exit_on_missing_path();
         }
-        let path = RepoKitRuntime::with_runtime(|runtime| {
-            runtime
-                .typescript_library
-                .install_path
-                .join(&path_arg)
-                .normalize()
-        });
+        let mut path = Path::new(&path_arg).to_path_buf().normalize();
+        if !path.is_absolute() {
+            let working_dir = current_dir().unwrap_or(
+                RepoKitRuntime::with_runtime(|runtime| {
+                    runtime
+                        .typescript_library
+                        .install_path
+                        .join(&path_arg)
+                        .normalize()
+                })
+            );
+            path = working_dir.join(path).normalize();
+        }
         if !path.exists() {
             Logger::info(
                 format!(
