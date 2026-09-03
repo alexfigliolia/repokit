@@ -45,7 +45,8 @@ impl InstallationScope {
             );
             if success {
                 PostProcessor::get().register_task(move || {
-                    Executor::with_stdio("repokit", |cmd| cmd.args(args()));
+                    let argv: Vec<String> = args().collect();
+                    Executor::with_stdio(format!("repokit {}", argv[1..].join(" ")), |cmd| cmd);
                 });
             } else {
                 Logger::info(
