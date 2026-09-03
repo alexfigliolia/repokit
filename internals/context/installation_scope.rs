@@ -121,6 +121,7 @@ impl InstallationScope {
             Logger::error(
                format!("If you believe this to be a bug within {}, please file a bug here", Logger::with_theme(|theme| theme.highlight("Repokit"))).as_str()
             );
+            Logger::log_issue_link();
         });
     }
 
