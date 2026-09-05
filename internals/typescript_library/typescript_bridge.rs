@@ -35,7 +35,7 @@ impl TypeScriptBridge {
         let stdout = TypeScriptBridge::execute_with_node(
             &library.install_path,
             format!(
-                "{executable} --root {}",
+                "{executable} --root \"{}\"",
                 library.install_path.to_string_lossy()
             )
             .as_str(),
@@ -62,7 +62,7 @@ impl TypeScriptBridge {
             TypeScriptBridge::execute_with_node(
                 &runtime.typescript_library.install_path,
                 format!(
-                    "{executable} --paths {paths} --root {}",
+                    "{executable} --paths \"{paths}\" --root \"{}\"",
                     runtime.typescript_library.install_path.to_string_lossy()
                 )
                 .as_str(),

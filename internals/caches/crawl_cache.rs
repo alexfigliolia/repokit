@@ -50,12 +50,13 @@ impl CrawlCache {
         let files: HashSet<String> = stdout
             .split("\n")
             .filter_map(|file| {
-                if !contains_git_ignore && file.ends_with(".gitignore") {
+                let trimmed_file = file.trim();
+                if !contains_git_ignore && trimmed_file.ends_with(".gitignore") {
                     contains_git_ignore = true;
                     return None;
                 }
                 let matches: Vec<&str> = file_path_matcher
-                    .captures_iter(file)
+                    .captures_iter(trimmed_file)
                     .filter_map(|entry| {
                         if let Some(match_result) = entry.get(1) {
                             return Some(match_result.as_str());
@@ -110,8 +111,7 @@ impl FileCache<GitScope> for CrawlCache {
             if let Some(git_root) = &git_scope.root_path {
                 let (git_ignore_changed, mut changed_files) = self.get_changed_files(git_root);
                 if git_ignore_changed {
-                    CrawlCache::clear_cache_file(path.to_owned(), false);
-                    return;
+                    return CrawlCache::clear_cache_file(path.to_owned(), false);
                 }
                 for line in &lines {
                     if changed_files.contains(line) {
