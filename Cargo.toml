@@ -1,6 +1,6 @@
 [package]
 name = "repokit"
-version = "5.1.9"
+version = "5.2.0"
 edition = "2024"
 license = "MIT"
 readme = "README.md"
@@ -26,10 +26,11 @@ regex = { version = "1.13.1", features = ["std", "unicode"] }
 shellexpand = "3.1.2"
 schemars = "1.2.2"
 futures = "0.3.33"
-tokio = { version = "1.53.1", features = ["full"] }
+tokio = { version = "1.53.1", features = ["full", "rt-multi-thread"] }
 inquire = "0.9.4"
 inquire-derive = "0.9.4"
 sha2 = "0.11.0"
+num_cpus = "1.17.0"
 
 [profile.release]
 opt-level = 3
