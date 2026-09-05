@@ -2,9 +2,7 @@ use std::path::{Path, PathBuf};
 
 use futures::join;
 
-use crate::{
-    context::async_scope::AsyncScope, executor::executor::Executor,
-};
+use crate::{context::async_scope::AsyncScope, executor::executor::Executor};
 
 #[derive(Clone)]
 pub struct GitScope {
@@ -26,16 +24,16 @@ impl AsyncScope<(Option<PathBuf>, Option<String>, Option<String>)> for GitScope 
     async fn resolve() -> (Option<PathBuf>, Option<String>, Option<String>) {
         join!(
             GitScope::find_root(),
-            GitScope::get_root_commit(),
-            GitScope::get_head_commit()
+            GitScope::exec_with_non_empty_result("git rev-list --parents HEAD | tail -1"),
+            GitScope::exec_with_non_empty_result("git rev-parse HEAD")
         )
     }
 }
 
 impl GitScope {
     async fn find_root() -> Option<PathBuf> {
-        if let Some(root) = Executor::exec_with_stdout("git rev-parse --show-toplevel", |cmd| cmd)
-            && !root.is_empty()
+        if let Some(root) =
+            GitScope::exec_with_non_empty_result("git rev-parse --show-toplevel").await
         {
             let path = Path::new(&root);
             if path.exists() {
@@ -45,11 +43,12 @@ impl GitScope {
         None
     }
 
-    async fn get_head_commit() -> Option<String> {
-        Executor::exec_with_stdout("git rev-parse HEAD", |cmd| cmd)
-    }
-
-    async fn get_root_commit() -> Option<String> {
-        Executor::exec_with_stdout("git rev-list --parents HEAD | tail -1", |cmd| cmd)
+    async fn exec_with_non_empty_result(command: &str) -> Option<String> {
+        if let Some(result) = Executor::exec_with_stdout(command, |cmd| cmd)
+            && !result.is_empty()
+        {
+            return Some(result);
+        }
+        None
     }
 }
