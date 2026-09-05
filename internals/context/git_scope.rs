@@ -3,8 +3,7 @@ use std::path::{Path, PathBuf};
 use futures::join;
 
 use crate::{
-    context::async_scope::AsyncScope, executor::executor::Executor, logger::logger::Logger,
-    post_processing::post_processor::PostProcessor,
+    context::async_scope::AsyncScope, executor::executor::Executor,
 };
 
 #[derive(Clone)]
@@ -43,13 +42,6 @@ impl GitScope {
                 return Some(path.to_path_buf());
             }
         }
-        PostProcessor::get().register_task(|| {
-            Logger::info(format!(
-            "Running {} in your workspace will allow {} to cache file crawls more aggressively and improve performance",
-            Logger::with_theme(|theme| theme.highlight("git init")),
-            Logger::with_theme(|theme| theme.highlight("Repokit"))
-        ).as_str());
-        });
         None
     }
 
