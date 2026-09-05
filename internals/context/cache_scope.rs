@@ -8,22 +8,16 @@ use tokio::{join, runtime::Runtime, task::JoinHandle};
 
 use crate::{
     caches::{
-        crawl_cache::CrawlCache,
-        file_cache::FileCache,
-        git_notifier_cache::GitNotifierCache,
+        crawl_cache::CrawlCache, file_cache::FileCache, git_notifier_cache::GitNotifierCache,
         settings_cache::SettingsCache,
     },
-    context::{
-        git_scope::GitScope,
-        installation_scope::InstallationScope,
-    },
+    context::{git_scope::GitScope, installation_scope::InstallationScope},
 };
 
 #[derive(Clone)]
 pub struct CacheScope {
     pub crawl_cache: CrawlCache,
     pub settings_cache: SettingsCache,
-    pub git_notifier_cache: GitNotifierCache,
 }
 
 static CACHE_DIRECTORY: &str = ".repokit_cache";
@@ -45,7 +39,6 @@ impl CacheScope {
             git_notifier.notify()
         }
         CacheScope {
-            git_notifier_cache: git_notifier,
             crawl_cache: crawl_cache.unwrap(),
             settings_cache: settings_cache.unwrap(),
         }
