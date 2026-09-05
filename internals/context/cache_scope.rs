@@ -1,20 +1,29 @@
 use sha2::{Digest, Sha256};
 use std::{
     env::home_dir,
-    fs::create_dir_all,
+    fs::{create_dir_all, remove_dir_all, rename},
     path::{Path, PathBuf},
 };
 use tokio::{join, runtime::Runtime, task::JoinHandle};
 
 use crate::{
-    caches::{crawl_cache::CrawlCache, file_cache::FileCache, settings_cache::SettingsCache},
-    context::{git_scope::GitScope, installation_scope::InstallationScope},
+    caches::{
+        crawl_cache::CrawlCache,
+        file_cache::FileCache,
+        git_notifier_cache::GitNotifierCache,
+        settings_cache::SettingsCache,
+    },
+    context::{
+        git_scope::GitScope,
+        installation_scope::InstallationScope,
+    },
 };
 
 #[derive(Clone)]
 pub struct CacheScope {
     pub crawl_cache: CrawlCache,
     pub settings_cache: SettingsCache,
+    pub git_notifier_cache: GitNotifierCache,
 }
 
 static CACHE_DIRECTORY: &str = ".repokit_cache";
@@ -25,14 +34,18 @@ impl CacheScope {
         installation_scope: &InstallationScope,
         runtime: &Runtime,
     ) -> Self {
-        let home = home_dir();
-        let cache_directory =
-            CacheScope::resolve_cache_directory(&home, &git_scope.root_commit_hash);
-        let (crawl_cache, settings_cache) = join!(
+        let cache_directory = CacheScope::resolve_cache_path(git_scope, installation_scope);
+        let (crawl_cache, settings_cache, git_notifier_cache) = join!(
             CacheScope::crawl_cache_thread(&cache_directory, git_scope, runtime),
-            CacheScope::settings_cache_thread(&home, installation_scope, &cache_directory, runtime),
+            CacheScope::settings_cache_thread(&cache_directory, runtime),
+            CacheScope::git_notify_cache(&cache_directory, runtime),
         );
+        let git_notifier = git_notifier_cache.unwrap();
+        if !git_notifier.notification_state && git_scope.root_commit_hash.is_none() {
+            git_notifier.notify()
+        }
         CacheScope {
+            git_notifier_cache: git_notifier,
             crawl_cache: crawl_cache.unwrap(),
             settings_cache: settings_cache.unwrap(),
         }
@@ -49,31 +62,19 @@ impl CacheScope {
     }
 
     fn settings_cache_thread(
-        home: &Option<PathBuf>,
-        installation_scope: &InstallationScope,
-        old_cache_directory: &Option<PathBuf>,
+        cache_directory: &Option<PathBuf>,
         runtime: &Runtime,
     ) -> JoinHandle<SettingsCache> {
-        let cache_key = CacheScope::encode_install_path(&installation_scope.install_path);
-        let cache_directory = CacheScope::resolve_cache_directory(home, &Some(cache_key));
-        let old_cache_clone = old_cache_directory.clone();
-        runtime.spawn(async move { SettingsCache::spawn(cache_directory, old_cache_clone) })
+        let clone = cache_directory.clone();
+        runtime.spawn(async move { SettingsCache::spawn(clone, ()) })
     }
 
-    fn resolve_cache_directory(
-        home_path: &Option<PathBuf>,
-        target_dir: &Option<String>,
-    ) -> Option<PathBuf> {
-        if let Some(home) = home_path
-            && let Some(target) = target_dir
-        {
-            let cache_dir = home.join(CACHE_DIRECTORY).join(target);
-            if !cache_dir.exists() && create_dir_all(&cache_dir).is_err() {
-                return None;
-            }
-            return Some(cache_dir);
-        }
-        None
+    fn git_notify_cache(
+        cache_directory: &Option<PathBuf>,
+        runtime: &Runtime,
+    ) -> JoinHandle<GitNotifierCache> {
+        let clone = cache_directory.clone();
+        runtime.spawn(async move { GitNotifierCache::spawn(clone, ()) })
     }
 
     fn encode_install_path(path: &Path) -> String {
@@ -86,5 +87,44 @@ impl CacheScope {
             .map(|b| format!("{:02x}", b))
             .collect();
         result.to_lowercase()
+    }
+
+    fn resolve_cache_path(
+        git_scope: &GitScope,
+        installation_scope: &InstallationScope,
+    ) -> Option<PathBuf> {
+        if let Some(home) = home_dir() {
+            let encoded_install_path =
+                CacheScope::encode_install_path(&installation_scope.install_path);
+            let root_cache_dir = home.join(CACHE_DIRECTORY);
+            let fallback_path = root_cache_dir.join(encoded_install_path);
+            let fallback_path_exists = fallback_path.exists();
+            if let Some(root_commit) = &git_scope.root_commit_hash {
+                let git_root_cache_path = root_cache_dir.join(root_commit); // this is a huge mess.
+                let git_path_exists = &git_root_cache_path.exists();
+                if fallback_path_exists {
+                    if !git_path_exists {
+                        if rename(&fallback_path, &git_root_cache_path).is_ok() {
+                            return Some(git_root_cache_path);
+                        }
+                        return Some(fallback_path);
+                    }
+                    let _ = remove_dir_all(&fallback_path);
+                }
+                if !git_path_exists {
+                    let _ = create_dir_all(&git_root_cache_path);
+                }
+                if git_root_cache_path.exists() {
+                    return Some(git_root_cache_path);
+                }
+            }
+            if !fallback_path_exists {
+                let _ = create_dir_all(&fallback_path);
+            }
+            if fallback_path.exists() {
+                return Some(fallback_path);
+            }
+        }
+        None
     }
 }
