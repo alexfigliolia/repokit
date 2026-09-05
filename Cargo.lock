@@ -949,7 +949,11 @@ checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
 
 [[package]]
 name = "repokit"
+<<<<<<< HEAD
 version = "5.2.0"
+=======
+version = "5.1.9"
+>>>>>>> 873610c5cfbf6a1fe65efdcd251750b0f5e4d3c8
 dependencies = [
  "alphanumeric-sort",
  "colored",
