@@ -94,7 +94,7 @@ impl Logger {
         })
     }
 
-    pub fn list_file_paths(paths: &Vec<String>) {
+    pub fn list_file_paths(paths: &[String]) {
         Logger::with_surrounding_space(|| {
             for path in paths {
                 println!(

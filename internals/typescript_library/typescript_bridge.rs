@@ -4,8 +4,10 @@ use std::{
     sync::{LazyLock, MutexGuard},
 };
 
+use futures::{executor::block_on, future::join_all};
 use regex::Regex;
 use serde_json::{Value, from_str};
+use tokio::runtime::Builder;
 
 use crate::{
     context::{
@@ -54,29 +56,20 @@ impl TypeScriptBridge {
     }
 
     pub fn parse_commands(path_list: &MutexGuard<Vec<String>>) -> Vec<RepoKitCommand> {
-        let paths = path_list.join(",");
-        let stdout = RepoKitRuntime::with_runtime(|runtime| {
+        let (executable, root) = RepoKitRuntime::with_runtime(|runtime| {
             let executable = runtime
                 .typescript_library
                 .resolve_command(TypeScriptCommand::ParseCommands);
-            TypeScriptBridge::execute_with_node(
-                &runtime.typescript_library.install_path,
-                format!(
-                    "{executable} --paths \"{paths}\" --root \"{}\"",
-                    runtime.typescript_library.install_path.to_string_lossy()
-                )
-                .as_str(),
-            )
+            let install_path = &runtime.typescript_library.install_path;
+            (executable, install_path.to_owned())
         });
-        if let Some(parsed_commands) = TypeScriptBridge::unwrap_stdout(&stdout) {
-            let parse_result: Result<Vec<Value>, serde_json::Error> =
-                serde_json::from_str(parsed_commands);
-            if let Ok(commands) = parse_result {
-                return RepoKitCommand::from_input(commands);
-            }
-        }
-        Logger::parse_error("commands", &stdout);
-        panic!();
+        let process_distributions = TypeScriptBridge::calculate_process_distribution(path_list);
+        let parse_tasks = process_distributions
+            .iter()
+            .map(|batch| TypeScriptBridge::collect_command_batch(&root, &executable, batch));
+        let command_definitions = block_on(join_all(parse_tasks));
+
+        TypeScriptBridge::multi_thread_definition_parsing(command_definitions)
     }
 
     fn execute_with_node(root: &PathBuf, args: &str) -> String {
@@ -92,5 +85,74 @@ impl TypeScriptBridge {
             return Some(result.as_str());
         }
         None
+    }
+
+    fn calculate_process_distribution(path_list: &MutexGuard<Vec<String>>) -> Vec<Vec<String>> {
+        let total_paths = path_list.len();
+        let mut result = Vec::<Vec<String>>::new();
+        if total_paths < 10000 {
+            result.push(path_list.iter().map(|e| e.to_owned()).collect());
+            return result;
+        }
+        let cpus = num_cpus::get_physical().div_ceil(2);
+        let distribution_per_process = total_paths.div_ceil(cpus);
+        for cpu_idx in 0..cpus {
+            let mut paths_for_process = Vec::new();
+            for path_idx in 0..distribution_per_process {
+                if let Some(path) = path_list.get(path_idx + (cpu_idx * distribution_per_process)) {
+                    paths_for_process.push(path.to_owned());
+                }
+            }
+            result.push(paths_for_process);
+        }
+        result
+    }
+
+    async fn collect_command_batch(root: &PathBuf, executable: &str, batch: &[String]) -> String {
+        TypeScriptBridge::execute_with_node(
+            root,
+            format!(
+                "{executable} --paths \"{}\" --root \"{}\"",
+                batch.join(","),
+                root.to_string_lossy()
+            )
+            .as_str(),
+        )
+    }
+
+    fn multi_thread_definition_parsing(command_definitions: Vec<String>) -> Vec<RepoKitCommand> {
+        let total_batches = command_definitions.len();
+        if total_batches == 0 {
+            return Vec::new();
+        }
+        if total_batches == 1 {
+            return TypeScriptBridge::json_parse_command_batch(
+                command_definitions.first().unwrap(),
+            );
+        }
+        let mut json_tasks = Vec::new();
+        let runtime = Builder::new_multi_thread().enable_all().build().unwrap();
+        for batch in command_definitions {
+            json_tasks.push(
+                runtime.spawn(async move { TypeScriptBridge::json_parse_command_batch(&batch) }),
+            )
+        }
+        let results: Vec<RepoKitCommand> = block_on(join_all(json_tasks))
+            .iter()
+            .flat_map(|f| f.as_ref().unwrap().to_owned())
+            .collect();
+        results
+    }
+
+    fn json_parse_command_batch(batch: &str) -> Vec<RepoKitCommand> {
+        if let Some(parsed_commands) = TypeScriptBridge::unwrap_stdout(batch) {
+            let parse_result: Result<Vec<Value>, serde_json::Error> =
+                serde_json::from_str(parsed_commands);
+            if let Ok(commands) = parse_result {
+                return RepoKitCommand::from_input(commands);
+            }
+        }
+        Logger::parse_error("commands", batch);
+        panic!();
     }
 }

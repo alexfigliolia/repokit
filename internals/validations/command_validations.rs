@@ -70,7 +70,7 @@ impl CommandValidations {
     }
 
     fn detect_collisions_between_root_commands_and_externals(
-        externals: &Vec<RepoKitCommand>,
+        externals: &[RepoKitCommand],
     ) -> HashMap<String, RepoKitCommand> {
         RepoKitRuntime::with_runtime(|runtime| {
             let mut map: HashMap<String, RepoKitCommand> = HashMap::new();
