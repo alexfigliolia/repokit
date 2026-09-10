@@ -1,7 +1,11 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["externals/index.ts", "externals/commands/*.ts"],
+  entry: [
+    "externals/index.ts",
+    "externals/workers/*.ts",
+    "externals/commands/*.ts",
+  ],
   dts: true,
   shims: true,
   clean: false,
