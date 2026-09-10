@@ -5,6 +5,7 @@ import { existsSync } from "node:fs";
 
 import type { ILocatedCommand } from "./types";
 import { TSCompiler } from "./TSCompiler";
+import { RepoKitTemplate } from "./RepoKitTemplate";
 import { RepoKitCommand } from "./RepoKitCommand";
 
 export class CommandParser extends TSCompiler {
@@ -21,7 +22,10 @@ export class CommandParser extends TSCompiler {
     const commands: ILocatedCommand[] = [];
     const declaredExports = super.compile(join(root, path));
     for (const key in declaredExports) {
-      if (declaredExports[key] instanceof RepoKitCommand) {
+      if (
+        !(declaredExports[key] instanceof RepoKitTemplate) &&
+        declaredExports[key] instanceof RepoKitCommand
+      ) {
         // oxlint-disable-next-line typescript-eslint/no-misused-spread
         commands.push({ ...declaredExports[key], location: path });
       }

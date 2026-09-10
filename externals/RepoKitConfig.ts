@@ -1,5 +1,6 @@
 import type { ICommand, IRepoKitConfig } from "./types";
 import type { RepoKitTheme } from "./RepoKitTheme";
+import type { RepoKitTemplate } from "./RepoKitTemplate";
 import { RepoKitCommand } from "./RepoKitCommand";
 /* oxlint-disable typescript-eslint/no-misused-spread */
 
@@ -15,6 +16,7 @@ import { RepoKitCommand } from "./RepoKitCommand";
  * export const Kit = new RepoKitConfig({
  *   project: "My Project Name",
  *   thirdParty: [Compression, CriticalPath],
+ *   templates: [MyCustomCommandTemplate],
  *   themes: [
  *     new RepoKitTheme({
  *       name: "my-awesome-theme",
@@ -35,17 +37,20 @@ import { RepoKitCommand } from "./RepoKitCommand";
 export class RepoKitConfig {
   project: string;
   themes: RepoKitTheme[];
+  templates: RepoKitTemplate[];
   thirdParty: RepoKitCommand[];
   commands: Record<string, ICommand>;
   constructor({
     project,
     themes = [],
     commands = {},
+    templates = [],
     thirdParty = [],
   }: IRepoKitConfig) {
     this.themes = themes;
     this.project = project;
     this.commands = commands;
+    this.templates = templates.map(template => new RepoKitCommand(template));
     this.thirdParty = thirdParty.map(command => new RepoKitCommand(command));
   }
 

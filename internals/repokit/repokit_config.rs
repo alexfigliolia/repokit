@@ -13,7 +13,7 @@ use crate::{
     logger::logger::Logger,
     repokit::{
         command_definition::CommandDefinition, repokit_command::RepoKitCommand,
-        repokit_construct_validator::RepoKitConstructValidator,
+        repokit_construct_validator::RepoKitConstructValidator, repokit_template::RepoKitTemplate,
     },
     themes::theme_inputs::RepoKitTheme,
     typescript_library::typescript_templates::TypeScriptTemplate,
@@ -43,6 +43,7 @@ pub struct RepoKitConfig {
     pub project: String,
     #[serde(rename = "thirdParty")]
     pub third_party: Vec<RepoKitCommand>,
+    pub templates: Vec<RepoKitTemplate>,
     pub commands: HashMap<String, CommandDefinition>,
     pub themes: Vec<RepoKitTheme>,
 }

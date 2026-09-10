@@ -1,3 +1,4 @@
+import type { RepoKitTemplate } from "./RepoKitTemplate";
 import type { RepoKitConfig } from "./RepoKitConfig";
 
 export interface IRepoKitConfig extends Omit<
@@ -5,6 +6,7 @@ export interface IRepoKitConfig extends Omit<
   "project" | "toScoped"
 > {
   project: string;
+  templates?: RepoKitTemplate[];
 }
 
 export interface IRepoKitCommand {

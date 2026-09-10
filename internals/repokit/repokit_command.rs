@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::LazyLock};
 
 use jsonschema::Validator;
 use schemars::JsonSchema;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{Value, from_value, to_value};
 
 use crate::{
@@ -14,7 +14,7 @@ use crate::{
     },
 };
 
-#[derive(Debug, Deserialize, Clone, JsonSchema)]
+#[derive(Debug, Serialize, Deserialize, Clone, JsonSchema)]
 pub struct RepoKitCommand {
     pub name: String,
     pub owner: String,
