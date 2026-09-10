@@ -1,9 +1,14 @@
+use colored::Colorize;
 use core::panic;
 use jsonschema::Validator;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use serde_json::{Value, from_value, to_value};
-use std::{collections::HashMap, path::Path, sync::LazyLock};
+use std::{
+    collections::{HashMap, HashSet},
+    path::Path,
+    sync::LazyLock,
+};
 
 use crate::{
     context::{
@@ -60,7 +65,21 @@ impl RepoKitConfig {
         if !RepoKitConfig::is_valid(&REPOKIT_CONFIG_VALIDATOR, &input) || repokit_config.is_err() {
             RepoKitConfig::on_parsing_error(config_path, node, Value::Null);
         }
-        repokit_config.expect("assertions succeeded")
+        let configuration = repokit_config.unwrap();
+        let mut memo = HashSet::new();
+        for template in &configuration.templates {
+            if !memo.insert(&template.name) {
+                RepoKitConfig::exit_on_duplicate(&template.name, "template");
+            }
+        }
+        memo.clear();
+        memo.shrink_to_fit();
+        for command in &configuration.third_party {
+            if !memo.insert(&command.name) {
+                RepoKitConfig::exit_on_duplicate(&command.name, "third-party command");
+            }
+        }
+        configuration
     }
 
     pub fn on_parsing_error(config_path: &Path, node: &mut NodeScope, _: Value) -> Option<String> {
@@ -98,5 +117,14 @@ impl RepoKitConfig {
         );
         Logger::log_file_path(&library.config_path.to_string_lossy());
         panic!();
+    }
+
+    fn exit_on_duplicate(name: &str, value_type: &str) {
+        Logger::exit_with_error(&Logger::with_theme(|theme| {
+            format!(
+                "I've encountered two {value_type}s with the name {}. Please rename one of them.",
+                theme.highlight(name).bold()
+            )
+        }));
     }
 }
