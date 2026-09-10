@@ -8,6 +8,16 @@ Repokit is designed for large teams in complex codebases to publish self-documen
 
 The Repokit CLI exists as a living source of documentation and knowledge - growing alongside your team.
 
+#### Quick Links
+
+1. [Installation](#installation)
+2. [Building Your CLI](#building-your-cli)
+3. [Reasoning about your toolchain](#reasoning-about-your-toolchain)
+4. [Best Practices](#best-practices-for-registering-commands)
+5. [Templates](#templates)
+6. [Themes](#themes)
+7. [Motivation](#motivation)
+
 ## Getting Started
 
 ### Installation
@@ -240,6 +250,53 @@ When possible, prefer flags and positionals over environment variables. Often ti
 The commands you register onto the repokit toolchain will always be invoked using the working directory of the command's definition.
 
 If your command needs to reason about the file system, keep this in mind.
+
+### Templates
+
+When scaffolding new `RepokitCommands`, you may find yourself requiring similar sub-commands in more than one than one definition.
+
+To resolve this, `RepoKitTemplates` allow you to scaffold `RepokitCommands` from a non-blank source
+
+Here's a working example with common bazel operations:
+
+```typescript
+// my-bazel-template.ts
+import { RepoKitTemplate } from "@repokit/core";
+
+export const BazelTemplate = new RepoKitTemplate({
+  name: "bazel",
+  description: "A set of tools for working with bazel packages",
+  commands: {
+    build: {
+      command: "bazel build //src/main:app",
+      description: "Builds the current package for production",
+      args: {
+        "(--features=<feature>)": "Turns specific build features on or off",
+        "(--jobs=<N>)":
+          "Limits the number of CPU cores Bazel can use at the same time",
+        "(--sandbox_debug)":
+          "Helps you debug build failures by showing exactly what happened inside the isolated build sandbox",
+      },
+    },
+    run: {
+      command: "bazel run //src/main:app",
+      description: "Builds and runs the current package",
+    },
+    watch: {
+      command: "ibazel build //src/main:app",
+      description: "Runs the current package in development mode",
+    },
+  },
+});
+```
+
+By adding this template to our `RepoKitConfig.templates` we can now run
+
+```bash
+repokit register ./path/to/new-app --template bazel
+```
+
+With it, our generated command will now be scaffolded using the `RepoKitTemplate` above.
 
 ### Themes
 

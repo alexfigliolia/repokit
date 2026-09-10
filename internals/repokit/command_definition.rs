@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use schemars::JsonSchema;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Clone, JsonSchema)]
+#[derive(Debug, Serialize, Deserialize, Clone, JsonSchema)]
 pub struct CommandDefinition {
     pub command: String,
     pub description: String,
