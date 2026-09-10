@@ -56,20 +56,35 @@ impl TypeScriptBridge {
     }
 
     pub fn parse_commands(path_list: &MutexGuard<Vec<String>>) -> Vec<RepoKitCommand> {
-        let (executable, root) = RepoKitRuntime::with_runtime(|runtime| {
-            let executable = runtime
-                .typescript_library
-                .resolve_command(TypeScriptCommand::ParseCommands);
-            let install_path = &runtime.typescript_library.install_path;
-            (executable, install_path.to_owned())
-        });
+        let (executable, root) = TypeScriptBridge::executable_scope();
+        let commands = block_on(TypeScriptBridge::collect_command_batch(
+            &root,
+            &executable,
+            path_list,
+        ));
+        TypeScriptBridge::json_parse_command_batch(&commands)
+    }
+
+    fn parallel_process_command_parsing(
+        path_list: &MutexGuard<Vec<String>>,
+    ) -> Vec<RepoKitCommand> {
+        let (executable, root) = TypeScriptBridge::executable_scope();
         let process_distributions = TypeScriptBridge::calculate_process_distribution(path_list);
         let parse_tasks = process_distributions
             .iter()
             .map(|batch| TypeScriptBridge::collect_command_batch(&root, &executable, batch));
         let command_definitions = block_on(join_all(parse_tasks));
-
         TypeScriptBridge::multi_thread_definition_parsing(command_definitions)
+    }
+
+    fn executable_scope() -> (String, PathBuf) {
+        RepoKitRuntime::with_runtime(|runtime| {
+            let executable = runtime
+                .typescript_library
+                .resolve_command(TypeScriptCommand::ParseCommands);
+            let install_path = &runtime.typescript_library.install_path;
+            (executable, install_path.to_owned())
+        })
     }
 
     fn execute_with_node(root: &PathBuf, args: &str) -> String {
