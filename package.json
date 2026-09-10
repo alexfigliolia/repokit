@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@figliolia/child-process": "^1.0.4",
+    "@figliolia/event-emitter": "^2.0.0",
     "@figliolia/semver": "^1.0.0",
     "@taplo/cli": "^0.7.0",
     "@types/node": "^25.3.0",

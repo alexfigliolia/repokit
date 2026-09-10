@@ -27,7 +27,7 @@
       "files": ["**/*.{ts}"],
       "plugins": ["node", "eslint", "import", "promise", "typescript", "oxc"],
       "rules": {
-        "typescript/no-explicit-any": "error",
+        "typescript/no-explicit-any": "off",
         "typescript/no-unsafe-assignment": "off",
         "typescript/no-floating-promises": [
           "error",

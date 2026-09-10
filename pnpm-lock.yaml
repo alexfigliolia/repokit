@@ -18,6 +18,9 @@ importers:
       '@figliolia/child-process':
         specifier: ^1.0.4
         version: 1.0.4
+      '@figliolia/event-emitter':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@figliolia/semver':
         specifier: ^1.0.0
         version: 1.0.0
@@ -246,6 +249,9 @@ packages:
 
   '@figliolia/child-process@1.0.4':
     resolution: {integrity: sha512-midiGoIu0pO9q+T607iYFSsEFSg6XlWJ7REaGcX/mCuxgrr8hudGSPz4OzyXznVUlp1UwaVTjfgYHlSUxuaJXg==}
+
+  '@figliolia/event-emitter@2.0.0':
+    resolution: {integrity: sha512-fuGY711hwoSejipy7ZiZnlWlMMqHTf4buPP6/+H0jbUufv50OYxjVuIi8MErqjGfoGqWLfmxwVygPdmp1IMZ5g==}
 
   '@figliolia/semver@1.0.0':
     resolution: {integrity: sha512-8+HBxSsbdvfFJKvSwKRGdeq6dV5BjoMGu7AQEooXFnUXGedgvnIxAgolnykGMUcF5hBC6hQB0a9FZuq79HYOgw==}
@@ -1379,6 +1385,8 @@ snapshots:
     optional: true
 
   '@figliolia/child-process@1.0.4': {}
+
+  '@figliolia/event-emitter@2.0.0': {}
 
   '@figliolia/semver@1.0.0': {}
 

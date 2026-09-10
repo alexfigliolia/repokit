@@ -1,4 +1,5 @@
 import { parseArgs } from "node:util";
+import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -7,6 +8,7 @@ import type { ILocatedCommand } from "./types";
 import { TSCompiler } from "./TSCompiler";
 import { RepoKitTemplate } from "./RepoKitTemplate";
 import { RepoKitCommand } from "./RepoKitCommand";
+import { WorkerPool } from "./concurrency";
 
 export class CommandParser extends TSCompiler {
   public static readonly parse = this.wrapParsingOperation(async () => {
@@ -15,10 +17,26 @@ export class CommandParser extends TSCompiler {
       return [];
     }
     const pathList = paths.split(",").filter(Boolean);
+    const maxConcurrency = Math.floor((WorkerPool.CORES / 2) * 10);
+    if (pathList.length >= maxConcurrency) {
+      const pool = new WorkerPool<ThreadArgs, ThreadResult>({
+        maxConcurrency,
+        maxUtilization: 0.5,
+        workerScript: new URL(
+          "./workers/ParseCommandsWorker.mjs",
+          fileURLToPath(__dirname),
+        ),
+      });
+      const threadResults = await Promise.all(
+        pathList.map(path => pool.enqueue({ root, path }).then(v => v.result)),
+      );
+      void pool.shutDownBackground();
+      return threadResults.flatMap(commands => commands);
+    }
     return pathList.map(path => this.parseCommand(root, path)).flat();
   });
 
-  private static parseCommand(root: string, path: string) {
+  public static parseCommand(root: string, path: string) {
     const commands: ILocatedCommand[] = [];
     const declaredExports = super.compile(join(root, path));
     for (const key in declaredExports) {
@@ -55,4 +73,13 @@ export class CommandParser extends TSCompiler {
       return { paths: "", root: "" };
     }
   }
+}
+
+interface ThreadArgs {
+  root: string;
+  path: string;
+}
+
+export interface ThreadResult {
+  result: ILocatedCommand[];
 }
