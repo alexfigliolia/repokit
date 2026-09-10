@@ -1,6 +1,6 @@
 import type { ICommand, IRepoKitConfig } from "./types";
 import type { RepoKitTheme } from "./RepoKitTheme";
-import type { RepoKitTemplate } from "./RepoKitTemplate";
+import { RepoKitTemplate } from "./RepoKitTemplate";
 import { RepoKitCommand } from "./RepoKitCommand";
 /* oxlint-disable typescript-eslint/no-misused-spread */
 
@@ -50,8 +50,8 @@ export class RepoKitConfig {
     this.themes = themes;
     this.project = project;
     this.commands = commands;
-    this.templates = templates.map(template => new RepoKitCommand(template));
     this.thirdParty = thirdParty.map(command => new RepoKitCommand(command));
+    this.templates = templates.map(template => new RepoKitTemplate(template));
   }
 
   public toScoped(location: string) {

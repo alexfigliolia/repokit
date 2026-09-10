@@ -147,10 +147,9 @@ impl RegisterCommand {
 
 impl InternalExecutable for RegisterCommand {
     fn run(&self, args: Vec<String>, _: &HashMap<String, Box<dyn InternalExecutable>>) {
-        Logger::info("Registering a new command");
         let (command_path, template_name) = self.parse_command_args(args);
-        let source_file = RepoKitRuntime::with_runtime(|runtime| {
-            if !template_name.is_empty() && !runtime.configuration.templates.is_empty() {
+        let default_template = RepoKitRuntime::with_runtime(|runtime| {
+            if !template_name.is_empty() {
                 for template in &runtime.configuration.templates {
                     if template.name == template_name {
                         self.create_from_template(template, &command_path);
@@ -170,7 +169,8 @@ impl InternalExecutable for RegisterCommand {
                     .resolve_template(TypeScriptTemplate::CommandTemplate),
             )
         });
-        if let Some(mut source) = source_file {
+        if let Some(mut source) = default_template {
+            Logger::info("Registering a new command");
             let mut target = FileBuilder::create(&command_path, |_| Logger::file_create_error());
             FileBuilder::copy_to(&mut source, &mut target, |_| Logger::file_write_error());
             Logger::info("Creating command file");
