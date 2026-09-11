@@ -24,6 +24,9 @@ importers:
       '@figliolia/semver':
         specifier: ^1.0.0
         version: 1.0.0
+      '@figliolia/thread-pool':
+        specifier: ^1.0.0
+        version: 1.0.0(@figliolia/event-emitter@2.0.0)
       '@taplo/cli':
         specifier: ^0.7.0
         version: 0.7.0
@@ -256,6 +259,11 @@ packages:
   '@figliolia/semver@1.0.0':
     resolution: {integrity: sha512-8+HBxSsbdvfFJKvSwKRGdeq6dV5BjoMGu7AQEooXFnUXGedgvnIxAgolnykGMUcF5hBC6hQB0a9FZuq79HYOgw==}
     hasBin: true
+
+  '@figliolia/thread-pool@1.0.0':
+    resolution: {integrity: sha512-ljDw80mDizsZWanU+h0RWz6vLPhT48neFfCeE133QBYkfDiR8/94o49ZShlWHf+O4Yyqi3Im/oIagzr6QdrjYA==}
+    peerDependencies:
+      '@figliolia/event-emitter': '>=2.0.0'
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1389,6 +1397,10 @@ snapshots:
   '@figliolia/event-emitter@2.0.0': {}
 
   '@figliolia/semver@1.0.0': {}
+
+  '@figliolia/thread-pool@1.0.0(@figliolia/event-emitter@2.0.0)':
+    dependencies:
+      '@figliolia/event-emitter': 2.0.0
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

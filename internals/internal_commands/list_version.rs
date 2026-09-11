@@ -10,7 +10,7 @@ use crate::{
     logger::logger::Logger,
 };
 
-pub static REPOKIT_VERSION: &str = "5.3.1";
+pub static REPOKIT_VERSION: &str = "5.4.0";
 
 pub struct ListVersion {
     pub definition: InternalExecutableDefinition,

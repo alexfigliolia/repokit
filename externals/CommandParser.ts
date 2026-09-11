@@ -1,14 +1,15 @@
 import { parseArgs } from "node:util";
-import { fileURLToPath } from "node:url";
 import { join } from "node:path";
+import { availableParallelism } from "node:os";
 import { stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
+
+import { ThreadPool } from "@figliolia/thread-pool";
 
 import type { ILocatedCommand } from "./types";
 import { TSCompiler } from "./TSCompiler";
 import { RepoKitTemplate } from "./RepoKitTemplate";
 import { RepoKitCommand } from "./RepoKitCommand";
-import { WorkerPool } from "./concurrency";
 
 export class CommandParser extends TSCompiler {
   public static readonly parse = this.wrapParsingOperation(async () => {
@@ -17,18 +18,18 @@ export class CommandParser extends TSCompiler {
       return [];
     }
     const pathList = paths.split(",").filter(Boolean);
-    const maxConcurrency = Math.floor((WorkerPool.CORES / 2) * 10);
+    const maxConcurrency = Math.floor((availableParallelism() / 2) * 10);
     if (pathList.length >= maxConcurrency) {
-      const pool = new WorkerPool<ThreadArgs, ThreadResult>({
+      const pool = new ThreadPool<ThreadArgs, ILocatedCommand[]>({
         maxConcurrency,
-        maxUtilization: 0.5,
         workerScript: new URL(
           "./workers/ParseCommandsWorker.mjs",
-          fileURLToPath(__dirname),
+          // @ts-expect-error "node assumes a common.js target when type: "module" is not specified in package.json"
+          import.meta.url,
         ),
       });
       const threadResults = await Promise.all(
-        pathList.map(path => pool.enqueue({ root, path }).then(v => v.result)),
+        pathList.map(path => pool.enqueueTask({ root, path })),
       );
       void pool.shutDownBackground();
       return threadResults.flatMap(commands => commands);
@@ -78,8 +79,4 @@ export class CommandParser extends TSCompiler {
 interface ThreadArgs {
   root: string;
   path: string;
-}
-
-export interface ThreadResult {
-  result: ILocatedCommand[];
 }
