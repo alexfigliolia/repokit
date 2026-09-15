@@ -11,6 +11,7 @@ use crate::{
     repokit::{
         command_definition::CommandDefinition, repokit_command::RepoKitCommand,
         repokit_config::RootCommand, repokit_runtime::RepoKitRuntime,
+        repokit_template::RepoKitTemplate,
     },
 };
 
@@ -50,6 +51,29 @@ impl Help {
             );
         });
         Help::log_args(&command.args, None)
+    }
+
+    pub fn log_template(template: &RepoKitTemplate) {
+        Logger::with_theme(|theme| {
+            println!(
+                "{}{} {}",
+                Logger::indent(Some(3)),
+                theme.command(&template.name),
+                theme.description(&template.description),
+            );
+        });
+        println!();
+        Help::log_external_subcommands(&template.commands, 6);
+        if !template.owner.is_empty() {
+            Logger::with_theme(|theme| {
+                println!(
+                    "\n{}{}{}",
+                    Logger::indent(Some(9)),
+                    theme.description("Owned by: "),
+                    Logger::cyan(&template.owner),
+                );
+            });
+        }
     }
 
     pub fn log_external_command(command: &RepoKitCommand) {
@@ -114,6 +138,19 @@ impl Help {
         });
     }
 
+    pub fn log_templates(templates: &[RepoKitTemplate]) {
+        if templates.is_empty() {
+            return;
+        }
+        let sorted_templates = Help::sort_templates(templates);
+        Logger::info("Registered Templates:");
+        println!();
+        for template in sorted_templates {
+            Help::log_template(template);
+            println!();
+        }
+    }
+
     pub fn log_external_commands(externals: &HashMap<String, RepoKitCommand>) {
         if externals.is_empty() {
             return;
@@ -170,5 +207,11 @@ impl Help {
                 )
             })
             .collect()
+    }
+
+    fn sort_templates(templates: &[RepoKitTemplate]) -> &[RepoKitTemplate] {
+        let mut clone = templates.to_vec();
+        sort_slice_by_str_key(&mut clone, |x| &x.name);
+        templates
     }
 }
