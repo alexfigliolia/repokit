@@ -62,9 +62,11 @@ impl Logger {
     pub fn parse_error(file_type: &str, stdout: &str) {
         Logger::info(format!("There was an error parsing your {}", file_type).as_str());
         Logger::info(
-            "This can occur when RepoKit attempts to parse a TypeScript file that can terminate the process upon evaluation",
+            "This can occur when Repokit attempts to parse a TypeScript file that throws an error upon evaluation",
         );
-        Logger::info("Please file a bug to with any related error or stack trace found below");
+        Logger::info(
+            "If you encounter this error and believe it may be a bug within Repokit, please file a bug here:",
+        );
         Logger::log_issue_link();
         println!();
         if !stdout.is_empty() {

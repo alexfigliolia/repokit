@@ -1,24 +1,19 @@
 use colored::Colorize;
 use core::panic;
-use jsonschema::Validator;
 use schemars::JsonSchema;
 use serde::Deserialize;
-use serde_json::{Value, from_value, to_value};
 use std::{
     collections::{HashMap, HashSet},
     path::Path,
-    sync::LazyLock,
 };
 
 use crate::{
-    context::{
-        node_scope::NodeScope, typescript_library_installation::TypeScriptLibraryInstallation,
-    },
+    context::typescript_library_installation::TypeScriptLibraryInstallation,
     internal_filesystem::file_builder::FileBuilder,
     logger::logger::Logger,
     repokit::{
         command_definition::CommandDefinition, repokit_command::RepoKitCommand,
-        repokit_construct_validator::RepoKitConstructValidator, repokit_template::RepoKitTemplate,
+        repokit_template::RepoKitTemplate,
     },
     themes::theme_inputs::RepoKitTheme,
     typescript_library::typescript_templates::TypeScriptTemplate,
@@ -53,19 +48,8 @@ pub struct RepoKitConfig {
     pub themes: Vec<RepoKitTheme>,
 }
 
-static REPOKIT_CONFIG_VALIDATOR: LazyLock<Validator> = LazyLock::new(|| {
-    Validator::new(&to_value(schemars::schema_for!(RepoKitConfig)).unwrap()).unwrap()
-});
-
-impl RepoKitConstructValidator for RepoKitConfig {}
-
 impl RepoKitConfig {
-    pub fn from_input(config_path: &Path, node: &mut NodeScope, input: Value) -> RepoKitConfig {
-        let repokit_config: Result<RepoKitConfig, serde_json::Error> = from_value(input.clone());
-        if !RepoKitConfig::is_valid(&REPOKIT_CONFIG_VALIDATOR, &input) || repokit_config.is_err() {
-            RepoKitConfig::on_parsing_error(config_path, node, Value::Null);
-        }
-        let configuration = repokit_config.unwrap();
+    pub fn validate(configuration: RepoKitConfig) -> RepoKitConfig {
         let mut memo = HashSet::new();
         for template in &configuration.templates {
             if !memo.insert(&template.name) {
@@ -82,11 +66,11 @@ impl RepoKitConfig {
         configuration
     }
 
-    pub fn on_parsing_error(config_path: &Path, node: &mut NodeScope, _: Value) -> Option<String> {
-        node.type_check_file(config_path);
-        println!();
+    pub fn on_parsing_error(config_path: &Path) {
         Logger::info("There was an error parsing your configuration");
-        NodeScope::prompt_to_fix_errors(config_path);
+        Logger::info("This can occur if your configuration throws an error during parsing");
+        Logger::info("Here's a link to the path I attempted to parse");
+        Logger::log_file_path(&config_path.to_string_lossy());
         panic!();
     }
 

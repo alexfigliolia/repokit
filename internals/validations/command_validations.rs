@@ -7,7 +7,6 @@ use crate::{
     internal_commands::internal_registry::InternalCommandRegistry,
     logger::logger::Logger,
     repokit::{repokit_command::RepoKitCommand, repokit_runtime::RepoKitRuntime},
-    typescript_library::typescript_bridge::TypeScriptBridge,
 };
 
 pub struct CommandValidations;
@@ -22,7 +21,9 @@ impl CommandValidations {
     pub fn collect_and_validate_externals() -> HashMap<String, RepoKitCommand> {
         let walker = FileWalker::new();
         let result = walker.get();
-        let externals = TypeScriptBridge::parse_commands(&result);
+        let externals = RepoKitRuntime::with_runtime(|runtime| {
+            runtime.typescript_library.parse_commands(&result)
+        });
         let all = RepoKitRuntime::with_runtime(|runtime| {
             [&externals[..], &runtime.configuration.third_party[..]].concat()
         });
