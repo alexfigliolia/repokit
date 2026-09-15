@@ -1,6 +1,7 @@
 import { register, type RegisterOptions } from "ts-node";
 
-import type { UnwrappedBrigdeOperation } from "./types";
+import { FileParseResult } from "./FileParseResult";
+import { FileParseError } from "./FileParseError";
 
 export class TSCompiler {
   private static PARSE_INDICATOR =
@@ -26,28 +27,47 @@ export class TSCompiler {
       const result = require(path) as T;
       compiler.enabled(false);
       return result;
-    } catch (error) {
-      console.error(`Failure to parse module at path ${path}`, error);
-      return {} as T;
+    } catch (error: unknown) {
+      throw FileParseResult.error<T, FileParseError>(
+        // @ts-expect-error "error unknown"
+        new FileParseError(path, error?.message),
+      );
     }
   }
 
-  public static wrapParsingOperation<F extends (...args: unknown[]) => unknown>(
-    operation: F,
-  ) {
+  public static wrapParsingOperation<
+    F extends (
+      ...args: unknown[]
+    ) =>
+      | FileParseResult<any, FileParseError>
+      | Promise<FileParseResult<any, FileParseError>>,
+  >(operation: F) {
     return (...params: Parameters<F>) => {
       const restore = this.plugExits();
-      const result = operation(...params);
-      if (result instanceof Promise) {
-        return result.then(v =>
-          this.toStdout(v, restore),
-        ) as UnwrappedBrigdeOperation<F>;
+      try {
+        const result = operation(...params);
+        if (result instanceof Promise) {
+          void result
+            .then(v => this.toStdout(v, restore))
+            .catch(e => this.toStdout(e, restore));
+        } else {
+          this.toStdout(result, restore);
+        }
+      } catch (error) {
+        this.toStdout(
+          error instanceof FileParseResult
+            ? error
+            : FileParseResult.error(error),
+          restore,
+        );
       }
-      return this.toStdout(result, restore) as UnwrappedBrigdeOperation<F>;
     };
   }
 
-  private static toStdout<T>(result: T, ...callbacks: (() => void)[]) {
+  private static toStdout<T>(
+    result: FileParseResult<T>,
+    ...callbacks: (() => void)[]
+  ) {
     if (typeof result !== "undefined") {
       console.log(
         `${this.PARSE_INDICATOR}${JSON.stringify(result)}${this.PARSE_INDICATOR}`,

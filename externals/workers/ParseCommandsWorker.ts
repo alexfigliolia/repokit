@@ -1,4 +1,4 @@
-import { ThreadPoolWorker } from "@figliolia/thread-pool";
+import { ThreadPoolWorker } from "@figliolia/thread-pool/node";
 
 import { CommandParser } from "../CommandParser";
 
