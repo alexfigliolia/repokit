@@ -10,7 +10,6 @@ use crate::{
         typescript_library_installation::TypeScriptLibraryInstallation,
     },
     repokit::repokit_config::RepoKitConfig,
-    typescript_library::typescript_bridge::TypeScriptBridge,
 };
 
 pub struct RepoKitRuntime {
@@ -40,8 +39,8 @@ impl RepoKitRuntime {
         let node_init = runtime.spawn(async move { NodeScope::new(&p2) });
         let caches = block_on(cache_init);
         let typescript_library = block_on(library_init).unwrap();
-        let mut node = block_on(node_init).unwrap();
-        let configuration = TypeScriptBridge::parse_configuration(&typescript_library, &mut node);
+        let node = block_on(node_init).unwrap();
+        let configuration = typescript_library.parse_configuration();
         runtime.shutdown_background();
         RepoKitRuntime {
             git,

@@ -52,3 +52,8 @@ export type UnwrappedBrigdeOperation<
   F extends (...args: unknown[]) => unknown,
   T = void,
 > = ReturnType<F> extends Promise<unknown> ? Promise<T> : T;
+
+export interface ParseResult<T, E = unknown> {
+  result?: T;
+  error?: E;
+}

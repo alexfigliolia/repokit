@@ -17,7 +17,7 @@ pub struct ListCommands {
     pub definition: InternalExecutableDefinition,
 }
 
-static SCOPES: [&str; 4] = ["internal", "registered", "root", "<owner>"];
+static SCOPES: [&str; 5] = ["internal", "registered", "root", "templates", "<owner>"];
 
 impl ListCommands {
     pub fn new() -> ListCommands {
@@ -58,9 +58,19 @@ impl InternalExecutable for ListCommands {
         if scope == SCOPES[0] {
             return Help::log_internal_commands(internals);
         }
+        if scope == SCOPES[3] {
+            return RepoKitRuntime::with_runtime(|runtime| {
+                Help::log_templates(&runtime.configuration.templates)
+            });
+        }
         if scope == SCOPES[2] {
             return RepoKitRuntime::with_runtime(|runtime| {
-                Help::log_root_commands(&runtime.configuration.commands)
+                if !runtime.configuration.commands.is_empty() {
+                    Logger::info("Root Commands:\n\n");
+                    Help::log_root_commands(&runtime.configuration.commands)
+                } else {
+                    Logger::info("There are no commands registered in your RepoKit configuration");
+                }
             });
         }
         let registered_commands = CommandValidations::collect_and_validate_externals();
