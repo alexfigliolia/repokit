@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Create GitHub Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REPOKIT_DISTRIBUTION_TOKEN }}
         run: gh release create ${{ github.ref_name }} --draft --title "Release ${{ github.ref_name }}"
 
   build-assets:
@@ -59,4 +59,4 @@ jobs:
           target: ${{ matrix.target }}
           tar: all
           zip: windows
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.REPOKIT_DISTRIBUTION_TOKEN }}
