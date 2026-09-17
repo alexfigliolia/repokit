@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    # tags:
+    # - 'v*' # Triggers the workflow whenever you push a version tag like v1.0.0
+    branches:
+      - binary-distribution
+
+permissions:
+  contents: write # Crucial: Allows the action to create and write to GitHub Releases
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create ${{ github.ref_name }} --draft --title "Release ${{ github.ref_name }}"
+
+  build-assets:
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          # Linux 64-bit
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          # Linux ARM64 (e.g., Raspberry Pi 4/5)
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+          # macOS Intel
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          # macOS Apple Silicon (M1/M2/M3)
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          # Windows 64-bit
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build and Upload Binary
+        uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          # Replace 'my-bin' with the actual binary name defined in your Cargo.toml
+          bin: repokit
+          target: ${{ matrix.target }}
+          tar: all
+          zip: windows
+          token: ${{ secrets.GITHUB_TOKEN }}
