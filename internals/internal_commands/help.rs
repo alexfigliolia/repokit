@@ -1,3 +1,4 @@
+use colored::Colorize;
 use std::collections::HashMap;
 
 use alphanumeric_sort::{sort_slice_by_str_key, sort_str_slice};
@@ -10,9 +11,9 @@ use crate::{
     logger::logger::Logger,
     repokit::{
         command_definition::CommandDefinition, repokit_command::RepoKitCommand,
-        repokit_config::RootCommand, repokit_runtime::RepoKitRuntime,
-        repokit_template::RepoKitTemplate,
+        repokit_config::RootCommand, repokit_template::RepoKitTemplate,
     },
+    themes::theme::Theme,
 };
 
 pub struct Help;
@@ -20,36 +21,27 @@ pub struct Help;
 impl Help {
     pub fn list_all(
         internals: &HashMap<String, Box<dyn InternalExecutable>>,
-        externals: &HashMap<String, RepoKitCommand>,
+        _externals: &HashMap<String, RepoKitCommand>,
     ) {
         Help::log_internal_commands(internals);
-        RepoKitRuntime::with_runtime(|runtime| {
-            Help::log_root_commands(&runtime.configuration.commands);
-        });
-        Help::log_external_commands(externals);
+        Logger::info("Execute any command by running:");
+        Logger::log_file_path(&Logger::with_theme(|theme| {
+            format!(
+                "{} {} {}",
+                theme.prefix("repokit").bold(),
+                theme.command("<command>").bold(),
+                theme.arg("<args>").bold(),
+            )
+        }));
     }
 
     pub fn log_internal_command(command: &InternalExecutableDefinition) {
-        Logger::with_theme(|theme| {
-            println!(
-                "{}{} {}",
-                Logger::indent(Some(3)),
-                theme.command(&command.name),
-                theme.description(&command.description),
-            );
-        });
+        Help::log_command_name_and_description(&command.name, &command.description, None);
         Help::log_args(&command.args, None);
     }
 
     pub fn log_root_command(command: &RootCommand) {
-        Logger::with_theme(|theme| {
-            println!(
-                "{}{} {}",
-                Logger::indent(Some(3)),
-                theme.command(&command.name),
-                theme.description(&command.description),
-            );
-        });
+        Help::log_command_name_and_description(&command.name, &command.description, None);
         Help::log_args(&command.args, None)
     }
 
@@ -77,14 +69,7 @@ impl Help {
     }
 
     pub fn log_external_command(command: &RepoKitCommand) {
-        Logger::with_theme(|theme| {
-            println!(
-                "{}{} {}",
-                Logger::indent(Some(3)),
-                theme.command(&command.name),
-                theme.description(&command.description),
-            );
-        });
+        Help::log_command_name_and_description(&command.name, &command.description, None);
         println!();
         Help::log_external_subcommands(&command.commands, 6);
         if !command.owner.is_empty() {
@@ -162,6 +147,39 @@ impl Help {
             Help::log_external_command(external);
             println!();
         }
+    }
+
+    pub fn log_command_usage(name: &str, sub_commands: &Vec<String>) {
+        Logger::log_file_path(&Logger::with_theme(|theme| {
+            format!(
+                "{} {} {} {}",
+                theme.prefix("repokit").bold(),
+                theme.command(name).bold(),
+                theme
+                    .sub_command(&format!("<| {} |>", sub_commands.join(" | ")))
+                    .bold(),
+                theme.arg("<args>").bold(),
+            )
+        }));
+    }
+
+    fn log_command_name_and_description(
+        name: &str,
+        description: &str,
+        runtime_theme: Option<&Theme>,
+    ) {
+        let printer = |theme: &Theme| {
+            println!(
+                "{}{} {}",
+                Logger::indent(Some(3)),
+                theme.command(name),
+                theme.description(description),
+            );
+        };
+        if let Some(theme) = runtime_theme {
+            return printer(theme);
+        }
+        Logger::with_theme(|theme| printer(theme));
     }
 
     fn log_args(map: &Option<HashMap<String, String>>, indentation: Option<i32>) {

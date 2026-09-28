@@ -132,10 +132,6 @@ export const Commands = new RepoKitCommand({
     "build:production": {
       command: "vite build",
       description: "Build the UI for production",
-      args: {
-        "(--optimization | -o)":
-          "Run post-build optimizers such as compression and css purging",
-      },
     },
     "run:development": {
       command: "vite",
@@ -360,6 +356,6 @@ For engineers new and old to onboard to new features, they were often left stuck
 
 Most of the time landing them in GChat asking for help.
 
-During my time there, I never met an engineer with a fully functioning local environment.
+It was not pretty.
 
 It was there that I designed an early version of **repokit.**
