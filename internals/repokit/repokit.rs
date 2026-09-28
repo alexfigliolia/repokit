@@ -125,6 +125,14 @@ impl RepoKit {
         );
         Help::log_external_subcommands(&command.commands, 3);
         println!();
+        Logger::info(&Logger::with_theme(|theme| {
+            format!(
+                "Execute any {} workflow by running",
+                theme.sub_command(&command.name)
+            )
+        }));
+        let sub_commands: Vec<String> = command.commands.keys().map(|str| str.to_owned()).collect();
+        Help::log_command_usage(&command.name, &sub_commands);
     }
 
     fn working_directory_not_found(&self, interface: &RepoKitCommand, executable: &str) {

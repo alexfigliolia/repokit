@@ -42,8 +42,9 @@ impl Interactive {
 
     pub fn prompt_arguments(&self, command_name: &str) -> Result<String, InquireError> {
         let result = Text::new(&Logger::with_info_prefix(&format!(
-            "Please specify any command arguments you wish to execute {} with\n",
-            Logger::with_theme(|theme| theme.highlight(command_name))
+            "Please specify any command arguments you wish to execute {} with. You can press {} to omit arguments.\n",
+            Logger::with_theme(|theme| theme.highlight(command_name)),
+            Logger::with_theme(|theme| theme.highlight("(Enter)"))
         )))
         .with_formatter(&|v| format!("{}", v.to_owned().bold()))
         .with_render_config(InquireTheme::create())
@@ -125,6 +126,7 @@ impl Interactive {
                 Executor::with_stdio(format!("{} {}", definition.command, args), |cmd| {
                     cmd.current_dir(&runtime.typescript_library.install_path)
                 });
+                Logger::info("Done!");
                 panic!();
             }
         });
@@ -157,6 +159,7 @@ impl Interactive {
                 let executable = format!("{} {}", script.command, args);
                 if let Some(working_dir) = Path::new(&definition.location).parent() {
                     Executor::with_stdio(executable, |cmd| cmd.current_dir(working_dir));
+                    Logger::info("Done!");
                     panic!();
                 }
             }
